@@ -1,71 +1,66 @@
 # Retail360 — Initial Fact Grain Definitions
 
-These grain definitions are provisional and must be validated during source profiling before production modelling.
+These grain definitions are provisional until they are validated against the downloaded source files.
 
-## FactSales
+## FactInternetSales
 
-**Proposed grain:** one row per product sold through a store/channel on a transaction date at the source sales-record level.
-
-Primary analytical use:
-
-- Store sales
-- Product performance
-- Revenue
-- Cost
-- Gross profit
-- Returns
-- Discount analysis
-- Promotion analysis
-
-Important source measures include:
-
-- SalesQuantity
-- ReturnQuantity
-- ReturnAmount
-- DiscountQuantity
-- DiscountAmount
-- UnitCost
-- UnitPrice
-- TotalCost
-- SalesAmount
-
-## FactOnlineSales
-
-**Proposed grain:** one row per online sales line / product transaction at source-record level.
+**Proposed grain:** one row per internet sales order line, identified by SalesOrderNumber × SalesOrderLineNumber.
 
 Primary analytical use:
-
 - E-commerce revenue
-- Customer analytics
-- Product performance
-- Promotion performance
-- Channel comparison
-
-The final grain will be confirmed using key uniqueness tests during profiling.
-
-## FactInventory
-
-**Proposed grain:** one inventory snapshot per Date × Store × Product × Currency combination, subject to source validation.
-
-Primary analytical use:
-
-- On-hand inventory
-- Inventory value
-- On-order inventory
-- Safety stock
-- Days in stock
-- Inventory ageing
-- Stock-risk analysis
+- Customer purchasing behaviour
+- Product and category performance
+- Promotion effectiveness
+- Discount analysis
+- Gross profit analysis
+- Geographic and territory analysis
 
 Important source measures include:
+- OrderQuantity
+- UnitPrice
+- ExtendedAmount
+- UnitPriceDiscountPct
+- DiscountAmount
+- ProductStandardCost
+- TotalProductCost
+- SalesAmount
+- TaxAmt
+- Freight
 
-- OnHandQuantity
-- OnOrderQuantity
-- SafetyStockQuantity
+## FactResellerSales
+
+**Proposed grain:** one row per reseller sales order line, identified by SalesOrderNumber × SalesOrderLineNumber.
+
+Primary analytical use:
+- Reseller-channel revenue
+- Product and category performance
+- Territory performance
+- Reseller performance
+- Promotion analysis
+- Profitability
+- Internet-versus-reseller channel comparison
+
+The exact uniqueness rules will be verified during profiling.
+
+## FactProductInventory
+
+**Proposed grain:** one product inventory record per ProductKey × DateKey, subject to source validation.
+
+Primary analytical use:
+- Inventory balance
+- Inventory movement
+- Units in
+- Units out
+- Unit cost
+- Inventory value
+- Product-level stock trends
+
+Important source measures include:
 - UnitCost
-- DaysInStock
-- Aging
+- UnitsIn
+- UnitsOut
+- UnitsBalance
 
 ## Modelling Rule
 
-No DAX measure or Power BI visual will be built from a fact table until its grain, keys, duplicate behaviour and null behaviour have been validated.
+No DAX measure or Power BI visual will be treated as production-ready until the relevant fact table's grain, key uniqueness, null behaviour and referential integrity have been validated.
