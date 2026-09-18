@@ -63,3 +63,9 @@ jobs:
 
       - name: Validate Stage 3 staging layer
         run: python scripts/qa_staging.py
+
+      - name: Build Stage 4 analytics star schema
+        run: python scripts/build_analytics.py
+
+      - name: Validate Stage 4 analytics star schema
+        run: python scripts/qa_analytics.py
