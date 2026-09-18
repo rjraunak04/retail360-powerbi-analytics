@@ -1,0 +1,16 @@
+// Run in Power BI Desktop DAX Query View after loading the Stage 5 semantic model.
+
+EVALUATE
+ROW(
+    "FactSales Rows", COUNTROWS(FactSales),
+    "FactInventory Rows", COUNTROWS(FactInventory),
+    "DimProduct Rows", COUNTROWS(DimProduct),
+    "DimCustomer Rows", COUNTROWS(DimCustomer),
+    "DimDate Rows", COUNTROWS(DimDate)
+)
+
+EVALUATE
+SUMMARIZECOLUMNS(
+    DimChannel[Channel],
+    "Sales Lines", COUNTROWS(FactSales)
+)

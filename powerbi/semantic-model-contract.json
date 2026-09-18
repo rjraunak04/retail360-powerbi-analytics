@@ -1,0 +1,1108 @@
+{
+  "modelName": "Retail360",
+  "storageMode": "Import",
+  "source": {
+    "connector": "PostgreSQL.Database",
+    "serverParameter": "pServer",
+    "databaseParameter": "pDatabase",
+    "schema": "analytics"
+  },
+  "dateTable": {
+    "table": "DimDate",
+    "dateColumn": "Date"
+  },
+  "tables": {
+    "DimDate": {
+      "source": "dim_date",
+      "key": "Date Key",
+      "hiddenColumns": [
+        "Date Key"
+      ],
+      "sortBy": {
+        "Month Name": "Month Number",
+        "Year Month": "Year Month Key"
+      },
+      "columns": [
+        [
+          "Date Key",
+          "date_key",
+          "int64"
+        ],
+        [
+          "Date",
+          "date",
+          "dateTime"
+        ],
+        [
+          "Day Of Week",
+          "day_of_week",
+          "int64"
+        ],
+        [
+          "Day Name",
+          "day_name",
+          "string"
+        ],
+        [
+          "Day Of Month",
+          "day_of_month",
+          "int64"
+        ],
+        [
+          "Day Of Year",
+          "day_of_year",
+          "int64"
+        ],
+        [
+          "Week Of Year",
+          "week_of_year",
+          "int64"
+        ],
+        [
+          "Month Name",
+          "month_name",
+          "string"
+        ],
+        [
+          "Month Number",
+          "month_number",
+          "int64"
+        ],
+        [
+          "Calendar Quarter",
+          "calendar_quarter",
+          "int64"
+        ],
+        [
+          "Calendar Year",
+          "calendar_year",
+          "int64"
+        ],
+        [
+          "Calendar Semester",
+          "calendar_semester",
+          "int64"
+        ],
+        [
+          "Fiscal Quarter",
+          "fiscal_quarter",
+          "int64"
+        ],
+        [
+          "Fiscal Year",
+          "fiscal_year",
+          "int64"
+        ],
+        [
+          "Fiscal Semester",
+          "fiscal_semester",
+          "int64"
+        ],
+        [
+          "Year Month Key",
+          "year_month_key",
+          "int64"
+        ],
+        [
+          "Year Month",
+          "year_month",
+          "string"
+        ]
+      ]
+    },
+    "DimProduct": {
+      "source": "dim_product",
+      "key": "Product Key",
+      "hiddenColumns": [
+        "Product Key",
+        "Product Subcategory Key",
+        "Product Category Key"
+      ],
+      "columns": [
+        [
+          "Product Key",
+          "product_key",
+          "int64"
+        ],
+        [
+          "Product Code",
+          "product_code",
+          "string"
+        ],
+        [
+          "Product Name",
+          "product_name",
+          "string"
+        ],
+        [
+          "Product Subcategory Key",
+          "product_subcategory_key",
+          "int64"
+        ],
+        [
+          "Subcategory",
+          "subcategory_name",
+          "string"
+        ],
+        [
+          "Product Category Key",
+          "product_category_key",
+          "int64"
+        ],
+        [
+          "Category",
+          "category_name",
+          "string"
+        ],
+        [
+          "Standard Cost",
+          "standard_cost",
+          "decimal"
+        ],
+        [
+          "List Price",
+          "list_price",
+          "decimal"
+        ],
+        [
+          "Dealer Price",
+          "dealer_price",
+          "decimal"
+        ],
+        [
+          "Color",
+          "color",
+          "string"
+        ],
+        [
+          "Size",
+          "size",
+          "string"
+        ],
+        [
+          "Size Range",
+          "size_range",
+          "string"
+        ],
+        [
+          "Weight",
+          "weight",
+          "decimal"
+        ],
+        [
+          "Safety Stock Level",
+          "safety_stock_level",
+          "int64"
+        ],
+        [
+          "Reorder Point",
+          "reorder_point",
+          "int64"
+        ],
+        [
+          "Days To Manufacture",
+          "days_to_manufacture",
+          "int64"
+        ],
+        [
+          "Product Line",
+          "product_line",
+          "string"
+        ],
+        [
+          "Class",
+          "product_class",
+          "string"
+        ],
+        [
+          "Style",
+          "style",
+          "string"
+        ],
+        [
+          "Model Name",
+          "model_name",
+          "string"
+        ],
+        [
+          "Start Date",
+          "start_date",
+          "dateTime"
+        ],
+        [
+          "End Date",
+          "end_date",
+          "dateTime"
+        ],
+        [
+          "Status",
+          "status",
+          "string"
+        ]
+      ]
+    },
+    "DimCustomer": {
+      "source": "dim_customer",
+      "key": "Customer Key",
+      "hiddenColumns": [
+        "Customer Key"
+      ],
+      "columns": [
+        [
+          "Customer Key",
+          "customer_key",
+          "int64"
+        ],
+        [
+          "Customer Code",
+          "customer_code",
+          "string"
+        ],
+        [
+          "Customer Name",
+          "customer_name",
+          "string"
+        ],
+        [
+          "Title",
+          "title",
+          "string"
+        ],
+        [
+          "First Name",
+          "first_name",
+          "string"
+        ],
+        [
+          "Middle Name",
+          "middle_name",
+          "string"
+        ],
+        [
+          "Last Name",
+          "last_name",
+          "string"
+        ],
+        [
+          "Birth Date",
+          "birth_date",
+          "dateTime"
+        ],
+        [
+          "Marital Status",
+          "marital_status",
+          "string"
+        ],
+        [
+          "Gender",
+          "gender",
+          "string"
+        ],
+        [
+          "Email Address",
+          "email_address",
+          "string"
+        ],
+        [
+          "Yearly Income",
+          "yearly_income",
+          "decimal"
+        ],
+        [
+          "Total Children",
+          "total_children",
+          "int64"
+        ],
+        [
+          "Children At Home",
+          "children_at_home",
+          "int64"
+        ],
+        [
+          "Education",
+          "education",
+          "string"
+        ],
+        [
+          "Occupation",
+          "occupation",
+          "string"
+        ],
+        [
+          "Is House Owner",
+          "is_house_owner",
+          "boolean"
+        ],
+        [
+          "Cars Owned",
+          "cars_owned",
+          "int64"
+        ],
+        [
+          "First Purchase Date",
+          "first_purchase_date",
+          "dateTime"
+        ],
+        [
+          "Commute Distance",
+          "commute_distance",
+          "string"
+        ]
+      ]
+    },
+    "DimReseller": {
+      "source": "dim_reseller",
+      "key": "Reseller Key",
+      "hiddenColumns": [
+        "Reseller Key"
+      ],
+      "columns": [
+        [
+          "Reseller Key",
+          "reseller_key",
+          "int64"
+        ],
+        [
+          "Reseller Code",
+          "reseller_code",
+          "string"
+        ],
+        [
+          "Reseller Name",
+          "reseller_name",
+          "string"
+        ],
+        [
+          "Business Type",
+          "business_type",
+          "string"
+        ],
+        [
+          "Number Employees",
+          "number_employees",
+          "int64"
+        ],
+        [
+          "Order Frequency",
+          "order_frequency",
+          "string"
+        ],
+        [
+          "Order Month",
+          "order_month",
+          "int64"
+        ],
+        [
+          "First Order Year",
+          "first_order_year",
+          "int64"
+        ],
+        [
+          "Last Order Year",
+          "last_order_year",
+          "int64"
+        ],
+        [
+          "Product Line",
+          "product_line",
+          "string"
+        ],
+        [
+          "Annual Sales",
+          "annual_sales",
+          "decimal"
+        ],
+        [
+          "Annual Revenue",
+          "annual_revenue",
+          "decimal"
+        ],
+        [
+          "Year Opened",
+          "year_opened",
+          "int64"
+        ]
+      ]
+    },
+    "DimEmployee": {
+      "source": "dim_employee",
+      "key": "Employee Key",
+      "hiddenColumns": [
+        "Employee Key"
+      ],
+      "columns": [
+        [
+          "Employee Key",
+          "employee_key",
+          "int64"
+        ],
+        [
+          "Employee Name",
+          "employee_name",
+          "string"
+        ],
+        [
+          "Title",
+          "title",
+          "string"
+        ],
+        [
+          "Hire Date",
+          "hire_date",
+          "dateTime"
+        ],
+        [
+          "Department",
+          "department_name",
+          "string"
+        ],
+        [
+          "Is Current",
+          "is_current",
+          "boolean"
+        ],
+        [
+          "Is Sales Person",
+          "is_sales_person",
+          "boolean"
+        ],
+        [
+          "Start Date",
+          "start_date",
+          "dateTime"
+        ],
+        [
+          "End Date",
+          "end_date",
+          "dateTime"
+        ],
+        [
+          "Status",
+          "status",
+          "string"
+        ]
+      ]
+    },
+    "DimGeography": {
+      "source": "dim_geography",
+      "key": "Geography Key",
+      "hiddenColumns": [
+        "Geography Key"
+      ],
+      "columns": [
+        [
+          "Geography Key",
+          "geography_key",
+          "int64"
+        ],
+        [
+          "City",
+          "city",
+          "string"
+        ],
+        [
+          "State Province Code",
+          "state_province_code",
+          "string"
+        ],
+        [
+          "State Province",
+          "state_province_name",
+          "string"
+        ],
+        [
+          "Country Region Code",
+          "country_region_code",
+          "string"
+        ],
+        [
+          "Country",
+          "country_name",
+          "string"
+        ],
+        [
+          "Postal Code",
+          "postal_code",
+          "string"
+        ],
+        [
+          "Territory Region",
+          "territory_region",
+          "string"
+        ],
+        [
+          "Territory Country",
+          "territory_country",
+          "string"
+        ],
+        [
+          "Territory Group",
+          "territory_group",
+          "string"
+        ]
+      ]
+    },
+    "DimSalesTerritory": {
+      "source": "dim_sales_territory",
+      "key": "Sales Territory Key",
+      "hiddenColumns": [
+        "Sales Territory Key",
+        "Sales Territory Alternate Key"
+      ],
+      "columns": [
+        [
+          "Sales Territory Key",
+          "sales_territory_key",
+          "int64"
+        ],
+        [
+          "Sales Territory Alternate Key",
+          "sales_territory_alternate_key",
+          "int64"
+        ],
+        [
+          "Territory Region",
+          "territory_region",
+          "string"
+        ],
+        [
+          "Territory Country",
+          "territory_country",
+          "string"
+        ],
+        [
+          "Territory Group",
+          "territory_group",
+          "string"
+        ]
+      ]
+    },
+    "DimPromotion": {
+      "source": "dim_promotion",
+      "key": "Promotion Key",
+      "hiddenColumns": [
+        "Promotion Key",
+        "Promotion Alternate Key"
+      ],
+      "columns": [
+        [
+          "Promotion Key",
+          "promotion_key",
+          "int64"
+        ],
+        [
+          "Promotion Alternate Key",
+          "promotion_alternate_key",
+          "int64"
+        ],
+        [
+          "Promotion Name",
+          "promotion_name",
+          "string"
+        ],
+        [
+          "Discount Pct",
+          "discount_pct",
+          "decimal"
+        ],
+        [
+          "Promotion Type",
+          "promotion_type",
+          "string"
+        ],
+        [
+          "Promotion Category",
+          "promotion_category",
+          "string"
+        ],
+        [
+          "Start Date",
+          "start_date",
+          "dateTime"
+        ],
+        [
+          "End Date",
+          "end_date",
+          "dateTime"
+        ],
+        [
+          "Min Qty",
+          "min_qty",
+          "int64"
+        ],
+        [
+          "Max Qty",
+          "max_qty",
+          "int64"
+        ]
+      ]
+    },
+    "DimCurrency": {
+      "source": "dim_currency",
+      "key": "Currency Key",
+      "hiddenColumns": [
+        "Currency Key"
+      ],
+      "columns": [
+        [
+          "Currency Key",
+          "currency_key",
+          "int64"
+        ],
+        [
+          "Currency Code",
+          "currency_code",
+          "string"
+        ],
+        [
+          "Currency Name",
+          "currency_name",
+          "string"
+        ]
+      ]
+    },
+    "DimChannel": {
+      "source": "dim_channel",
+      "key": "Channel Key",
+      "hiddenColumns": [
+        "Channel Key"
+      ],
+      "columns": [
+        [
+          "Channel Key",
+          "channel_key",
+          "int64"
+        ],
+        [
+          "Channel",
+          "channel_name",
+          "string"
+        ]
+      ]
+    },
+    "FactSales": {
+      "source": "fact_sales",
+      "key": "Sales Line Id",
+      "hiddenColumns": [
+        "Sales Line Id",
+        "Channel Key",
+        "Product Key",
+        "Order Date Key",
+        "Due Date Key",
+        "Ship Date Key",
+        "Customer Key",
+        "Reseller Key",
+        "Employee Key",
+        "Promotion Key",
+        "Currency Key",
+        "Sales Territory Key",
+        "Geography Key",
+        "Revision Number",
+        "Order Date",
+        "Due Date",
+        "Ship Date",
+        "Order Quantity",
+        "Unit Price",
+        "Extended Amount",
+        "Unit Price Discount Pct",
+        "Discount Amount",
+        "Product Standard Cost",
+        "Total Product Cost",
+        "Sales Amount",
+        "Tax Amount",
+        "Freight",
+        "Gross Profit",
+        "Gross Margin Pct"
+      ],
+      "columns": [
+        [
+          "Sales Line Id",
+          "sales_line_id",
+          "string"
+        ],
+        [
+          "Channel Key",
+          "channel_key",
+          "int64"
+        ],
+        [
+          "Product Key",
+          "product_key",
+          "int64"
+        ],
+        [
+          "Order Date Key",
+          "order_date_key",
+          "int64"
+        ],
+        [
+          "Due Date Key",
+          "due_date_key",
+          "int64"
+        ],
+        [
+          "Ship Date Key",
+          "ship_date_key",
+          "int64"
+        ],
+        [
+          "Customer Key",
+          "customer_key",
+          "int64"
+        ],
+        [
+          "Reseller Key",
+          "reseller_key",
+          "int64"
+        ],
+        [
+          "Employee Key",
+          "employee_key",
+          "int64"
+        ],
+        [
+          "Promotion Key",
+          "promotion_key",
+          "int64"
+        ],
+        [
+          "Currency Key",
+          "currency_key",
+          "int64"
+        ],
+        [
+          "Sales Territory Key",
+          "sales_territory_key",
+          "int64"
+        ],
+        [
+          "Geography Key",
+          "geography_key",
+          "int64"
+        ],
+        [
+          "Sales Order Number",
+          "sales_order_number",
+          "string"
+        ],
+        [
+          "Sales Order Line Number",
+          "sales_order_line_number",
+          "int64"
+        ],
+        [
+          "Revision Number",
+          "revision_number",
+          "int64"
+        ],
+        [
+          "Order Quantity",
+          "order_quantity",
+          "int64"
+        ],
+        [
+          "Unit Price",
+          "unit_price",
+          "decimal"
+        ],
+        [
+          "Extended Amount",
+          "extended_amount",
+          "decimal"
+        ],
+        [
+          "Unit Price Discount Pct",
+          "unit_price_discount_pct",
+          "decimal"
+        ],
+        [
+          "Discount Amount",
+          "discount_amount",
+          "decimal"
+        ],
+        [
+          "Product Standard Cost",
+          "product_standard_cost",
+          "decimal"
+        ],
+        [
+          "Total Product Cost",
+          "total_product_cost",
+          "decimal"
+        ],
+        [
+          "Sales Amount",
+          "sales_amount",
+          "decimal"
+        ],
+        [
+          "Tax Amount",
+          "tax_amount",
+          "decimal"
+        ],
+        [
+          "Freight",
+          "freight",
+          "decimal"
+        ],
+        [
+          "Gross Profit",
+          "gross_profit",
+          "decimal"
+        ],
+        [
+          "Gross Margin Pct",
+          "gross_margin_pct",
+          "decimal"
+        ],
+        [
+          "Order Date",
+          "order_date",
+          "dateTime"
+        ],
+        [
+          "Due Date",
+          "due_date",
+          "dateTime"
+        ],
+        [
+          "Ship Date",
+          "ship_date",
+          "dateTime"
+        ]
+      ]
+    },
+    "FactInventory": {
+      "source": "fact_inventory",
+      "key": null,
+      "hiddenColumns": [
+        "Product Key",
+        "Date Key",
+        "Movement Date",
+        "Unit Cost",
+        "Units In",
+        "Units Out",
+        "Units Balance",
+        "Net Units Movement",
+        "Inventory Value"
+      ],
+      "columns": [
+        [
+          "Product Key",
+          "product_key",
+          "int64"
+        ],
+        [
+          "Date Key",
+          "date_key",
+          "int64"
+        ],
+        [
+          "Movement Date",
+          "movement_date",
+          "dateTime"
+        ],
+        [
+          "Unit Cost",
+          "unit_cost",
+          "decimal"
+        ],
+        [
+          "Units In",
+          "units_in",
+          "int64"
+        ],
+        [
+          "Units Out",
+          "units_out",
+          "int64"
+        ],
+        [
+          "Units Balance",
+          "units_balance",
+          "int64"
+        ],
+        [
+          "Net Units Movement",
+          "net_units_movement",
+          "int64"
+        ],
+        [
+          "Inventory Value",
+          "inventory_value",
+          "decimal"
+        ]
+      ]
+    }
+  },
+  "relationships": [
+    {
+      "name": "Sales_Channel",
+      "from": [
+        "FactSales",
+        "Channel Key"
+      ],
+      "to": [
+        "DimChannel",
+        "Channel Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Sales_Product",
+      "from": [
+        "FactSales",
+        "Product Key"
+      ],
+      "to": [
+        "DimProduct",
+        "Product Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Sales_OrderDate",
+      "from": [
+        "FactSales",
+        "Order Date Key"
+      ],
+      "to": [
+        "DimDate",
+        "Date Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Sales_DueDate",
+      "from": [
+        "FactSales",
+        "Due Date Key"
+      ],
+      "to": [
+        "DimDate",
+        "Date Key"
+      ],
+      "active": false
+    },
+    {
+      "name": "Sales_ShipDate",
+      "from": [
+        "FactSales",
+        "Ship Date Key"
+      ],
+      "to": [
+        "DimDate",
+        "Date Key"
+      ],
+      "active": false
+    },
+    {
+      "name": "Sales_Customer",
+      "from": [
+        "FactSales",
+        "Customer Key"
+      ],
+      "to": [
+        "DimCustomer",
+        "Customer Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Sales_Reseller",
+      "from": [
+        "FactSales",
+        "Reseller Key"
+      ],
+      "to": [
+        "DimReseller",
+        "Reseller Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Sales_Employee",
+      "from": [
+        "FactSales",
+        "Employee Key"
+      ],
+      "to": [
+        "DimEmployee",
+        "Employee Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Sales_Promotion",
+      "from": [
+        "FactSales",
+        "Promotion Key"
+      ],
+      "to": [
+        "DimPromotion",
+        "Promotion Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Sales_Currency",
+      "from": [
+        "FactSales",
+        "Currency Key"
+      ],
+      "to": [
+        "DimCurrency",
+        "Currency Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Sales_Territory",
+      "from": [
+        "FactSales",
+        "Sales Territory Key"
+      ],
+      "to": [
+        "DimSalesTerritory",
+        "Sales Territory Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Sales_Geography",
+      "from": [
+        "FactSales",
+        "Geography Key"
+      ],
+      "to": [
+        "DimGeography",
+        "Geography Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Inventory_Product",
+      "from": [
+        "FactInventory",
+        "Product Key"
+      ],
+      "to": [
+        "DimProduct",
+        "Product Key"
+      ],
+      "active": true
+    },
+    {
+      "name": "Inventory_Date",
+      "from": [
+        "FactInventory",
+        "Date Key"
+      ],
+      "to": [
+        "DimDate",
+        "Date Key"
+      ],
+      "active": true
+    }
+  ]
+}
