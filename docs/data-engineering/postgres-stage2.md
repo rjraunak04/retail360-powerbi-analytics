@@ -6,16 +6,16 @@ Build a reproducible PostgreSQL warehouse foundation for Retail360 after the sou
 
 ## Layering
 
-- `raw`: source-aligned landing tables; all source attributes are stored as text with lineage metadata.
+- `raw`: source-aligned landing tables; source attributes are stored as text with lineage metadata, except binary/image payload fields which use PostgreSQL `bytea`.
 - `staging`: typed, cleaned and standardised transformations.
 - `analytics`: business-ready dimensional/star-schema objects.
 - `audit`: load metadata and reconciliation evidence.
 
 Stage 2 focuses on the database, schemas, raw ingestion and reconciliation. Business transformations begin in Stage 3.
 
-## Why raw columns are TEXT
+## Why raw columns are mostly TEXT
 
-The raw layer is intentionally source-preserving. It avoids mixing ingestion with business typing rules and makes it easier to distinguish:
+The raw layer is intentionally source-preserving. Binary/image payload fields (`EmployeePhoto`, `LargePhoto`, `SalesTerritoryImage`) are encoded into PostgreSQL `bytea` because PostgreSQL text values cannot contain NUL bytes. It avoids mixing ingestion with business typing rules and makes it easier to distinguish:
 
 - source problems
 - parsing problems
