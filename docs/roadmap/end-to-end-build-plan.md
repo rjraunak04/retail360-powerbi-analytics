@@ -44,7 +44,7 @@ Deliverables:
 - SQL quality checks
 
 ## Stage 3 — Staging and Business Transformation
-Status: NEXT
+Status: COMPLETE
 
 
 Deliverables:
@@ -57,6 +57,8 @@ Deliverables:
 - null/unknown-member policy
 
 ## Stage 4 — Analytics Star Schema
+Status: NEXT
+
 
 Target semantic entities:
 - DimDate
