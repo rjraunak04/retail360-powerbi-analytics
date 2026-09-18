@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS raw.dim_employee (
     start_date text,
     end_date text,
     status text,
-    employee_photo text,
+    employee_photo bytea,
     _source_file text NOT NULL,
     _source_row_number bigint NOT NULL,
     _loaded_at timestamptz NOT NULL DEFAULT now()
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS raw.dim_product (
     class text,
     style text,
     model_name text,
-    large_photo text,
+    large_photo bytea,
     english_description text,
     french_description text,
     chinese_description text,
@@ -244,7 +244,7 @@ CREATE TABLE IF NOT EXISTS raw.dim_sales_territory (
     sales_territory_region text,
     sales_territory_country text,
     sales_territory_group text,
-    sales_territory_image text,
+    sales_territory_image bytea,
     _source_file text NOT NULL,
     _source_row_number bigint NOT NULL,
     _loaded_at timestamptz NOT NULL DEFAULT now()
