@@ -2,30 +2,22 @@
 
 ## Selected Source
 
-Retail360 will use the Microsoft Contoso retail data warehouse as the primary learning and portfolio dataset.
+Retail360 uses the official Microsoft AdventureWorks Data Warehouse CSV source files from the microsoft/sql-server-samples repository.
 
-Contoso is a fictional retail business dataset published by Microsoft for BI and data warehouse scenarios. It contains a realistic multi-domain retail structure covering sales, online sales, customers, products, stores, geography, promotions, inventory, channels and finance-related entities.
+AdventureWorks represents a multi-channel retail business and provides a realistic dimensional warehouse structure for portfolio-grade analytics. The source includes customer, product, geography, promotion, reseller, sales-territory, internet-sales, reseller-sales and product-inventory data.
 
 ## Why This Dataset
 
-The dataset supports a stronger portfolio project than a single flat retail CSV because it allows Retail360 to demonstrate:
+This source is preferred for Retail360 because it is:
 
-- Multiple business domains
-- Multiple fact tables
-- Shared conformed dimensions
-- Store and online sales analysis
-- Customer analytics
-- Product/category analytics
-- Promotion effectiveness
-- Inventory analytics
-- Geographic analysis
-- Dimensional modelling
-- SQL transformation layers
-- Power BI semantic modelling
+- Published and maintained in Microsoft's official SQL Server samples repository
+- Directly downloadable as individual source CSV files
+- Suitable for PostgreSQL ingestion without requiring a SQL Server backup restore
+- Multi-table and relational rather than a single flat dashboard CSV
+- Rich enough to demonstrate customer, product, geography, promotion, channel, profitability and inventory analytics
+- Appropriate for dimensional modelling, data-quality testing, SQL transformation and Power BI semantic modelling
 
 ## Retail360 Scope
-
-Retail360 will initially use only the tables required for the core analytical product.
 
 ### Core dimensions
 
@@ -34,37 +26,42 @@ Retail360 will initially use only the tables required for the core analytical pr
 - DimProductSubcategory
 - DimProductCategory
 - DimCustomer
-- DimStore
 - DimGeography
 - DimPromotion
-- DimChannel
 - DimCurrency
+- DimSalesTerritory
+- DimReseller
 
 ### Core facts
 
-- FactSales
-- FactOnlineSales
-- FactInventory
+- FactInternetSales
+- FactResellerSales
+- FactProductInventory
 
-Additional source tables will only be introduced when they answer a defined business requirement.
+### Optional analytical extensions
+
+- DimSalesReason
+- FactInternetSalesReason
+
+Optional tables will only be introduced when they answer a documented business requirement.
+
+## Analytical Domains
+
+- Executive retail performance
+- Revenue and profitability
+- Product and category performance
+- Customer analytics
+- Geography and sales-territory performance
+- Internet versus reseller channel analysis
+- Promotion and discount analysis
+- Product inventory analysis
 
 ## Data Engineering Approach
 
-The Microsoft source model will not be copied directly into Power BI.
+Retail360 will not connect the Microsoft source files directly to final report visuals.
 
-Retail360 will use the following flow:
-
-Source retail data
-→ PostgreSQL raw layer
-→ PostgreSQL staging layer
-→ PostgreSQL analytics layer
-→ Power Query
-→ Power BI semantic model
-→ DAX
-→ Business reports
+Microsoft source CSV files → local raw landing zone → PostgreSQL raw schema → PostgreSQL staging schema → PostgreSQL analytics/star-schema layer → Power Query → Power BI semantic model → DAX → business reports
 
 ## Portfolio Principle
 
-The goal is not to reproduce Microsoft's existing demo dashboard.
-
-The goal is to use the source data to design and implement an independent Retail360 analytics solution with documented business logic, quality checks, dimensional modelling, Power BI measures and executive reporting.
+Retail360 is an independent analytics implementation. The Microsoft source data is used as the input dataset, while the ingestion process, PostgreSQL layers, business rules, quality checks, semantic model, DAX measures, report design and documentation are built specifically for this project.
