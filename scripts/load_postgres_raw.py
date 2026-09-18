@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import argparse
 import csv
 import os
 import re
@@ -40,6 +39,7 @@ def ensure_database(dbname: str) -> None:
             "SELECT 1 FROM pg_database WHERE datname = %s",
             (dbname,),
         ).fetchone()
+
         if exists:
             print(f"Database already exists: {dbname}")
             return
@@ -50,16 +50,16 @@ def ensure_database(dbname: str) -> None:
         )
 
 
-def run_sql_file(conn: psycopg.Connection, path: Path) -> None:
-    print(f"Applying: {path.relative_to(ROOT)}")
-    conn.execute(path.read_text(encoding="utf-8"))
+def apply_ddl(conn: psycopg.Connection) -> None:
+    for path in sorted(DDL_DIR.glob("*.sql")):
+        print(f"Applying: {path.relative_to(ROOT)}")
+        conn.execute(path.read_text(encoding="utf-8"))
+    conn.commit()
 
 
 def load_table(
     conn: psycopg.Connection,
     source_table: str,
-    *,
-    truncate: bool,
 ) -> int:
     source_path = RAW_DIR / f"{source_table}.csv"
     if not source_path.exists():
@@ -68,10 +68,9 @@ def load_table(
     table_name = snake(source_table)
     columns = [snake(column) for column in SCHEMAS[source_table]]
 
-    if truncate:
-        conn.execute(
-            sql.SQL("TRUNCATE TABLE raw.{}").format(sql.Identifier(table_name))
-        )
+    conn.execute(
+        sql.SQL("TRUNCATE TABLE raw.{}").format(sql.Identifier(table_name))
+    )
 
     copy_columns = columns + ["_source_file", "_source_row_number"]
     copy_stmt = sql.SQL("COPY raw.{} ({}) FROM STDIN").format(
@@ -96,35 +95,91 @@ def load_table(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Create Retail360 PostgreSQL raw layer and load validated source data."
-    )
-    parser.add_argument(
-        "--no-truncate",
-        action="store_true",
-        help="Append instead of truncating raw tables before load.",
-    )
-    args = parser.parse_args()
-
     load_dotenv(ROOT / ".env")
     dbname = os.getenv("PGDATABASE", "retail360")
+
+    missing = [
+        f"{table}.csv"
+        for table in SCHEMAS
+        if not (RAW_DIR / f"{table}.csv").exists()
+    ]
+    if missing:
+        raise SystemExit(
+            "Missing source files:\n- "
+            + "\n- ".join(missing)
+            + "\nRun: python .\\scripts\\download_adventureworks.py"
+        )
 
     ensure_database(dbname)
 
     with psycopg.connect(**connection_settings(dbname)) as conn:
-        run_sql_file(conn, DDL_DIR / "00_create_schemas.sql")
-        run_sql_file(conn, DDL_DIR / "01_create_raw_tables.sql")
+        apply_ddl(conn)
+
+        load_run_id = conn.execute(
+            """
+            INSERT INTO audit.load_run (source_name, status)
+            VALUES (%s, 'RUNNING')
+            RETURNING load_run_id
+            """,
+            ("Microsoft AdventureWorksDW CSV",),
+        ).fetchone()[0]
         conn.commit()
 
-        print("\nLoading validated AdventureWorksDW source files...")
         total = 0
-        for table in SCHEMAS:
-            loaded = load_table(conn, table, truncate=not args.no_truncate)
-            conn.commit()
-            total += loaded
-            print(f"  {table:24} {loaded:>10,} rows")
+        table_count = 0
 
-        print(f"\nRaw load complete: {total:,} rows across {len(SCHEMAS)} tables.")
+        try:
+            print("\nLoading validated AdventureWorksDW source files...")
+            for table in SCHEMAS:
+                loaded = load_table(conn, table)
+                table_count += 1
+                total += loaded
+
+                conn.execute(
+                    """
+                    INSERT INTO audit.table_load
+                        (load_run_id, table_name, source_file, loaded_rows)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (load_run_id, snake(table), f"{table}.csv", loaded),
+                )
+                conn.commit()
+                print(f"  {table:24} {loaded:>10,} rows")
+
+            conn.execute(
+                """
+                UPDATE audit.load_run
+                SET completed_at = now(),
+                    status = 'SUCCESS',
+                    total_tables = %s,
+                    total_rows = %s
+                WHERE load_run_id = %s
+                """,
+                (table_count, total, load_run_id),
+            )
+            conn.commit()
+
+        except Exception as exc:
+            conn.rollback()
+            conn.execute(
+                """
+                UPDATE audit.load_run
+                SET completed_at = now(),
+                    status = 'FAILED',
+                    total_tables = %s,
+                    total_rows = %s,
+                    notes = %s
+                WHERE load_run_id = %s
+                """,
+                (table_count, total, str(exc)[:2000], load_run_id),
+            )
+            conn.commit()
+            raise
+
+        print(
+            f"\nRaw load complete: {total:,} rows across "
+            f"{table_count} tables. load_run_id={load_run_id}"
+        )
 
 
 if __name__ == "__main__":
