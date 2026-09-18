@@ -101,13 +101,25 @@ def main() -> None:
     if len(model["relationships"]) != 14:
         fail(f"expected 14 relationships, found {len(model['relationships'])}")
 
+    for parameter_file in ("pServer.m", "pDatabase.m"):
+        if not (M_DIR / parameter_file).exists():
+            fail(f"missing Power Query parameter file: {parameter_file}")
+
     tmdl = TMDL.read_text(encoding="utf-8")
     for table_name in EXPECTED_TABLES:
-        if f"table {table_name}" not in tmdl:
-            fail(f"TMDL missing table {table_name}")
+        if f"        table {table_name}\n" not in tmdl:
+            fail(f"TMDL missing or mis-indented table {table_name}")
+        if f"            partition {table_name} = m\n" not in tmdl:
+            fail(f"TMDL missing or mis-indented partition {table_name}")
 
     if "expression pServer" not in tmdl or "expression pDatabase" not in tmdl:
         fail("TMDL missing PostgreSQL parameters")
+
+    if "        table DimDate\n            dataCategory: Time" not in tmdl:
+        fail("TMDL does not mark DimDate as a Time table")
+
+    if "            column 'Date'\n" not in tmdl or "                isKey\n" not in tmdl:
+        fail("TMDL date-table key metadata missing")
 
     if tmdl.count("relationship ") != 14:
         fail("TMDL does not contain exactly 14 relationships")
@@ -119,7 +131,7 @@ def main() -> None:
     print("Storage mode: Import PASS")
     print("Date table:   DimDate[Date] PASS")
     print("Role dates:   Order=active, Due/Ship=inactive PASS")
-    print("Power Query:  12/12 analytics sources parameterized PASS")
+    print("Power Query:  12/12 analytics sources + 2 parameters PASS")
     print("TMDL script:  structural contract PASS")
     print("-" * 72)
     print("Stage 5 semantic contract PASSED.")
