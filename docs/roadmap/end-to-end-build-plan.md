@@ -15,7 +15,7 @@ Deliverables:
 - source-control conventions
 
 ## Stage 1 — Data Foundation
-Status: IN PROGRESS
+Status: COMPLETE
 
 Deliverables:
 - official Microsoft AdventureWorksDW source download
@@ -32,6 +32,8 @@ Exit gate:
 - referential-integrity checks understood and documented
 
 ## Stage 2 — PostgreSQL Warehouse Foundation
+Status: COMPLETE
+
 
 Deliverables:
 - retail360 database
@@ -42,6 +44,8 @@ Deliverables:
 - SQL quality checks
 
 ## Stage 3 — Staging and Business Transformation
+Status: NEXT
+
 
 Deliverables:
 - cleaned and typed staging views/tables
