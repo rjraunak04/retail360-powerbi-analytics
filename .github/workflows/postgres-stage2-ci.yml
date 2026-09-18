@@ -1,4 +1,4 @@
-name: PostgreSQL Stage 2 CI
+name: PostgreSQL Warehouse CI
 
 on:
   pull_request:
@@ -57,3 +57,9 @@ jobs:
 
       - name: Reconcile PostgreSQL row counts
         run: python scripts/qa_postgres_raw.py
+
+      - name: Apply Stage 3 staging transformations
+        run: python scripts/apply_staging.py
+
+      - name: Validate Stage 3 staging layer
+        run: python scripts/qa_staging.py
