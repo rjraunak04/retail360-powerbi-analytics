@@ -46,3 +46,9 @@ data/raw/*
 
 data/processed/*
 !data/processed/.gitkeep
+
+# Generated data-quality reports (reproducible)
+docs/data-model/raw-data-profile.csv
+docs/data-model/source-data-dictionary.csv
+docs/data-model/table-integrity-report.csv
+docs/data-model/foreign-key-report.csv
