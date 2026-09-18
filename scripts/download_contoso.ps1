@@ -3,6 +3,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
 
 $BaseUrl = "https://contosoretaildw.blob.core.windows.net/contosoretaildw-tables"
 $OutputRoot = Join-Path $PSScriptRoot "..\data\raw\contoso"
@@ -44,11 +45,19 @@ function Get-BlobNames {
 
     do {
         $encodedPrefix = [System.Uri]::EscapeDataString("$Prefix/")
-        $uri = "$BaseUrl?restype=container&comp=list&prefix=$encodedPrefix"
+        $uri = "{0}?restype=container&comp=list&prefix={1}" -f $BaseUrl.TrimEnd("/"), $encodedPrefix
 
         if ($marker) {
             $encodedMarker = [System.Uri]::EscapeDataString($marker)
-            $uri += "&marker=$encodedMarker"
+            $uri = "{0}&marker={1}" -f $uri, $encodedMarker
+        }
+
+        # Fail early with a clear message if URI construction is invalid.
+        try {
+            $null = [System.Uri]::new($uri)
+        }
+        catch {
+            throw "Invalid Azure Blob URI generated: $uri"
         }
 
         $response = Invoke-RestMethod -Uri $uri -Method Get
@@ -93,7 +102,7 @@ foreach ($prefix in $Prefixes) {
         $escapedBlobPath = ($blobName.Split("/") |
             ForEach-Object { [System.Uri]::EscapeDataString($_) }) -join "/"
 
-        $downloadUrl = "$BaseUrl/$escapedBlobPath"
+        $downloadUrl = "{0}/{1}" -f $BaseUrl.TrimEnd("/"), $escapedBlobPath
 
         Write-Host "Downloading: $relativePath"
         Invoke-WebRequest -Uri $downloadUrl -OutFile $destination
