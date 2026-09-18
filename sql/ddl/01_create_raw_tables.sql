@@ -2,8 +2,7 @@
 -- All source attributes are intentionally TEXT in the raw layer.
 -- Typing, standardisation, constraints, and business rules belong in staging/analytics.
 
-DROP TABLE IF EXISTS raw.dim_currency CASCADE;
-CREATE TABLE raw.dim_currency (
+CREATE TABLE IF NOT EXISTS raw.dim_currency (
     currency_key text,
     currency_alternate_key text,
     currency_name text,
@@ -12,8 +11,7 @@ CREATE TABLE raw.dim_currency (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_customer CASCADE;
-CREATE TABLE raw.dim_customer (
+CREATE TABLE IF NOT EXISTS raw.dim_customer (
     customer_key text,
     geography_key text,
     customer_alternate_key text,
@@ -48,8 +46,7 @@ CREATE TABLE raw.dim_customer (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_date CASCADE;
-CREATE TABLE raw.dim_date (
+CREATE TABLE IF NOT EXISTS raw.dim_date (
     date_key text,
     full_date_alternate_key text,
     day_number_of_week text,
@@ -74,8 +71,7 @@ CREATE TABLE raw.dim_date (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_employee CASCADE;
-CREATE TABLE raw.dim_employee (
+CREATE TABLE IF NOT EXISTS raw.dim_employee (
     employee_key text,
     parent_employee_key text,
     employee_national_id_alternate_key text,
@@ -112,8 +108,7 @@ CREATE TABLE raw.dim_employee (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_geography CASCADE;
-CREATE TABLE raw.dim_geography (
+CREATE TABLE IF NOT EXISTS raw.dim_geography (
     geography_key text,
     city text,
     state_province_code text,
@@ -130,8 +125,7 @@ CREATE TABLE raw.dim_geography (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_product CASCADE;
-CREATE TABLE raw.dim_product (
+CREATE TABLE IF NOT EXISTS raw.dim_product (
     product_key text,
     product_alternate_key text,
     product_subcategory_key text,
@@ -173,8 +167,7 @@ CREATE TABLE raw.dim_product (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_product_category CASCADE;
-CREATE TABLE raw.dim_product_category (
+CREATE TABLE IF NOT EXISTS raw.dim_product_category (
     product_category_key text,
     product_category_alternate_key text,
     english_product_category_name text,
@@ -185,8 +178,7 @@ CREATE TABLE raw.dim_product_category (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_product_subcategory CASCADE;
-CREATE TABLE raw.dim_product_subcategory (
+CREATE TABLE IF NOT EXISTS raw.dim_product_subcategory (
     product_subcategory_key text,
     product_subcategory_alternate_key text,
     english_product_subcategory_name text,
@@ -198,8 +190,7 @@ CREATE TABLE raw.dim_product_subcategory (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_promotion CASCADE;
-CREATE TABLE raw.dim_promotion (
+CREATE TABLE IF NOT EXISTS raw.dim_promotion (
     promotion_key text,
     promotion_alternate_key text,
     english_promotion_name text,
@@ -221,8 +212,7 @@ CREATE TABLE raw.dim_promotion (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_reseller CASCADE;
-CREATE TABLE raw.dim_reseller (
+CREATE TABLE IF NOT EXISTS raw.dim_reseller (
     reseller_key text,
     geography_key text,
     reseller_alternate_key text,
@@ -248,8 +238,7 @@ CREATE TABLE raw.dim_reseller (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.dim_sales_territory CASCADE;
-CREATE TABLE raw.dim_sales_territory (
+CREATE TABLE IF NOT EXISTS raw.dim_sales_territory (
     sales_territory_key text,
     sales_territory_alternate_key text,
     sales_territory_region text,
@@ -261,8 +250,7 @@ CREATE TABLE raw.dim_sales_territory (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.fact_internet_sales CASCADE;
-CREATE TABLE raw.fact_internet_sales (
+CREATE TABLE IF NOT EXISTS raw.fact_internet_sales (
     product_key text,
     order_date_key text,
     due_date_key text,
@@ -294,8 +282,7 @@ CREATE TABLE raw.fact_internet_sales (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.fact_reseller_sales CASCADE;
-CREATE TABLE raw.fact_reseller_sales (
+CREATE TABLE IF NOT EXISTS raw.fact_reseller_sales (
     product_key text,
     order_date_key text,
     due_date_key text,
@@ -328,8 +315,7 @@ CREATE TABLE raw.fact_reseller_sales (
     _loaded_at timestamptz NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS raw.fact_product_inventory CASCADE;
-CREATE TABLE raw.fact_product_inventory (
+CREATE TABLE IF NOT EXISTS raw.fact_product_inventory (
     product_key text,
     date_key text,
     movement_date text,
