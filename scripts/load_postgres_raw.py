@@ -66,7 +66,7 @@ def apply_ddl(conn: psycopg.Connection) -> None:
 def load_table(
     conn: psycopg.Connection,
     source_table: str,
-) -> int:
+) -> tuple[int, int]:
     source_path = RAW_DIR / f"{source_table}.csv"
     if not source_path.exists():
         raise FileNotFoundError(f"Missing source file: {source_path}")
@@ -85,6 +85,7 @@ def load_table(
     )
 
     loaded = 0
+    nul_bytes_removed = 0
     with source_path.open("r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.reader(handle, delimiter="|")
         with conn.cursor().copy(copy_stmt) as copy:
@@ -101,17 +102,16 @@ def load_table(
                     if source_column in binary_columns:
                         converted.append(value.encode("utf-8"))
                     else:
-                        if "\x00" in value:
-                            raise ValueError(
-                                f"{source_table} row {row_number} column "
-                                f"{source_column}: unexpected NUL byte in text field"
-                            )
+                        removed = value.count("\x00")
+                        if removed:
+                            nul_bytes_removed += removed
+                            value = value.replace("\x00", "")
                         converted.append(value)
 
                 copy.write_row(converted + [source_path.name, row_number])
                 loaded += 1
 
-    return loaded
+    return loaded, nul_bytes_removed
 
 
 def main() -> None:
@@ -151,20 +151,23 @@ def main() -> None:
         try:
             print("\nLoading validated AdventureWorksDW source files...")
             for table in SCHEMAS:
-                loaded = load_table(conn, table)
+                loaded, nul_removed = load_table(conn, table)
                 table_count += 1
                 total += loaded
 
                 conn.execute(
                     """
                     INSERT INTO audit.table_load
-                        (load_run_id, table_name, source_file, loaded_rows)
-                    VALUES (%s, %s, %s, %s)
+                        (load_run_id, table_name, source_file, loaded_rows, nul_bytes_removed)
+                    VALUES (%s, %s, %s, %s, %s)
                     """,
-                    (load_run_id, snake(table), f"{table}.csv", loaded),
+                    (load_run_id, snake(table), f"{table}.csv", loaded, nul_removed),
                 )
                 conn.commit()
-                print(f"  {table:24} {loaded:>10,} rows")
+                print(
+                    f"  {table:24} {loaded:>10,} rows "
+                    f"(NUL bytes normalized: {nul_removed:,})"
+                )
 
             conn.execute(
                 """
