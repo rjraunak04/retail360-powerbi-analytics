@@ -1,0 +1,1118 @@
+createOrReplace
+
+    model Model
+        culture: en-US
+        defaultPowerBIDataSourceVersion: powerBI_V3
+        sourceQueryCulture: en-US
+
+        expression pServer = "localhost:5432" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+        expression pDatabase = "retail360" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+        table DimDate
+        column 'Date Key'
+            dataType: int64
+            sourceColumn: date_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'Date'
+            dataType: dateTime
+            sourceColumn: date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'Day Of Week'
+            dataType: int64
+            sourceColumn: day_of_week
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Day Name'
+            dataType: string
+            sourceColumn: day_name
+            summarizeBy: none
+
+        column 'Day Of Month'
+            dataType: int64
+            sourceColumn: day_of_month
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Day Of Year'
+            dataType: int64
+            sourceColumn: day_of_year
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Week Of Year'
+            dataType: int64
+            sourceColumn: week_of_year
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Month Name'
+            dataType: string
+            sourceColumn: month_name
+            summarizeBy: none
+            sortByColumn: 'Month Number'
+
+        column 'Month Number'
+            dataType: int64
+            sourceColumn: month_number
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Calendar Quarter'
+            dataType: int64
+            sourceColumn: calendar_quarter
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Calendar Year'
+            dataType: int64
+            sourceColumn: calendar_year
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Calendar Semester'
+            dataType: int64
+            sourceColumn: calendar_semester
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Fiscal Quarter'
+            dataType: int64
+            sourceColumn: fiscal_quarter
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Fiscal Year'
+            dataType: int64
+            sourceColumn: fiscal_year
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Fiscal Semester'
+            dataType: int64
+            sourceColumn: fiscal_semester
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Year Month Key'
+            dataType: int64
+            sourceColumn: year_month_key
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Year Month'
+            dataType: string
+            sourceColumn: year_month
+            summarizeBy: none
+            sortByColumn: 'Year Month Key'
+
+            partition DimDate = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_date"]}[Data]
+                    in
+                        Analytics
+
+        table DimProduct
+        column 'Product Key'
+            dataType: int64
+            sourceColumn: product_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'Product Code'
+            dataType: string
+            sourceColumn: product_code
+            summarizeBy: none
+
+        column 'Product Name'
+            dataType: string
+            sourceColumn: product_name
+            summarizeBy: none
+
+        column 'Product Subcategory Key'
+            dataType: int64
+            sourceColumn: product_subcategory_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Subcategory'
+            dataType: string
+            sourceColumn: subcategory_name
+            summarizeBy: none
+
+        column 'Product Category Key'
+            dataType: int64
+            sourceColumn: product_category_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Category'
+            dataType: string
+            sourceColumn: category_name
+            summarizeBy: none
+
+        column 'Standard Cost'
+            dataType: decimal
+            sourceColumn: standard_cost
+            summarizeBy: none
+            formatString: #,0.00
+
+        column 'List Price'
+            dataType: decimal
+            sourceColumn: list_price
+            summarizeBy: none
+            formatString: #,0.00
+
+        column 'Dealer Price'
+            dataType: decimal
+            sourceColumn: dealer_price
+            summarizeBy: none
+            formatString: #,0.00
+
+        column 'Color'
+            dataType: string
+            sourceColumn: color
+            summarizeBy: none
+
+        column 'Size'
+            dataType: string
+            sourceColumn: size
+            summarizeBy: none
+
+        column 'Size Range'
+            dataType: string
+            sourceColumn: size_range
+            summarizeBy: none
+
+        column 'Weight'
+            dataType: decimal
+            sourceColumn: weight
+            summarizeBy: none
+            formatString: #,0.00
+
+        column 'Safety Stock Level'
+            dataType: int64
+            sourceColumn: safety_stock_level
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Reorder Point'
+            dataType: int64
+            sourceColumn: reorder_point
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Days To Manufacture'
+            dataType: int64
+            sourceColumn: days_to_manufacture
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Product Line'
+            dataType: string
+            sourceColumn: product_line
+            summarizeBy: none
+
+        column 'Class'
+            dataType: string
+            sourceColumn: product_class
+            summarizeBy: none
+
+        column 'Style'
+            dataType: string
+            sourceColumn: style
+            summarizeBy: none
+
+        column 'Model Name'
+            dataType: string
+            sourceColumn: model_name
+            summarizeBy: none
+
+        column 'Start Date'
+            dataType: dateTime
+            sourceColumn: start_date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'End Date'
+            dataType: dateTime
+            sourceColumn: end_date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'Status'
+            dataType: string
+            sourceColumn: status
+            summarizeBy: none
+
+            partition DimProduct = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_product"]}[Data]
+                    in
+                        Analytics
+
+        table DimCustomer
+        column 'Customer Key'
+            dataType: int64
+            sourceColumn: customer_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'Customer Code'
+            dataType: string
+            sourceColumn: customer_code
+            summarizeBy: none
+
+        column 'Customer Name'
+            dataType: string
+            sourceColumn: customer_name
+            summarizeBy: none
+
+        column 'Title'
+            dataType: string
+            sourceColumn: title
+            summarizeBy: none
+
+        column 'First Name'
+            dataType: string
+            sourceColumn: first_name
+            summarizeBy: none
+
+        column 'Middle Name'
+            dataType: string
+            sourceColumn: middle_name
+            summarizeBy: none
+
+        column 'Last Name'
+            dataType: string
+            sourceColumn: last_name
+            summarizeBy: none
+
+        column 'Birth Date'
+            dataType: dateTime
+            sourceColumn: birth_date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'Marital Status'
+            dataType: string
+            sourceColumn: marital_status
+            summarizeBy: none
+
+        column 'Gender'
+            dataType: string
+            sourceColumn: gender
+            summarizeBy: none
+
+        column 'Email Address'
+            dataType: string
+            sourceColumn: email_address
+            summarizeBy: none
+
+        column 'Yearly Income'
+            dataType: decimal
+            sourceColumn: yearly_income
+            summarizeBy: none
+            formatString: #,0.00
+
+        column 'Total Children'
+            dataType: int64
+            sourceColumn: total_children
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Children At Home'
+            dataType: int64
+            sourceColumn: children_at_home
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Education'
+            dataType: string
+            sourceColumn: education
+            summarizeBy: none
+
+        column 'Occupation'
+            dataType: string
+            sourceColumn: occupation
+            summarizeBy: none
+
+        column 'Is House Owner'
+            dataType: boolean
+            sourceColumn: is_house_owner
+            summarizeBy: none
+
+        column 'Cars Owned'
+            dataType: int64
+            sourceColumn: cars_owned
+            summarizeBy: none
+            formatString: #,0
+
+        column 'First Purchase Date'
+            dataType: dateTime
+            sourceColumn: first_purchase_date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'Commute Distance'
+            dataType: string
+            sourceColumn: commute_distance
+            summarizeBy: none
+
+            partition DimCustomer = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_customer"]}[Data]
+                    in
+                        Analytics
+
+        table DimReseller
+        column 'Reseller Key'
+            dataType: int64
+            sourceColumn: reseller_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'Reseller Code'
+            dataType: string
+            sourceColumn: reseller_code
+            summarizeBy: none
+
+        column 'Reseller Name'
+            dataType: string
+            sourceColumn: reseller_name
+            summarizeBy: none
+
+        column 'Business Type'
+            dataType: string
+            sourceColumn: business_type
+            summarizeBy: none
+
+        column 'Number Employees'
+            dataType: int64
+            sourceColumn: number_employees
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Order Frequency'
+            dataType: string
+            sourceColumn: order_frequency
+            summarizeBy: none
+
+        column 'Order Month'
+            dataType: int64
+            sourceColumn: order_month
+            summarizeBy: none
+            formatString: #,0
+
+        column 'First Order Year'
+            dataType: int64
+            sourceColumn: first_order_year
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Last Order Year'
+            dataType: int64
+            sourceColumn: last_order_year
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Product Line'
+            dataType: string
+            sourceColumn: product_line
+            summarizeBy: none
+
+        column 'Annual Sales'
+            dataType: decimal
+            sourceColumn: annual_sales
+            summarizeBy: none
+            formatString: #,0.00
+
+        column 'Annual Revenue'
+            dataType: decimal
+            sourceColumn: annual_revenue
+            summarizeBy: none
+            formatString: #,0.00
+
+        column 'Year Opened'
+            dataType: int64
+            sourceColumn: year_opened
+            summarizeBy: none
+            formatString: #,0
+
+            partition DimReseller = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_reseller"]}[Data]
+                    in
+                        Analytics
+
+        table DimEmployee
+        column 'Employee Key'
+            dataType: int64
+            sourceColumn: employee_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'Employee Name'
+            dataType: string
+            sourceColumn: employee_name
+            summarizeBy: none
+
+        column 'Title'
+            dataType: string
+            sourceColumn: title
+            summarizeBy: none
+
+        column 'Hire Date'
+            dataType: dateTime
+            sourceColumn: hire_date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'Department'
+            dataType: string
+            sourceColumn: department_name
+            summarizeBy: none
+
+        column 'Is Current'
+            dataType: boolean
+            sourceColumn: is_current
+            summarizeBy: none
+
+        column 'Is Sales Person'
+            dataType: boolean
+            sourceColumn: is_sales_person
+            summarizeBy: none
+
+        column 'Start Date'
+            dataType: dateTime
+            sourceColumn: start_date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'End Date'
+            dataType: dateTime
+            sourceColumn: end_date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'Status'
+            dataType: string
+            sourceColumn: status
+            summarizeBy: none
+
+            partition DimEmployee = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_employee"]}[Data]
+                    in
+                        Analytics
+
+        table DimGeography
+        column 'Geography Key'
+            dataType: int64
+            sourceColumn: geography_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'City'
+            dataType: string
+            sourceColumn: city
+            summarizeBy: none
+
+        column 'State Province Code'
+            dataType: string
+            sourceColumn: state_province_code
+            summarizeBy: none
+
+        column 'State Province'
+            dataType: string
+            sourceColumn: state_province_name
+            summarizeBy: none
+
+        column 'Country Region Code'
+            dataType: string
+            sourceColumn: country_region_code
+            summarizeBy: none
+
+        column 'Country'
+            dataType: string
+            sourceColumn: country_name
+            summarizeBy: none
+
+        column 'Postal Code'
+            dataType: string
+            sourceColumn: postal_code
+            summarizeBy: none
+
+        column 'Territory Region'
+            dataType: string
+            sourceColumn: territory_region
+            summarizeBy: none
+
+        column 'Territory Country'
+            dataType: string
+            sourceColumn: territory_country
+            summarizeBy: none
+
+        column 'Territory Group'
+            dataType: string
+            sourceColumn: territory_group
+            summarizeBy: none
+
+            partition DimGeography = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_geography"]}[Data]
+                    in
+                        Analytics
+
+        table DimSalesTerritory
+        column 'Sales Territory Key'
+            dataType: int64
+            sourceColumn: sales_territory_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'Sales Territory Alternate Key'
+            dataType: int64
+            sourceColumn: sales_territory_alternate_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Territory Region'
+            dataType: string
+            sourceColumn: territory_region
+            summarizeBy: none
+
+        column 'Territory Country'
+            dataType: string
+            sourceColumn: territory_country
+            summarizeBy: none
+
+        column 'Territory Group'
+            dataType: string
+            sourceColumn: territory_group
+            summarizeBy: none
+
+            partition DimSalesTerritory = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_sales_territory"]}[Data]
+                    in
+                        Analytics
+
+        table DimPromotion
+        column 'Promotion Key'
+            dataType: int64
+            sourceColumn: promotion_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'Promotion Alternate Key'
+            dataType: int64
+            sourceColumn: promotion_alternate_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Promotion Name'
+            dataType: string
+            sourceColumn: promotion_name
+            summarizeBy: none
+
+        column 'Discount Pct'
+            dataType: decimal
+            sourceColumn: discount_pct
+            summarizeBy: none
+            formatString: 0.00%
+
+        column 'Promotion Type'
+            dataType: string
+            sourceColumn: promotion_type
+            summarizeBy: none
+
+        column 'Promotion Category'
+            dataType: string
+            sourceColumn: promotion_category
+            summarizeBy: none
+
+        column 'Start Date'
+            dataType: dateTime
+            sourceColumn: start_date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'End Date'
+            dataType: dateTime
+            sourceColumn: end_date
+            summarizeBy: none
+            formatString: yyyy-MM-dd
+
+        column 'Min Qty'
+            dataType: int64
+            sourceColumn: min_qty
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Max Qty'
+            dataType: int64
+            sourceColumn: max_qty
+            summarizeBy: none
+            formatString: #,0
+
+            partition DimPromotion = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_promotion"]}[Data]
+                    in
+                        Analytics
+
+        table DimCurrency
+        column 'Currency Key'
+            dataType: int64
+            sourceColumn: currency_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'Currency Code'
+            dataType: string
+            sourceColumn: currency_code
+            summarizeBy: none
+
+        column 'Currency Name'
+            dataType: string
+            sourceColumn: currency_name
+            summarizeBy: none
+
+            partition DimCurrency = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_currency"]}[Data]
+                    in
+                        Analytics
+
+        table DimChannel
+        column 'Channel Key'
+            dataType: int64
+            sourceColumn: channel_key
+            summarizeBy: none
+            isHidden
+            isKey
+            formatString: #,0
+
+        column 'Channel'
+            dataType: string
+            sourceColumn: channel_name
+            summarizeBy: none
+
+            partition DimChannel = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="dim_channel"]}[Data]
+                    in
+                        Analytics
+
+        table FactSales
+        column 'Sales Line Id'
+            dataType: string
+            sourceColumn: sales_line_id
+            summarizeBy: none
+            isHidden
+            isKey
+
+        column 'Channel Key'
+            dataType: int64
+            sourceColumn: channel_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Product Key'
+            dataType: int64
+            sourceColumn: product_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Order Date Key'
+            dataType: int64
+            sourceColumn: order_date_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Due Date Key'
+            dataType: int64
+            sourceColumn: due_date_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Ship Date Key'
+            dataType: int64
+            sourceColumn: ship_date_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Customer Key'
+            dataType: int64
+            sourceColumn: customer_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Reseller Key'
+            dataType: int64
+            sourceColumn: reseller_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Employee Key'
+            dataType: int64
+            sourceColumn: employee_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Promotion Key'
+            dataType: int64
+            sourceColumn: promotion_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Currency Key'
+            dataType: int64
+            sourceColumn: currency_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Sales Territory Key'
+            dataType: int64
+            sourceColumn: sales_territory_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Geography Key'
+            dataType: int64
+            sourceColumn: geography_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Sales Order Number'
+            dataType: string
+            sourceColumn: sales_order_number
+            summarizeBy: none
+
+        column 'Sales Order Line Number'
+            dataType: int64
+            sourceColumn: sales_order_line_number
+            summarizeBy: none
+            formatString: #,0
+
+        column 'Revision Number'
+            dataType: int64
+            sourceColumn: revision_number
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Order Quantity'
+            dataType: int64
+            sourceColumn: order_quantity
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Unit Price'
+            dataType: decimal
+            sourceColumn: unit_price
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Extended Amount'
+            dataType: decimal
+            sourceColumn: extended_amount
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Unit Price Discount Pct'
+            dataType: decimal
+            sourceColumn: unit_price_discount_pct
+            summarizeBy: none
+            isHidden
+            formatString: 0.00%
+
+        column 'Discount Amount'
+            dataType: decimal
+            sourceColumn: discount_amount
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Product Standard Cost'
+            dataType: decimal
+            sourceColumn: product_standard_cost
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Total Product Cost'
+            dataType: decimal
+            sourceColumn: total_product_cost
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Sales Amount'
+            dataType: decimal
+            sourceColumn: sales_amount
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Tax Amount'
+            dataType: decimal
+            sourceColumn: tax_amount
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Freight'
+            dataType: decimal
+            sourceColumn: freight
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Gross Profit'
+            dataType: decimal
+            sourceColumn: gross_profit
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Gross Margin Pct'
+            dataType: decimal
+            sourceColumn: gross_margin_pct
+            summarizeBy: none
+            isHidden
+            formatString: 0.00%
+
+        column 'Order Date'
+            dataType: dateTime
+            sourceColumn: order_date
+            summarizeBy: none
+            isHidden
+            formatString: yyyy-MM-dd
+
+        column 'Due Date'
+            dataType: dateTime
+            sourceColumn: due_date
+            summarizeBy: none
+            isHidden
+            formatString: yyyy-MM-dd
+
+        column 'Ship Date'
+            dataType: dateTime
+            sourceColumn: ship_date
+            summarizeBy: none
+            isHidden
+            formatString: yyyy-MM-dd
+
+            partition FactSales = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="fact_sales"]}[Data]
+                    in
+                        Analytics
+
+        table FactInventory
+        column 'Product Key'
+            dataType: int64
+            sourceColumn: product_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Date Key'
+            dataType: int64
+            sourceColumn: date_key
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Movement Date'
+            dataType: dateTime
+            sourceColumn: movement_date
+            summarizeBy: none
+            isHidden
+            formatString: yyyy-MM-dd
+
+        column 'Unit Cost'
+            dataType: decimal
+            sourceColumn: unit_cost
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+        column 'Units In'
+            dataType: int64
+            sourceColumn: units_in
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Units Out'
+            dataType: int64
+            sourceColumn: units_out
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Units Balance'
+            dataType: int64
+            sourceColumn: units_balance
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Net Units Movement'
+            dataType: int64
+            sourceColumn: net_units_movement
+            summarizeBy: none
+            isHidden
+            formatString: #,0
+
+        column 'Inventory Value'
+            dataType: decimal
+            sourceColumn: inventory_value
+            summarizeBy: none
+            isHidden
+            formatString: #,0.00
+
+            partition FactInventory = m
+                mode: import
+                source =
+                    let
+                        Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+                        Analytics = Source{[Schema="analytics", Item="fact_inventory"]}[Data]
+                    in
+                        Analytics
+
+        relationship 11111111-1111-4111-8111-111111111111
+            fromColumn: FactSales.'Channel Key'
+            toColumn: DimChannel.'Channel Key'
+
+        relationship 22222222-2222-4222-8222-222222222222
+            fromColumn: FactSales.'Product Key'
+            toColumn: DimProduct.'Product Key'
+
+        relationship 33333333-3333-4333-8333-333333333333
+            fromColumn: FactSales.'Order Date Key'
+            toColumn: DimDate.'Date Key'
+
+        relationship 44444444-4444-4444-8444-444444444444
+            fromColumn: FactSales.'Due Date Key'
+            toColumn: DimDate.'Date Key'
+            isActive: false
+
+        relationship 55555555-5555-4555-8555-555555555555
+            fromColumn: FactSales.'Ship Date Key'
+            toColumn: DimDate.'Date Key'
+            isActive: false
+
+        relationship 66666666-6666-4666-8666-666666666666
+            fromColumn: FactSales.'Customer Key'
+            toColumn: DimCustomer.'Customer Key'
+
+        relationship 77777777-7777-4777-8777-777777777777
+            fromColumn: FactSales.'Reseller Key'
+            toColumn: DimReseller.'Reseller Key'
+
+        relationship 88888888-8888-4888-8888-888888888888
+            fromColumn: FactSales.'Employee Key'
+            toColumn: DimEmployee.'Employee Key'
+
+        relationship 99999999-9999-4999-8999-999999999999
+            fromColumn: FactSales.'Promotion Key'
+            toColumn: DimPromotion.'Promotion Key'
+
+        relationship aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+            fromColumn: FactSales.'Currency Key'
+            toColumn: DimCurrency.'Currency Key'
+
+        relationship bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb
+            fromColumn: FactSales.'Sales Territory Key'
+            toColumn: DimSalesTerritory.'Sales Territory Key'
+
+        relationship cccccccc-cccc-4ccc-8ccc-cccccccccccc
+            fromColumn: FactSales.'Geography Key'
+            toColumn: DimGeography.'Geography Key'
+
+        relationship dddddddd-dddd-4ddd-8ddd-dddddddddddd
+            fromColumn: FactInventory.'Product Key'
+            toColumn: DimProduct.'Product Key'
+
+        relationship eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee
+            fromColumn: FactInventory.'Date Key'
+            toColumn: DimDate.'Date Key'
+
