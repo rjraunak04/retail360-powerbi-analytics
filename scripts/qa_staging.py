@@ -19,10 +19,15 @@ class Check:
 
 
 CHECKS = [
-    Check("dim_date row count", "SELECT count(*) FROM staging.dim_date", 3652),
+    Check("dim_currency row count", "SELECT count(*) FROM staging.dim_currency", 105),
     Check("dim_customer row count", "SELECT count(*) FROM staging.dim_customer", 18484),
+    Check("dim_date row count", "SELECT count(*) FROM staging.dim_date", 3652),
+    Check("dim_employee row count", "SELECT count(*) FROM staging.dim_employee", 296),
+    Check("dim_geography row count", "SELECT count(*) FROM staging.dim_geography", 655),
     Check("dim_product row count", "SELECT count(*) FROM staging.dim_product", 606),
+    Check("dim_promotion row count", "SELECT count(*) FROM staging.dim_promotion", 16),
     Check("dim_reseller row count", "SELECT count(*) FROM staging.dim_reseller", 701),
+    Check("dim_sales_territory row count", "SELECT count(*) FROM staging.dim_sales_territory", 11),
     Check("internet sales row count", "SELECT count(*) FROM staging.fact_internet_sales", 60398),
     Check("reseller sales row count", "SELECT count(*) FROM staging.fact_reseller_sales", 60855),
     Check("unified sales row count", "SELECT count(*) FROM staging.fact_sales", 121253),
@@ -91,6 +96,77 @@ CHECKS = [
         FROM staging.fact_reseller_sales f
         LEFT JOIN staging.dim_reseller d USING (reseller_key)
         WHERE d.reseller_key IS NULL
+        """,
+        0,
+    ),
+    Check(
+        "sales promotion orphans",
+        """
+        SELECT count(*)
+        FROM staging.fact_sales f
+        LEFT JOIN staging.dim_promotion d USING (promotion_key)
+        WHERE d.promotion_key IS NULL
+        """,
+        0,
+    ),
+    Check(
+        "sales currency orphans",
+        """
+        SELECT count(*)
+        FROM staging.fact_sales f
+        LEFT JOIN staging.dim_currency d USING (currency_key)
+        WHERE d.currency_key IS NULL
+        """,
+        0,
+    ),
+    Check(
+        "sales territory orphans",
+        """
+        SELECT count(*)
+        FROM staging.fact_sales f
+        LEFT JOIN staging.dim_sales_territory d USING (sales_territory_key)
+        WHERE d.sales_territory_key IS NULL
+        """,
+        0,
+    ),
+    Check(
+        "reseller employee orphans",
+        """
+        SELECT count(*)
+        FROM staging.fact_reseller_sales f
+        LEFT JOIN staging.dim_employee d USING (employee_key)
+        WHERE d.employee_key IS NULL
+        """,
+        0,
+    ),
+    Check(
+        "inventory product orphans",
+        """
+        SELECT count(*)
+        FROM staging.fact_product_inventory f
+        LEFT JOIN staging.dim_product d USING (product_key)
+        WHERE d.product_key IS NULL
+        """,
+        0,
+    ),
+    Check(
+        "inventory date orphans",
+        """
+        SELECT count(*)
+        FROM staging.fact_product_inventory f
+        LEFT JOIN staging.dim_date d
+          ON f.date_key = d.date_key
+        WHERE d.date_key IS NULL
+        """,
+        0,
+    ),
+    Check(
+        "invalid sales channel values",
+        """
+        SELECT count(*)
+        FROM staging.fact_sales
+        WHERE channel NOT IN ('Internet', 'Reseller')
+           OR channel IS NULL
         """,
         0,
     ),
