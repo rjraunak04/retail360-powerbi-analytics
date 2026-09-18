@@ -17,8 +17,12 @@ CREATE TABLE IF NOT EXISTS audit.table_load (
     table_name text NOT NULL,
     source_file text NOT NULL,
     loaded_rows bigint NOT NULL,
+    nul_bytes_removed bigint NOT NULL DEFAULT 0,
     loaded_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE audit.table_load
+ADD COLUMN IF NOT EXISTS nul_bytes_removed bigint NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS audit.row_reconciliation (
     reconciliation_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
