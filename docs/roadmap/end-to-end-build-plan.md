@@ -79,7 +79,7 @@ Exit gate:
 - no accidental many-to-many relationships
 
 ## Stage 5 — Power BI Semantic Model
-Status: NEXT
+Status: REPOSITORY COMPLETE — DESKTOP MATERIALIZATION PENDING
 
 
 Deliverables:
@@ -92,6 +92,8 @@ Deliverables:
 - Date table marked properly
 
 ## Stage 6 — DAX KPI Layer
+Status: NEXT
+
 
 Core KPI groups:
 - Sales: Total Sales, Units, Orders, ASP
