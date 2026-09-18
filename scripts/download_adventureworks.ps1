@@ -13,6 +13,7 @@ $DimensionFiles = @(
     "DimCurrency.csv",
     "DimCustomer.csv",
     "DimDate.csv",
+    "DimEmployee.csv",
     "DimGeography.csv",
     "DimProduct.csv",
     "DimProductCategory.csv",
