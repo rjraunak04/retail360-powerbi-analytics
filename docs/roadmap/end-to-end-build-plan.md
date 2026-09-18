@@ -57,7 +57,7 @@ Deliverables:
 - null/unknown-member policy
 
 ## Stage 4 — Analytics Star Schema
-Status: NEXT
+Status: COMPLETE
 
 
 Target semantic entities:
@@ -79,6 +79,8 @@ Exit gate:
 - no accidental many-to-many relationships
 
 ## Stage 5 — Power BI Semantic Model
+Status: NEXT
+
 
 Deliverables:
 - PostgreSQL connection
