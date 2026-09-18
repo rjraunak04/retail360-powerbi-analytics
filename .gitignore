@@ -39,6 +39,7 @@ secrets.*
 *.pbit.cache
 *.pbix.autosave
 *.localSettings.json
+**/.pbi/
 
 # Large/raw data
 data/raw/*
