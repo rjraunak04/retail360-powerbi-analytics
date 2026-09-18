@@ -1,0 +1,74 @@
+table DimEmployee
+	column 'Employee Key'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: employee_key
+
+	column 'Employee Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: employee_name
+
+	column 'Title'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: title
+
+	column 'Hire Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: hire_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Department'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: department_name
+
+	column 'Is Current'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_current
+
+	column 'Is Sales Person'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_sales_person
+
+	column 'Start Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: start_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'End Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: end_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	partition DimEmployee = m
+		mode: import
+		source =
+				let
+					Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+					Analytics = Source{[Schema="analytics", Item="dim_employee"]}[Data]
+				in
+					Analytics
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table

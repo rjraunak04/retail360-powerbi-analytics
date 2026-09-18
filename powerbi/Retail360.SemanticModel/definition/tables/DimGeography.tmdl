@@ -1,0 +1,65 @@
+table DimGeography
+	column 'Geography Key'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: geography_key
+
+	column 'City'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: city
+
+	column 'State Province Code'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: state_province_code
+
+	column 'State Province'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: state_province_name
+
+	column 'Country Region Code'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: country_region_code
+
+	column 'Country'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: country_name
+
+	column 'Postal Code'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: postal_code
+
+	column 'Territory Region'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: territory_region
+
+	column 'Territory Country'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: territory_country
+
+	column 'Territory Group'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: territory_group
+
+	partition DimGeography = m
+		mode: import
+		source =
+				let
+					Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+					Analytics = Source{[Schema="analytics", Item="dim_geography"]}[Data]
+				in
+					Analytics
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table
