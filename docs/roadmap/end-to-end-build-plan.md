@@ -32,7 +32,7 @@ Exit gate:
 - referential-integrity checks understood and documented
 
 ## Stage 2 — PostgreSQL Warehouse Foundation
-Status: IN PROGRESS
+Status: COMPLETE
 
 
 Deliverables:
@@ -44,6 +44,8 @@ Deliverables:
 - SQL quality checks
 
 ## Stage 3 — Staging and Business Transformation
+Status: NEXT
+
 
 Deliverables:
 - cleaned and typed staging views/tables
