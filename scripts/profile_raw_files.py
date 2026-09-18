@@ -19,9 +19,8 @@ def profile_file(path: Path, delimiter: str = "|") -> dict[str, object]:
             if not row:
                 continue
 
-            # AdventureWorksDW source files may end records with a trailing |.
-            if row and row[-1] == "":
-                row = row[:-1]
+            # Preserve a final empty field: in AdventureWorksDW it can represent
+            # a legitimate NULL in the last source column (for example Status/MaxQty).
 
             row_count += 1
             field_count_histogram[len(row)] += 1
