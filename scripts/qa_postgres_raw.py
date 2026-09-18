@@ -44,9 +44,41 @@ def main() -> None:
 
     with psycopg.connect(**settings()) as conn:
         run_row = conn.execute(
-            "SELECT load_run_id FROM audit.load_run ORDER BY load_run_id DESC LIMIT 1"
+            """
+            SELECT load_run_id, status, total_tables, total_rows
+            FROM audit.load_run
+            ORDER BY load_run_id DESC
+            LIMIT 1
+            """
         ).fetchone()
-        load_run_id = run_row[0] if run_row else None
+
+        if not run_row:
+            raise SystemExit("No audit.load_run record found.")
+
+        load_run_id, load_status, total_tables, total_rows = run_row
+        expected_total_rows = sum(EXPECTED.values())
+
+        if load_status != "SUCCESS":
+            raise SystemExit(f"Latest load run is not SUCCESS: {load_status}")
+        if int(total_tables or 0) != len(EXPECTED):
+            raise SystemExit(
+                f"Audit table count mismatch: expected {len(EXPECTED)}, got {total_tables}"
+            )
+        if int(total_rows or 0) != expected_total_rows:
+            raise SystemExit(
+                f"Audit total row mismatch: expected {expected_total_rows}, got {total_rows}"
+            )
+
+        table_load_count = int(
+            conn.execute(
+                "SELECT count(*) FROM audit.table_load WHERE load_run_id = %s",
+                (load_run_id,),
+            ).fetchone()[0]
+        )
+        if table_load_count != len(EXPECTED):
+            raise SystemExit(
+                f"Audit table_load mismatch: expected {len(EXPECTED)}, got {table_load_count}"
+            )
 
         conn.execute("DELETE FROM audit.row_reconciliation WHERE load_run_id IS NOT DISTINCT FROM %s", (load_run_id,))
 
@@ -81,7 +113,10 @@ def main() -> None:
     if failures:
         raise SystemExit(f"Raw reconciliation FAILED: {failures} table(s) mismatched.")
 
-    print("Raw reconciliation PASSED: 14/14 tables match validated source counts.")
+    print(
+        "Raw reconciliation PASSED: 14/14 tables match validated source counts "
+        "and the latest audited load is complete."
+    )
 
 
 if __name__ == "__main__":
