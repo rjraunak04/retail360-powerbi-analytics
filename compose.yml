@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: retail360-postgres
+    environment:
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-retail360_dev_only}
+      POSTGRES_DB: postgres
+    ports:
+      - "${PGPORT:-5432}:5432"
+    volumes:
+      - retail360_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  retail360_pgdata:
