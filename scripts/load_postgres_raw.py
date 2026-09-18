@@ -15,6 +15,12 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw" / "adventureworks"
 DDL_DIR = ROOT / "sql" / "ddl"
 
+BINARY_COLUMNS: dict[str, set[str]] = {
+    "DimEmployee": {"EmployeePhoto"},
+    "DimProduct": {"LargePhoto"},
+    "DimSalesTerritory": {"SalesTerritoryImage"},
+}
+
 
 def snake(name: str) -> str:
     value = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
@@ -88,7 +94,21 @@ def load_table(
                         f"{source_table} row {row_number}: expected "
                         f"{len(columns)} fields, found {len(row)}"
                     )
-                copy.write_row(row + [source_path.name, row_number])
+                binary_columns = BINARY_COLUMNS.get(source_table, set())
+                converted: list[object] = []
+
+                for source_column, value in zip(SCHEMAS[source_table], row):
+                    if source_column in binary_columns:
+                        converted.append(value.encode("utf-8"))
+                    else:
+                        if "\x00" in value:
+                            raise ValueError(
+                                f"{source_table} row {row_number} column "
+                                f"{source_column}: unexpected NUL byte in text field"
+                            )
+                        converted.append(value)
+
+                copy.write_row(converted + [source_path.name, row_number])
                 loaded += 1
 
     return loaded
