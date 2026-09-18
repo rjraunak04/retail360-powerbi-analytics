@@ -2,44 +2,47 @@
 
 ## Modelling Approach
 
-Retail360 will use a dimensional star-schema architecture.
+Retail360 will use a dimensional star-schema architecture designed for analytical reporting and Power BI performance.
 
 ## Core Rules
 
-1. Each fact table must have a clearly defined grain.
-2. Dimensions should contain descriptive business attributes.
+1. Every fact table must have a clearly documented grain.
+2. Dimension tables contain descriptive business attributes.
 3. Relationships should primarily be one-to-many.
-4. Dimension filters should flow toward fact tables.
-5. Many-to-many relationships should be avoided unless justified.
-6. Business measures should be implemented using explicit DAX measures.
-7. Technical identifiers should be hidden from report consumers.
-8. Date intelligence should use a dedicated Date dimension.
-9. Raw-source transformations should not be mixed with presentation logic.
-10. KPI definitions must be documented and validated before dashboard use.
+4. Filters should normally flow from dimensions to facts.
+5. Many-to-many relationships require explicit justification.
+6. Business KPIs should use explicit DAX measures.
+7. Technical keys should be hidden from report consumers.
+8. Time intelligence must use a dedicated Date dimension.
+9. Source transformations must remain separate from presentation logic.
+10. KPI definitions must be documented and validated before use.
 
-## Naming Convention
+## Proposed Naming Convention
 
-### Dimensions
+### Dimension Tables
 
-DimDate  
-DimProduct  
-DimStore  
-DimCustomer  
-DimGeography  
-DimPromotion
+- DimDate
+- DimProduct
+- DimCustomer
+- DimStore
+- DimGeography
+- DimPromotion
 
-### Facts
+### Fact Tables
 
-FactSales  
-FactInventory  
-FactPromotion
+- FactSales
+- FactInventory
+- FactReturns
 
-### Measures
+These tables are provisional until source-data profiling confirms the final model.
 
-Readable business names should be used:
+## Measure Naming
 
-Total Sales  
-Gross Profit  
-Gross Margin %  
-Sales YoY %  
-Average Order Value
+Measures should use readable business terminology such as:
+
+- Total Sales
+- Gross Profit
+- Gross Margin %
+- Sales YoY %
+- Average Order Value
+- Units Sold
