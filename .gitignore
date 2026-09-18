@@ -1,0 +1,48 @@
+# ========================================
+# Retail360 - Git Ignore
+# ========================================
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Secrets / credentials
+*.env
+.env.*
+credentials.*
+secrets.*
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+~$*
+
+# Power BI temporary/cache files
+*.pbit.cache
+*.pbix.autosave
+*.localSettings.json
+
+# Large/raw data
+data/raw/*
+!data/raw/.gitkeep
+
+data/processed/*
+!data/processed/.gitkeep
