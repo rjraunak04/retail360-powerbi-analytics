@@ -170,8 +170,8 @@ def rows_for(table: str):
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.reader(handle, delimiter="|")
         for line_number, row in enumerate(reader, start=1):
-            if row and row[-1] == "":
-                row = row[:-1]
+            # Do not drop a trailing empty field. It is a valid NULL value for
+            # the final source column in several AdventureWorksDW dimensions.
             if len(row) != len(columns):
                 yield line_number, None
                 continue
