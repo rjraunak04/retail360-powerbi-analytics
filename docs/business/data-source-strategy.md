@@ -4,7 +4,7 @@
 
 Retail360 uses the official Microsoft AdventureWorks Data Warehouse CSV source files from the microsoft/sql-server-samples repository.
 
-AdventureWorks represents a multi-channel retail business and provides a realistic dimensional warehouse structure for portfolio-grade analytics. The source includes customer, product, geography, promotion, reseller, sales-territory, internet-sales, reseller-sales and product-inventory data.
+AdventureWorks represents a multi-channel retail business and provides a realistic dimensional warehouse structure for portfolio-grade analytics. The source includes customer, employee, product, geography, promotion, reseller, sales-territory, internet-sales, reseller-sales and product-inventory data.
 
 ## Why This Dataset
 
@@ -26,6 +26,7 @@ This source is preferred for Retail360 because it is:
 - DimProductSubcategory
 - DimProductCategory
 - DimCustomer
+- DimEmployee
 - DimGeography
 - DimPromotion
 - DimCurrency
