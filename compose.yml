@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${PGPASSWORD:-retail360_dev_only}
       POSTGRES_DB: postgres
     ports:
-      - "${PGPORT:-5432}:5432"
+      - "127.0.0.1:${PGPORT:-5432}:5432"
     volumes:
       - retail360_pgdata:/var/lib/postgresql/data
     healthcheck:
