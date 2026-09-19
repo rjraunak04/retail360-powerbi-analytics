@@ -1,0 +1,42 @@
+table DimSalesTerritory
+	column 'Sales Territory Key'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: sales_territory_key
+
+	column 'Sales Territory Alternate Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: sales_territory_alternate_key
+
+	column 'Territory Region'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: territory_region
+
+	column 'Territory Country'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: territory_country
+
+	column 'Territory Group'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: territory_group
+
+	partition DimSalesTerritory = m
+		mode: import
+		source =
+				let
+					Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+					Analytics = Source{[Schema="analytics", Item="dim_sales_territory"]}[Data]
+				in
+					Analytics
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table

@@ -1,0 +1,152 @@
+table DimProduct
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: product_key
+
+	column 'Product Code'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_code
+
+	column 'Product Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_name
+
+	column 'Product Subcategory Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: product_subcategory_key
+
+	column 'Subcategory'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: subcategory_name
+
+	column 'Product Category Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: product_category_key
+
+	column 'Category'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: category_name
+
+	column 'Standard Cost'
+		dataType: decimal
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: standard_cost
+
+	column 'List Price'
+		dataType: decimal
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: list_price
+
+	column 'Dealer Price'
+		dataType: decimal
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: dealer_price
+
+	column 'Color'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: color
+
+	column 'Size'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: size
+
+	column 'Size Range'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: size_range
+
+	column 'Weight'
+		dataType: decimal
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: weight
+
+	column 'Safety Stock Level'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: safety_stock_level
+
+	column 'Reorder Point'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: reorder_point
+
+	column 'Days To Manufacture'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: days_to_manufacture
+
+	column 'Product Line'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_line
+
+	column 'Class'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_class
+
+	column 'Style'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: style
+
+	column 'Model Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: model_name
+
+	column 'Start Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: start_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'End Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: end_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	partition DimProduct = m
+		mode: import
+		source =
+				let
+					Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+					Analytics = Source{[Schema="analytics", Item="dim_product"]}[Data]
+				in
+					Analytics
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table

@@ -76,3 +76,56 @@ The local Desktop gate is:
 7. Desktop saves the model as PBIP/TMDL
 
 The repository-side Stage 5 definition is approved for Stage 6 DAX development while this one-time local materialization is completed.
+
+
+## Final Power BI Desktop runtime proof
+
+**Status: PASSED — 19 September 2026**
+
+The Retail360 PBIP project was opened in Power BI Desktop against the local PostgreSQL analytics database and verified through the live local semantic-model engine.
+
+Runtime connection:
+
+- local Power BI Analysis Services port discovered successfully
+- semantic model catalog discovered successfully
+- final DAX QA executed directly against the loaded model
+- proof result: **20/20 checks PASS**
+
+Validated results:
+
+| Check | Actual | Expected | Status |
+|---|---:|---:|---|
+| DimChannel rows | 3 | 3 | PASS |
+| DimCurrency rows | 106 | 106 | PASS |
+| DimCustomer rows | 18,485 | 18,485 | PASS |
+| DimDate rows | 3,652 | 3,652 | PASS |
+| DimEmployee rows | 297 | 297 | PASS |
+| DimGeography rows | 656 | 656 | PASS |
+| DimProduct rows | 607 | 607 | PASS |
+| DimPromotion rows | 17 | 17 | PASS |
+| DimReseller rows | 702 | 702 | PASS |
+| DimSalesTerritory rows | 12 | 12 | PASS |
+| Distinct Orders | 31,455 | 31,455 | PASS |
+| FactInventory rows | 776,286 | 776,286 | PASS |
+| FactSales rows | 121,253 | 121,253 | PASS |
+| Gross Profit | 12,551,366.2483 | 12,551,366.2483 | PASS |
+| Internet sales lines | 60,398 | 60,398 | PASS |
+| Inventory Value (all snapshots) | 29,713,024,789.83 | 29,713,024,789.83 | PASS |
+| Reseller sales lines | 60,855 | 60,855 | PASS |
+| Total Product Cost | 97,257,907.9547 | 97,257,907.9547 | PASS |
+| Total Sales | 109,809,274.203 | 109,809,274.203 | PASS |
+| Units Sold | 274,776 | 274,776 | PASS |
+
+The runtime verifier is available at:
+
+`scripts/verify_powerbi_stage5_runtime.ps1`
+
+The generated local evidence file is:
+
+`docs/data-engineering/stage5-powerbi-runtime-proof.csv`
+
+### Stage 5 decision
+
+**Stage 5 — Power BI Semantic Model: COMPLETE**
+
+All repository, CI, PostgreSQL, PBIP/TMDL, credential, refresh, and live Power BI semantic-model runtime gates have passed.

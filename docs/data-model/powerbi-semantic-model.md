@@ -74,19 +74,25 @@ Because the warehouse relationships use integer surrogate date keys, the Desktop
 
 ## Power BI Desktop materialization
 
-The repository definition is source-controlled, but Power BI Desktop is required to materialize and credential the local model.
+Retail360 now includes a ready-to-open PBIP project, so manual TMDL copy/paste is no longer required.
 
-Fast path:
+Project entry point:
 
-1. Start the local PostgreSQL `retail360` database.
-2. Open a blank Power BI Desktop report.
-3. Open **Model > TMDL view**.
-4. Apply `powerbi/tmdl/stage5_semantic_model.tmdl`.
-5. Supply PostgreSQL credentials when prompted.
-6. Refresh.
-7. Mark `DimDate[Date]` as the Date table.
-8. Run `dax/qa/stage5_model_qa.dax` in DAX Query View.
-9. Save the project as PBIP using TMDL format so Desktop becomes the serializer of record.
+`powerbi/Retail360.pbip`
+
+The PBIP links:
+
+`Retail360.Report -> Retail360.SemanticModel`
+
+The semantic model is already stored in source-controlled TMDL under:
+
+`powerbi/Retail360.SemanticModel/definition/`
+
+The local launcher `scripts/open_powerbi_stage5.ps1` starts/checks PostgreSQL, executes warehouse and semantic-model validation, validates the PBIP structure, and opens `Retail360.pbip`.
+
+On the first model refresh, Power BI Desktop can request the local PostgreSQL credential. Credentials are intentionally kept outside Git and must remain in the local Power BI credential store.
+
+After the first successful refresh, run `powerbi/Retail360.SemanticModel/DAXQueries/Stage5 Model QA.dax` in DAX Query View to confirm model row counts.
 
 ## Stage 5 exit gate
 

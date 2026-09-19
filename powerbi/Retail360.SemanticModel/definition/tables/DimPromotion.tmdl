@@ -1,0 +1,76 @@
+table DimPromotion
+	column 'Promotion Key'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: promotion_key
+
+	column 'Promotion Alternate Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: promotion_alternate_key
+
+	column 'Promotion Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: promotion_name
+
+	column 'Discount Pct'
+		dataType: decimal
+		formatString: 0.00%
+		summarizeBy: none
+		sourceColumn: discount_pct
+
+	column 'Promotion Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: promotion_type
+
+	column 'Promotion Category'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: promotion_category
+
+	column 'Start Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: start_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'End Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: end_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Min Qty'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: min_qty
+
+	column 'Max Qty'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: max_qty
+
+	partition DimPromotion = m
+		mode: import
+		source =
+				let
+					Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+					Analytics = Source{[Schema="analytics", Item="dim_promotion"]}[Data]
+				in
+					Analytics
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table

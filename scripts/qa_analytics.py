@@ -134,6 +134,21 @@ COUNT_CHECKS = [
         1,
     ),
     CountCheck(
+        "blank dates in analytics dim_date",
+        "SELECT count(*) FROM analytics.dim_date WHERE date IS NULL",
+        0,
+    ),
+    CountCheck(
+        "fact rows using unknown date key 0",
+        """
+        SELECT
+            (SELECT count(*) FROM analytics.fact_sales
+             WHERE order_date_key = 0 OR due_date_key = 0 OR ship_date_key = 0)
+          + (SELECT count(*) FROM analytics.fact_inventory WHERE date_key = 0)
+        """,
+        0,
+    ),
+    CountCheck(
         "foreign-key constraint count",
         """
         SELECT count(*)

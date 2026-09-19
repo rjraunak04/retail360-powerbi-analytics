@@ -1,0 +1,125 @@
+table DimCustomer
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	column 'Customer Code'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: customer_code
+
+	column 'Customer Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: customer_name
+
+	column 'Title'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: title
+
+	column 'First Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: first_name
+
+	column 'Middle Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: middle_name
+
+	column 'Last Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: last_name
+
+	column 'Birth Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: birth_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Marital Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: marital_status
+
+	column 'Gender'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: gender
+
+	column 'Email Address'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: email_address
+
+	column 'Yearly Income'
+		dataType: decimal
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: yearly_income
+
+	column 'Total Children'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: total_children
+
+	column 'Children At Home'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: children_at_home
+
+	column 'Education'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: education
+
+	column 'Occupation'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: occupation
+
+	column 'Is House Owner'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_house_owner
+
+	column 'Cars Owned'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: cars_owned
+
+	column 'First Purchase Date'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: first_purchase_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Commute Distance'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: commute_distance
+
+	partition DimCustomer = m
+		mode: import
+		source =
+				let
+					Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+					Analytics = Source{[Schema="analytics", Item="dim_customer"]}[Data]
+				in
+					Analytics
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table

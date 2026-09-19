@@ -1,0 +1,30 @@
+table DimCurrency
+	column 'Currency Key'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: currency_key
+
+	column 'Currency Code'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: currency_code
+
+	column 'Currency Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: currency_name
+
+	partition DimCurrency = m
+		mode: import
+		source =
+				let
+					Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+					Analytics = Source{[Schema="analytics", Item="dim_currency"]}[Data]
+				in
+					Analytics
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table
