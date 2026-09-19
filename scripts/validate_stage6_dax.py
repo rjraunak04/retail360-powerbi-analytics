@@ -32,7 +32,8 @@ REQUIRED_MEASURES = {
     "Latest Inventory Date", "Current Inventory Value", "Current Inventory Units",
     "Average Inventory Value", "Inventory Turnover", "Products With Inventory",
     "Products Below Safety Stock", "Products Below Reorder Point",
-    "Inventory Health %", "Selected Period Label", "Executive Overview Title",
+    "Safety Stock Risk %", "Reorder Risk %", "Inventory Health %",
+    "Selected Period Label", "Executive Overview Title",
     "Sales Growth Title", "Product Profitability Title", "Inventory Title",
 }
 
@@ -61,6 +62,9 @@ REQUIRED_DAX_PATTERNS = {
     "latest snapshot": "REMOVEFILTERS(DimDate)",
     "selection-aware product contribution": "ALLSELECTED(DimProduct",
     "ranking": "RANKX(",
+    "channel context preservation": "KEEPFILTERS(DimChannel[Channel]",
+    "customer revenue scope": "DIVIDE([Internet Sales], [Customers])",
+    "safety-stock health": "1 - [Safety Stock Risk %]",
 }
 
 
@@ -138,8 +142,8 @@ def main() -> None:
         fail("consolidated measures must not claim a currency without rate semantics")
 
     check_count = qa.count('ROW("Check"')
-    if check_count != 26:
-        fail(f"Stage 6 runtime QA must contain exactly 26 checks, found {check_count}")
+    if check_count != 34:
+        fail(f"Stage 6 runtime QA must contain exactly 34 checks, found {check_count}")
 
     smoke_count = smoke.count('ROW("Check"')
     if smoke_count != len(REQUIRED_MEASURES):
@@ -165,6 +169,15 @@ def main() -> None:
         "Current Inventory Value",
         "Products Below Safety Stock",
         "Products Below Reorder Point",
+        "Safety Stock Risk % identity",
+        "Reorder Risk % identity",
+        "Inventory Health % identity",
+        "Average Selling Price identity",
+        "Average Order Value identity",
+        "Revenue per Customer identity",
+        "Revenue per Reseller identity",
+        "Due-date Sales 2013",
+        "Ship-date Sales 2013",
         "Sales PY under 2014 context",
         "Sales YTD under 2013 context",
         "Profit PY under 2014 context",
@@ -185,7 +198,7 @@ def main() -> None:
     print("Product ranking/contribution: PASS")
     print("Neutral currency formatting:  PASS")
     print("QA copies synchronized:       PASS")
-    print("Exact runtime QA:             26/26 checks defined")
+    print("Exact runtime QA:             34/34 checks defined")
     print(f"All-measure smoke QA:         {smoke_count}/{len(REQUIRED_MEASURES)} checks defined")
     print("-" * 76)
     print("Stage 6 DAX contract PASSED.")
