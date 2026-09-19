@@ -8,7 +8,7 @@ Repository implementation and PostgreSQL benchmark reconciliation are complete. 
 
 A dedicated calculated table named `KPI_Measures` hosts **78 governed report-facing measures**. The table contains a single hidden dummy column and is excluded from business analysis except as a measure container.
 
-The host is intentionally named `KPI_Measures` because `Measures` is a reserved/unsupported Power BI table name in current Desktop/PBIP builds.\n\nThe layer covers:
+The host is intentionally named `KPI_Measures` because `Measures` is a reserved/unsupported Power BI table name in current Desktop/PBIP builds. It uses a one-row static M partition instead of a calculated-table partition, avoiding semantic-model calculation dependencies during load.\n\nThe layer covers:
 
 - sales and volume
 - profitability
@@ -48,3 +48,9 @@ The runtime gate contains 34 exact reconciliation, role-date, customer, channel,
 GitHub Actions independently rebuilds the analytics schema and verifies the KPI layer against PostgreSQL. Important reference values include 109,809,274.2030 Total Sales, 12,551,366.2483 Gross Profit, 18,484 customers, 635 resellers, a 2014-06-30 latest inventory snapshot, and 23,603,975.5700 Current Inventory Value.
 
 See `docs/data-engineering/stage6-validation-summary.md` for the complete evidence table.
+
+
+## Load-stability hardening
+
+- `KPI_Measures` uses a one-row static M table so the measure host does not participate in calculated-table dependency evaluation.
+- `FactInventory` uses a direct parameterized PostgreSQL SQL query instead of navigator lookup. This preserves the same imported columns while avoiding Power Query navigator evaluation cycles observed in Desktop.
