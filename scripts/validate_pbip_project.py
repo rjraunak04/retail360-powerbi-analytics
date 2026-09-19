@@ -82,7 +82,8 @@ def main() -> None:
             fail(f"{table}.tmdl missing table declaration")
 
         if table in SOURCE_TABLES:
-            if "PostgreSQL.Database(pServer, pDatabase" not in t:
+            compact_t = "".join(t.split())
+            if "PostgreSQL.Database(pServer,pDatabase" not in compact_t:
                 fail(f"{table}.tmdl is not parameterized to PostgreSQL")
             if "\t\tmode: import" not in t:
                 fail(f"{table}.tmdl is not Import mode")
