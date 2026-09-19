@@ -75,3 +75,18 @@ jobs:
 
       - name: Validate ready-to-open PBIP scaffold
         run: python scripts/validate_pbip_project.py
+
+      - name: Parse Stage 5 PowerShell runtime verifier
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/verify_powerbi_stage5_runtime.ps1",
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
