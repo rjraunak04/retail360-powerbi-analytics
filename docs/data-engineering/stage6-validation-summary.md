@@ -85,9 +85,9 @@ The script performs four gates in sequence:
 3. live Power BI exact KPI reconciliation (34 checks)
 4. live Power BI all-measure smoke validation (78 measures)
 
-The generated runtime evidence files are:
+The local verifier writes temporary evidence under the ignored `.runtime/` directory:
 
-- `docs/data-engineering/stage6-powerbi-runtime-proof.csv`
-- `docs/data-engineering/stage6-measure-smoke-proof.csv`
+- `.runtime/stage6-powerbi-runtime-proof.csv`
+- `.runtime/stage6-measure-smoke-proof.csv`
 
-Stage 6 is marked COMPLETE only after live evidence shows **34/34 exact KPI checks PASS** and **78/78 governed measures evaluate successfully**.
+After the live gate passes, reviewed canonical copies are committed under `docs/data-engineering/`. Stage 6 is marked COMPLETE only after live evidence shows **34/34 exact KPI checks PASS** and **78/78 governed measures evaluate successfully**.
