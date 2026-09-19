@@ -24,6 +24,30 @@ foreach ($required in @(
 }
 
 Write-Host "Retail360 Stage 6 full validation gate" -ForegroundColor Cyan
+
+Write-Host "Starting/checking PostgreSQL..." -ForegroundColor DarkGray
+docker info *> $null
+if ($LASTEXITCODE -ne 0) {
+    throw "Docker Desktop is not running. Start Docker Desktop and rerun this command."
+}
+docker compose up -d postgres | Out-Host
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not start the Retail360 PostgreSQL container."
+}
+
+$ready = $false
+for ($i = 0; $i -lt 30; $i++) {
+    docker compose exec -T postgres pg_isready -U postgres *> $null
+    if ($LASTEXITCODE -eq 0) {
+        $ready = $true
+        break
+    }
+    Start-Sleep -Seconds 2
+}
+if (-not $ready) {
+    throw "Retail360 PostgreSQL did not become ready within 60 seconds."
+}
+
 Write-Host "1/4 PostgreSQL KPI reconciliation..." -ForegroundColor DarkGray
 python scripts/qa_stage6_kpis.py
 if ($LASTEXITCODE -ne 0) { throw "Stage 6 PostgreSQL KPI reconciliation failed." }
