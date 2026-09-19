@@ -278,10 +278,13 @@ Write-Host "Retail360 $StageLabel Power BI runtime verifier" -ForegroundColor Cy
 Write-Host ("Project: " + $Project) -ForegroundColor DarkGray
 
 # PostgreSQL must remain reachable because Power BI may refresh on open.
+# Use cmd.exe so harmless Docker CLI-plugin warnings written to stderr do not
+# become terminating PowerShell errors under ErrorActionPreference=Stop.
 try {
-    docker info *> $null
+    & $env:ComSpec /d /s /c "docker info >nul 2>nul"
     if ($LASTEXITCODE -eq 0) {
-        docker compose up -d postgres | Out-Host
+        $dockerOutput = & $env:ComSpec /d /s /c "docker compose up -d postgres 2>&1"
+        if ($dockerOutput) { $dockerOutput | Out-Host }
     }
 }
 catch {
