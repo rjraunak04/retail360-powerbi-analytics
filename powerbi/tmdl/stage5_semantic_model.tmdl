@@ -6,7 +6,7 @@ createOrReplace
         sourceQueryCulture: en-US
         valueFilterBehavior: independent
 
-        expression pServer = "localhost:5432" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+        expression pServer = "127.0.0.1:5432" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
         expression pDatabase = "retail360" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 
         table DimDate
