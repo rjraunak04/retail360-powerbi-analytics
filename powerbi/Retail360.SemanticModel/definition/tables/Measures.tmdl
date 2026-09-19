@@ -196,7 +196,8 @@ table Measures
 		formatString: #,0
 		displayFolder: Customer & Reseller
 
-	measure 'Revenue per Customer' = DIVIDE([Total Sales], [Customers])
+	/// Internet-channel sales per identified retail customer.
+	measure 'Revenue per Customer' = DIVIDE([Internet Sales], [Customers])
 		formatString: #,0.00
 		displayFolder: Customer & Reseller
 
