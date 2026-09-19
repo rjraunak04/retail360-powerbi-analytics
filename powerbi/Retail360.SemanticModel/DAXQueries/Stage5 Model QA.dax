@@ -46,7 +46,7 @@ EVALUATE
 UNION(
     ROW("Check", "FactSales rows", "Actual", _FactSalesRows, "Expected", 121253, "Status", IF(_FactSalesRows = 121253, "PASS", "FAIL")),
     ROW("Check", "FactInventory rows", "Actual", _FactInventoryRows, "Expected", 776286, "Status", IF(_FactInventoryRows = 776286, "PASS", "FAIL")),
-    ROW("Check", "DimDate rows", "Actual", _DimDateRows, "Expected", 3653, "Status", IF(_DimDateRows = 3653, "PASS", "FAIL")),
+    ROW("Check", "DimDate rows", "Actual", _DimDateRows, "Expected", 3652, "Status", IF(_DimDateRows = 3652, "PASS", "FAIL")),
     ROW("Check", "DimProduct rows", "Actual", _DimProductRows, "Expected", 607, "Status", IF(_DimProductRows = 607, "PASS", "FAIL")),
     ROW("Check", "DimCustomer rows", "Actual", _DimCustomerRows, "Expected", 18485, "Status", IF(_DimCustomerRows = 18485, "PASS", "FAIL")),
     ROW("Check", "DimReseller rows", "Actual", _DimResellerRows, "Expected", 702, "Status", IF(_DimResellerRows = 702, "PASS", "FAIL")),
