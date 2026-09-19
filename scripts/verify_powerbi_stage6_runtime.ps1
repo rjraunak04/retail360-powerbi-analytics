@@ -11,7 +11,7 @@ if (-not (Test-Path $BaseVerifier)) {
 
 # Stage6 QA intentionally has 20 rows and includes the core check names the
 # generic verifier uses to identify the Retail360 model.
-& powershell -ExecutionPolicy Bypass -File $BaseVerifier -QueryPath $Query -ProofCsvPath $Proof
+& powershell -ExecutionPolicy Bypass -File $BaseVerifier -QueryPath $Query -ProofCsvPath $Proof -StageLabel "Stage 6"
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
