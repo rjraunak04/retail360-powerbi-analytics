@@ -23,11 +23,36 @@ foreach ($required in @(
     }
 }
 
+
+function Test-DockerEngine {
+    # Windows PowerShell turns native stderr into ErrorRecord objects when
+    # ErrorActionPreference=Stop. Docker can emit harmless CLI-plugin warnings
+    # (for example a broken docker-agent plugin) even when the engine is healthy.
+    # Run the probe through cmd.exe and suppress both streams, then trust the
+    # native exit code instead of stderr text.
+    & $env:ComSpec /d /s /c "docker info >nul 2>nul"
+    return ($LASTEXITCODE -eq 0)
+}
+
+function Invoke-DockerComposeUp {
+    $output = & $env:ComSpec /d /s /c "docker compose up -d postgres 2>&1"
+    $exitCode = $LASTEXITCODE
+    if ($output) { $output | Out-Host }
+    if ($exitCode -ne 0) {
+        throw "Could not start the Retail360 PostgreSQL container. Docker exit code: $exitCode"
+    }
+}
+
+function Test-PostgresContainerReady {
+    param([string]$User)
+    & $env:ComSpec /d /s /c "docker compose exec -T postgres pg_isready -U $User >nul 2>nul"
+    return ($LASTEXITCODE -eq 0)
+}
+
 Write-Host "Retail360 Stage 6 full validation gate" -ForegroundColor Cyan
 
 Write-Host "Starting/checking PostgreSQL..." -ForegroundColor DarkGray
-docker info *> $null
-if ($LASTEXITCODE -ne 0) {
+if (-not (Test-DockerEngine)) {
     $DockerDesktop = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
     if (Test-Path $DockerDesktop) {
         Write-Host "Docker Desktop is not running; starting it automatically..." -ForegroundColor Yellow
@@ -35,8 +60,7 @@ if ($LASTEXITCODE -ne 0) {
         $dockerReady = $false
         for ($i = 0; $i -lt 30; $i++) {
             Start-Sleep -Seconds 2
-            docker info *> $null
-            if ($LASTEXITCODE -eq 0) {
+            if (Test-DockerEngine) {
                 $dockerReady = $true
                 break
             }
@@ -49,16 +73,13 @@ if ($LASTEXITCODE -ne 0) {
         throw "Docker Desktop is not running and its standard executable path was not found."
     }
 }
-docker compose up -d postgres | Out-Host
-if ($LASTEXITCODE -ne 0) {
-    throw "Could not start the Retail360 PostgreSQL container."
-}
+
+Invoke-DockerComposeUp
 
 $PgUser = if ($env:PGUSER) { $env:PGUSER } else { "postgres" }
 $ready = $false
 for ($i = 0; $i -lt 30; $i++) {
-    docker compose exec -T postgres pg_isready -U $PgUser *> $null
-    if ($LASTEXITCODE -eq 0) {
+    if (Test-PostgresContainerReady -User $PgUser) {
         $ready = $true
         break
     }
