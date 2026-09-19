@@ -76,14 +76,16 @@ Run:
 powershell -ExecutionPolicy Bypass -File .\scripts\verify_powerbi_stage6_runtime.ps1
 ```
 
-The script performs three gates in sequence:
+The script performs four gates in sequence:
 
 1. PostgreSQL KPI reconciliation
 2. DAX/TMDL contract validation
-3. live Power BI semantic-model DAX validation
+3. live Power BI exact KPI reconciliation (26 checks)
+4. live Power BI all-measure smoke validation (76 measures)
 
-The generated runtime evidence file is:
+The generated runtime evidence files are:
 
-`docs/data-engineering/stage6-powerbi-runtime-proof.csv`
+- `docs/data-engineering/stage6-powerbi-runtime-proof.csv`
+- `docs/data-engineering/stage6-measure-smoke-proof.csv`
 
-Stage 6 is marked COMPLETE only after that live evidence shows **26/26 PASS**.
+Stage 6 is marked COMPLETE only after live evidence shows **26/26 exact KPI checks PASS** and **76/76 governed measures evaluate successfully**.
