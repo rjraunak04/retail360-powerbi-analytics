@@ -97,3 +97,19 @@ After the live gate passes, reviewed canonical copies are committed under `docs/
 
 - `KPI_Measures` uses a one-row static M table so the measure host does not participate in calculated-table dependency evaluation.
 - `FactInventory` uses a direct parameterized PostgreSQL SQL query instead of navigator lookup. This preserves the same imported columns while avoiding Power Query navigator evaluation cycles observed in Desktop.
+
+
+## Stage 6 stability reset — final architecture
+
+The repeated Desktop errors were not caused by incorrect KPI mathematics or broken PostgreSQL facts. They were integration failures at the PBIP/Power Query/Desktop runtime boundary.
+
+Final hardening decisions:
+
+- all **12 imported semantic tables** now use explicit parameterized SQL queries against `analytics.*`; Power Query navigator lookups are no longer used
+- `KPI_Measures` remains a static one-row M host, not a DAX calculated table
+- the Stage 6 verifier uses **one Power BI model instance** and no longer opens a second temporary PBIP model on every run
+- orphaned temporary runtime instances from older verifier versions are cleaned before QA
+- PBIP validation fails if any source table regresses back to navigator lookup
+- runtime QA remains 34 exact KPI reconciliations + 78 measure smoke checks
+
+This design reduces metadata-navigation work, avoids cross-query evaluation cycles, and prevents repeated verifier runs from multiplying local Analysis Services memory usage.
