@@ -76,6 +76,8 @@ def main() -> None:
                 SELECT
                     SUM(sales_amount) FILTER (WHERE EXTRACT(YEAR FROM order_date) = 2013)::numeric AS sales_2013,
                     SUM(sales_amount) FILTER (WHERE EXTRACT(YEAR FROM order_date) = 2014)::numeric AS sales_2014,
+                    SUM(sales_amount) FILTER (WHERE EXTRACT(YEAR FROM due_date) = 2013)::numeric AS due_sales_2013,
+                    SUM(sales_amount) FILTER (WHERE EXTRACT(YEAR FROM ship_date) = 2013)::numeric AS ship_sales_2013,
                     SUM(gross_profit) FILTER (WHERE EXTRACT(YEAR FROM order_date) = 2013)::numeric AS profit_2013,
                     SUM(gross_profit) FILTER (WHERE EXTRACT(YEAR FROM order_date) = 2014)::numeric AS profit_2014
                 FROM analytics.fact_sales
@@ -86,7 +88,8 @@ def main() -> None:
                 b.internet_sales, b.reseller_sales, b.discounted_sales,
                 l.latest_inventory_date, i.current_inventory_value, i.current_inventory_units,
                 i.products_with_inventory, i.products_below_safety_stock, i.products_below_reorder_point,
-                y.sales_2013, y.sales_2014, y.profit_2013, y.profit_2014
+                y.sales_2013, y.sales_2014, y.due_sales_2013, y.ship_sales_2013,
+                y.profit_2013, y.profit_2014
             FROM base b
             CROSS JOIN repeat_customers r
             CROSS JOIN latest l
