@@ -1,11 +1,5 @@
 let
-    Source = PostgreSQL.Database(
-        pServer,
-        pDatabase,
-        [
-            CreateNavigationProperties=false,
-            Query="SELECT sales_territory_key, sales_territory_alternate_key, territory_region, territory_country, territory_group FROM analytics.dim_sales_territory"
-        ]
-    )
+    Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+    Analytics = Source{[Schema="analytics", Item="dim_sales_territory"]}[Data]
 in
-    Source
+    Analytics
