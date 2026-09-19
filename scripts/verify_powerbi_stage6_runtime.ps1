@@ -28,16 +28,36 @@ Write-Host "Retail360 Stage 6 full validation gate" -ForegroundColor Cyan
 Write-Host "Starting/checking PostgreSQL..." -ForegroundColor DarkGray
 docker info *> $null
 if ($LASTEXITCODE -ne 0) {
-    throw "Docker Desktop is not running. Start Docker Desktop and rerun this command."
+    $DockerDesktop = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    if (Test-Path $DockerDesktop) {
+        Write-Host "Docker Desktop is not running; starting it automatically..." -ForegroundColor Yellow
+        Start-Process $DockerDesktop
+        $dockerReady = $false
+        for ($i = 0; $i -lt 30; $i++) {
+            Start-Sleep -Seconds 2
+            docker info *> $null
+            if ($LASTEXITCODE -eq 0) {
+                $dockerReady = $true
+                break
+            }
+        }
+        if (-not $dockerReady) {
+            throw "Docker Desktop did not become ready within 60 seconds."
+        }
+    }
+    else {
+        throw "Docker Desktop is not running and its standard executable path was not found."
+    }
 }
 docker compose up -d postgres | Out-Host
 if ($LASTEXITCODE -ne 0) {
     throw "Could not start the Retail360 PostgreSQL container."
 }
 
+$PgUser = if ($env:PGUSER) { $env:PGUSER } else { "postgres" }
 $ready = $false
 for ($i = 0; $i -lt 30; $i++) {
-    docker compose exec -T postgres pg_isready -U postgres *> $null
+    docker compose exec -T postgres pg_isready -U $PgUser *> $null
     if ($LASTEXITCODE -eq 0) {
         $ready = $true
         break
