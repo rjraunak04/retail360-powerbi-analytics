@@ -8,7 +8,7 @@ Final exit gate still requires the live Power BI Desktop runtime query to return
 
 ## Governed semantic layer
 
-Stage 6 provides a dedicated `Measures` table with **78 explicit report-facing measures** across:
+Stage 6 provides a dedicated `KPI_Measures` table with **78 explicit report-facing measures** across:
 
 - Sales & Volume
 - Profitability
