@@ -57,6 +57,7 @@ REQUIRED_DAX_PATTERNS = {
     "prior year": "SAMEPERIODLASTYEAR(DimDate[Date])",
     "due-date role": "USERELATIONSHIP(FactSales[Due Date Key], DimDate[Date Key])",
     "ship-date role": "USERELATIONSHIP(FactSales[Ship Date Key], DimDate[Date Key])",
+    "role-date active-order isolation": "CROSSFILTER(FactSales[Order Date Key], DimDate[Date Key], NONE)",
     "latest snapshot": "REMOVEFILTERS(DimDate)",
     "selection-aware product contribution": "ALLSELECTED(DimProduct",
     "ranking": "RANKX(",
