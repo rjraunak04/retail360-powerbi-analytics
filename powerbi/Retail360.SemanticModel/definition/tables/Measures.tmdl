@@ -154,6 +154,7 @@ table Measures
 	measure 'Sales by Due Date' =
 			CALCULATE(
 			    [Total Sales],
+			    CROSSFILTER(FactSales[Order Date Key], DimDate[Date Key], NONE),
 			    USERELATIONSHIP(FactSales[Due Date Key], DimDate[Date Key])
 			)
 		formatString: #,0.00
@@ -163,6 +164,7 @@ table Measures
 	measure 'Sales by Ship Date' =
 			CALCULATE(
 			    [Total Sales],
+			    CROSSFILTER(FactSales[Order Date Key], DimDate[Date Key], NONE),
 			    USERELATIONSHIP(FactSales[Ship Date Key], DimDate[Date Key])
 			)
 		formatString: #,0.00
@@ -171,6 +173,7 @@ table Measures
 	measure 'Orders by Due Date' =
 			CALCULATE(
 			    [Distinct Orders],
+			    CROSSFILTER(FactSales[Order Date Key], DimDate[Date Key], NONE),
 			    USERELATIONSHIP(FactSales[Due Date Key], DimDate[Date Key])
 			)
 		formatString: #,0
@@ -179,6 +182,7 @@ table Measures
 	measure 'Orders by Ship Date' =
 			CALCULATE(
 			    [Distinct Orders],
+			    CROSSFILTER(FactSales[Order Date Key], DimDate[Date Key], NONE),
 			    USERELATIONSHIP(FactSales[Ship Date Key], DimDate[Date Key])
 			)
 		formatString: #,0
