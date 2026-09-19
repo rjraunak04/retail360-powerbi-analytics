@@ -96,7 +96,7 @@ After the live gate passes, reviewed canonical copies are committed under `docs/
 ## Load-stability hardening
 
 - `KPI_Measures` uses a one-row static M table so the measure host does not participate in calculated-table dependency evaluation.
-- `FactInventory` uses a direct parameterized PostgreSQL SQL query instead of navigator lookup. This preserves the same imported columns while avoiding Power Query navigator evaluation cycles observed in Desktop.
+- All 12 source tables now use the exact Stage 5 navigator-based PostgreSQL import pattern that already passed the live 20/20 Power BI runtime gate. Stage 6 therefore changes semantic logic only; it no longer experiments with source-partition loading behavior.
 
 
 ## Stage 6 stability reset — final architecture
@@ -105,11 +105,27 @@ The repeated Desktop errors were not caused by incorrect KPI mathematics or brok
 
 Final hardening decisions:
 
-- all **12 imported semantic tables** now use explicit parameterized SQL queries against `analytics.*`; Power Query navigator lookups are no longer used
-- `KPI_Measures` remains a static one-row M host, not a DAX calculated table
+- all **12 imported semantic tables** use the exact Stage 5 navigator-based PostgreSQL import pattern that already passed live 20/20 Power BI runtime QA
+- Stage 6 does not alter the proven source-partition layer; it adds semantic business logic only
+- `KPI_Measures` is a static one-row M host, not a DAX calculated table
 - the Stage 6 verifier uses **one Power BI model instance** and no longer opens a second temporary PBIP model on every run
 - orphaned temporary runtime instances from older verifier versions are cleaned before QA
-- PBIP validation fails if any source table regresses back to navigator lookup
+- PBIP validation fails if the source partitions drift away from the Stage 5 runtime-proven pattern
 - runtime QA remains 34 exact KPI reconciliations + 78 measure smoke checks
 
-This design reduces metadata-navigation work, avoids cross-query evaluation cycles, and prevents repeated verifier runs from multiplying local Analysis Services memory usage.
+This design minimizes the Stage 6 change surface and prevents repeated verifier runs from multiplying local Analysis Services memory usage.
+
+
+## Why Stage 6 surfaced several runtime issues
+
+Stage 5 had already proven the PostgreSQL source partitions and star schema in a live Power BI runtime. Most Stage 6 failures were therefore integration regressions around the new semantic layer and validation tooling rather than bad source data.
+
+The hardened design now follows these rules:
+
+- keep the 12 source-table partitions identical to the Stage 5 runtime-proven baseline
+- add Stage 6 business logic only through the `KPI_Measures` host and DAX queries
+- use a static one-row M partition for `KPI_Measures` so the measure host does not create calculated-table load dependencies
+- never launch duplicate Power BI runtime copies during verification
+- clean only repository-local Power BI caches on a cold start
+- fail fast when multiple Power BI Desktop instances are running, because parallel semantic-model engines can trigger memory pressure and misleading provider/container errors
+- validate the final model through 34 exact KPI checks and a 78-measure smoke suite

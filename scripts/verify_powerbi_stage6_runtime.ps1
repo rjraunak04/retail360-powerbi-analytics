@@ -129,14 +129,33 @@ Get-ChildItem $RuntimeRoot -Directory -Filter "stage6-powerbi-*" -ErrorAction Si
     }
 
 $CanonicalProject = Join-Path $Root "powerbi\Retail360.pbip"
-$PowerBIProcess = Get-Process PBIDesktop -ErrorAction SilentlyContinue
+$PowerBIProcess = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
+
+if ($PowerBIProcess.Count -gt 1) {
+    throw "Multiple Power BI Desktop instances are running ($($PowerBIProcess.Count)). Save and close all Power BI Desktop windows, then rerun this verifier. Multiple semantic-model engines can exhaust memory and cause false cyclic-reference/provider failures."
+}
+
 if (-not $PowerBIProcess) {
+    # Clear only repository-local Power BI caches before a clean start. These
+    # folders are ignored by Git and can preserve stale semantic-model state
+    # after a failed PBIP load.
+    Get-ChildItem (Join-Path $Root "powerbi") -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq ".pbi" } |
+        Sort-Object FullName -Descending |
+        ForEach-Object {
+            try {
+                Write-Host ("Removing stale local Power BI cache: " + $_.FullName) -ForegroundColor DarkGray
+                Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop
+            }
+            catch {}
+        }
+
     Write-Host "Power BI Desktop is not running; opening canonical Retail360.pbip..." -ForegroundColor Yellow
     Start-Process $CanonicalProject
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 12
 }
 else {
-    Write-Host "Using the already-open canonical Power BI Desktop instance; no duplicate model will be launched." -ForegroundColor Green
+    Write-Host "Using the single already-open canonical Power BI Desktop instance; no duplicate model will be launched." -ForegroundColor Green
 }
 
 Write-Host "3/4 Live Power BI KPI reconciliation..." -ForegroundColor DarkGray

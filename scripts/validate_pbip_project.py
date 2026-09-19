@@ -87,10 +87,10 @@ def main() -> None:
                 fail(f"{table}.tmdl is not parameterized to PostgreSQL")
             if "\t\tmode: import" not in t:
                 fail(f"{table}.tmdl is not Import mode")
-            if 'Query="SELECT' not in t or "FROM analytics." not in t:
-                fail(f"{table}.tmdl must use an explicit direct SQL import")
-            if 'Item="' in t:
-                fail(f"{table}.tmdl still uses navigator lookup and may reintroduce evaluation cycles")
+            if 'Source{[Schema="analytics",Item="' not in compact_t:
+                fail(f"{table}.tmdl must use the Stage 5 proven analytics navigator pattern")
+            if 'Query="SELECT' in t:
+                fail(f"{table}.tmdl must not use a direct SQL Query override")
         else:
             if f"partition {MEASURE_HOST_TABLE} = m" not in t:
                 fail(f"{MEASURE_HOST_TABLE} must use a static M partition")
@@ -133,7 +133,7 @@ def main() -> None:
     print("Semantic tables:        13/13 PASS")
     print("Reserved table names:   PASS")
     print("KPI measure host:       KPI_Measures static-M PASS")
-    print("Source imports:         12/12 direct SQL PASS")
+    print("Source imports:         12/12 Stage 5 navigator baseline PASS")
     print("Relationships:          14/14 PASS")
     print("Inactive date roles:     2/2 PASS")
     print("PostgreSQL parameters:  PASS")
