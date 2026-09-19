@@ -50,7 +50,7 @@ function Open-AdodbConnection {
     $conn.CommandTimeout = 120
     $conn.ConnectionTimeout = 2
 
-    $connectionString = "Provider=MSOLAP;Data Source=127.0.0.1:$Port;Integrated Security=SSPI;"
+    $connectionString = "Provider=MSOLAP;Data Source=localhost:$Port;Integrated Security=SSPI;"
     if ($Database) {
         $connectionString += "Initial Catalog=$Database;"
     }
@@ -299,6 +299,11 @@ while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
     foreach ($port in $ports) {
         try {
             $catalogs = Get-AnalysisServicesCatalogs -Port $port
+            if (-not $catalogs -or $catalogs.Count -eq 0) {
+                $lastProbeError = "Port $port responded but returned no Analysis Services catalogs."
+                continue
+            }
+            Write-Host ("Port " + $port + " catalogs: " + ($catalogs -join ", ")) -ForegroundColor DarkGray
         }
         catch {
             $lastProbeError = "Port $port catalog discovery: $($_.Exception.Message)"
@@ -347,7 +352,7 @@ if (-not $selectedConnection) {
     throw "Could not connect to the open Retail360 semantic model within $ModelProbeTimeoutSeconds seconds.$details If the error mentions MSOLAP, repair/update Power BI Desktop so its Analysis Services OLE DB provider is registered."
 }
 
-Write-Host "Connected to Retail360 Power BI semantic model on 127.0.0.1:$selectedPort" -ForegroundColor Green
+Write-Host "Connected to Retail360 Power BI semantic model on localhost:$selectedPort" -ForegroundColor Green
 Write-Host "Power BI model database: $selectedDatabase" -ForegroundColor DarkGray
 
 $query = Get-Content $QueryPath -Raw
