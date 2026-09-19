@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MEASURES = ROOT / "powerbi" / "Retail360.SemanticModel" / "definition" / "tables" / "Measures.tmdl"
 MODEL = ROOT / "powerbi" / "Retail360.SemanticModel" / "definition" / "model.tmdl"
 QA = ROOT / "powerbi" / "Retail360.SemanticModel" / "DAXQueries" / "Stage6 KPI QA.dax"
+QA_MIRROR = ROOT / "dax" / "qa" / "stage6_kpi_qa.dax"
+RUNTIME = ROOT / "scripts" / "verify_powerbi_stage6_runtime.ps1"
 
 REQUIRED_MEASURES = {
     "Total Sales", "Units Sold", "Distinct Orders", "Average Selling Price",
@@ -39,6 +41,10 @@ def main() -> None:
         fail("Measures.tmdl is missing")
     if not QA.exists():
         fail("Stage6 KPI QA.dax is missing")
+    if not QA_MIRROR.exists():
+        fail("dax/qa/stage6_kpi_qa.dax mirror is missing")
+    if not RUNTIME.exists():
+        fail("Stage 6 Power BI runtime verifier is missing")
 
     text = MEASURES.read_text(encoding="utf-8")
     model = MODEL.read_text(encoding="utf-8")
@@ -51,8 +57,8 @@ def main() -> None:
     if missing:
         fail(f"missing required measures: {sorted(missing)}")
 
-    if len(measure_names) < 60:
-        fail(f"expected at least 60 governed measures, found {len(measure_names)}")
+    if len(measure_names) < 75:
+        fail(f"expected at least 75 governed measures, found {len(measure_names)}")
 
     folders = set(re.findall(r"^\s*displayFolder:\s*(.+?)\s*$", text, re.MULTILINE))
     missing_folders = REQUIRED_FOLDERS - folders
@@ -85,6 +91,10 @@ def main() -> None:
     if 'source = ROW("Value", 0)' not in text:
         fail("Measures calculated partition source is not the expected one-row table")
 
+    qa_mirror = QA_MIRROR.read_text(encoding="utf-8")
+    if qa != qa_mirror:
+        fail("Stage 6 DAX QA mirror differs from the PBIP DAX query")
+
     if qa.count('ROW("Check"') != 20:
         fail("Stage6 KPI QA must contain exactly 20 checks")
     if "Gross Margin identity" not in qa or "Channel reconciliation" not in qa:
@@ -100,7 +110,18 @@ def main() -> None:
     print("Role-playing dates:     PASS")
     print("Inventory snapshot DAX: PASS")
     print("Product ranking/share:  PASS")
+    if "$" in text or "€" in text or "£" in text or "₹" in text:
+        fail("currency symbol found in governed measures despite unresolved currency conversion semantics")
+
+    runtime = RUNTIME.read_text(encoding="utf-8")
+    for token in ("Stage6 KPI QA.dax", "stage6-powerbi-runtime-proof.csv", 'StageLabel "Stage 6"'):
+        if token not in runtime:
+            fail(f"runtime verifier missing token: {token}")
+
     print("Runtime QA contract:    20 checks PASS")
+    print("QA mirror consistency:  PASS")
+    print("Neutral currency format: PASS")
+    print("Runtime verifier:       PASS")
     print("-" * 72)
     print("Stage 6 DAX contract PASSED.")
 
