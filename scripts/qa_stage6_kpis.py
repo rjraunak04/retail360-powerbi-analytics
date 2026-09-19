@@ -2,8 +2,13 @@ from __future__ import annotations
 
 import os
 from decimal import Decimal
+from pathlib import Path
 
+from dotenv import load_dotenv
 import psycopg
+
+ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(ROOT / ".env")
 
 
 def d(value) -> Decimal:
@@ -19,7 +24,7 @@ def main() -> None:
         host=os.getenv("PGHOST", "localhost"),
         port=int(os.getenv("PGPORT", "5432")),
         user=os.getenv("PGUSER", "postgres"),
-        password=os.getenv("PGPASSWORD", "postgres"),
+        password=os.getenv("PGPASSWORD") or None,
         dbname=os.getenv("PGDATABASE", "retail360"),
     )
 
