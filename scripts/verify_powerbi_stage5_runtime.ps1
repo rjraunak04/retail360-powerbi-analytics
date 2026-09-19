@@ -335,7 +335,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
                 $conn.Close()
 
                 if (-not $candidateRows -or $candidateRows.Count -eq 0) {
-                    $lastProbeError = "Port $port catalog ${catalog} returned no Stage 5 QA rows."
+                    $lastProbeError = "Port $port catalog ${catalog} returned no $StageLabel QA rows."
                     continue
                 }
 
@@ -343,7 +343,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
                 $checkNames = @($candidateRows | ForEach-Object { [string]$_.Check })
 
                 if (
-                    $candidateRows.Count -eq 20 -and
+                    $candidateRows.Count -ge 20 -and
                     $candidateFailures.Count -eq 0 -and
                     $checkNames -contains "Total Sales"
                 ) {
@@ -353,7 +353,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
                     break
                 }
 
-                $lastProbeError = "Port $port catalog ${catalog} ran Stage 5 QA but returned $($candidateRows.Count) row(s) with $($candidateFailures.Count) failure(s)."
+                $lastProbeError = "Port $port catalog ${catalog} ran $StageLabel QA but returned $($candidateRows.Count) row(s) with $($candidateFailures.Count) failure(s)."
             }
             catch {
                 $lastProbeError = "Port $port catalog ${catalog}: $($_.Exception.Message)"
