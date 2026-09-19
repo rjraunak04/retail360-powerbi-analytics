@@ -1,6 +1,6 @@
 param(
     [int]$StartupTimeoutSeconds = 120,
-    [int]$ModelProbeTimeoutSeconds = 120,
+    [int]$ModelProbeTimeoutSeconds = 30,
     [string]$QueryPath = "",
     [string]$ProofCsvPath = ""
 )
