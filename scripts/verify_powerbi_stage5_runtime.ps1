@@ -48,7 +48,7 @@ function Open-AdodbConnection {
 
     $conn = New-Object -ComObject ADODB.Connection
     $conn.CommandTimeout = 120
-    $conn.ConnectionTimeout = 10
+    $conn.ConnectionTimeout = 2
 
     $connectionString = "Provider=MSOLAP;Data Source=127.0.0.1:$Port;Integrated Security=SSPI;"
     if ($Database) {
@@ -67,7 +67,9 @@ function Get-AnalysisServicesCatalogs {
     $conn = $null
     try {
         $conn = Open-AdodbConnection -Port $Port
-        $rs = $conn.Execute('SELECT [CATALOG_NAME] FROM $SYSTEM.DBSCHEMA_CATALOGS')
+        # adSchemaCatalogs = 1. OpenSchema is more compatible across MSOLAP
+        # provider versions than issuing a DMV query before selecting a catalog.
+        $rs = $conn.OpenSchema(1)
         $catalogs = New-Object System.Collections.Generic.List[string]
 
         while (-not $rs.EOF) {
@@ -198,7 +200,44 @@ function Get-MsmdsrvPorts {
     }
     catch {}
 
-    return @($ports)
+    # Last-resort discovery: modern Power BI Desktop builds can hide the
+    # Analysis Services workspace path from the parent process command line.
+    # Scan all local listening TCP ports and let the MSOLAP handshake identify
+    # the Analysis Services endpoint. This is safe because we only connect to
+    # loopback listeners and use a very short timeout.
+    if ($ports.Count -eq 0) {
+        Write-Host "No engine port found from process/workspace metadata; scanning local listeners..." -ForegroundColor Yellow
+        try {
+            $listeners = Get-NetTCPConnection -State Listen -ErrorAction Stop |
+                Where-Object {
+                    $_.LocalPort -gt 1024 -and (
+                        $_.LocalAddress -eq '127.0.0.1' -or
+                        $_.LocalAddress -eq '::1' -or
+                        $_.LocalAddress -eq '0.0.0.0' -or
+                        $_.LocalAddress -eq '::'
+                    )
+                }
+            foreach ($listener in $listeners) {
+                [void]$ports.Add([int]$listener.LocalPort)
+            }
+        }
+        catch {
+            $netstat = netstat -ano -p tcp
+            foreach ($line in $netstat) {
+                if ($line -notmatch "LISTENING") { continue }
+                $parts = ($line -replace '^\s+', '') -split '\s+'
+                if ($parts.Count -lt 5) { continue }
+                $local = $parts[1]
+                $portText = ($local -split ':')[-1]
+                $port = 0
+                if ([int]::TryParse($portText, [ref]$port) -and $port -gt 1024) {
+                    [void]$ports.Add($port)
+                }
+            }
+        }
+    }
+
+    return @($ports | Sort-Object -Unique)
 }
 
 function Ensure-PowerBIModelRunning {
@@ -255,6 +294,7 @@ $lastProbeError = $null
 
 while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
     $ports = Get-MsmdsrvPorts
+    Write-Host ("Candidate local ports: " + $ports.Count) -ForegroundColor DarkGray
 
     foreach ($port in $ports) {
         try {
@@ -304,7 +344,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
 
 if (-not $selectedConnection) {
     $details = if ($lastProbeError) { " Last probe error: $lastProbeError" } else { "" }
-    throw "Could not connect to the open Retail360 semantic model within $ModelProbeTimeoutSeconds seconds.$details"
+    throw "Could not connect to the open Retail360 semantic model within $ModelProbeTimeoutSeconds seconds.$details If the error mentions MSOLAP, repair/update Power BI Desktop so its Analysis Services OLE DB provider is registered."
 }
 
 Write-Host "Connected to Retail360 Power BI semantic model on 127.0.0.1:$selectedPort" -ForegroundColor Green
