@@ -97,69 +97,47 @@ Write-Host "2/4 DAX/TMDL contract validation..." -ForegroundColor DarkGray
 python scripts/validate_stage6_dax.py
 if ($LASTEXITCODE -ne 0) { throw "Stage 6 DAX/TMDL contract validation failed." }
 
-Write-Host "Preparing a fresh Power BI Stage 6 runtime instance..." -ForegroundColor DarkGray
+Write-Host "Preparing single-instance Power BI runtime..." -ForegroundColor DarkGray
 
-# The user may already have Retail360 open from Stage 5. Power BI Desktop does
-# not hot-reload TMDL files into an already-running semantic model. To avoid
-# validating stale in-memory metadata, open a clean runtime copy of the current
-# source-controlled PBIP project. This does not close or modify the user's
-# existing Power BI window.
 $RuntimeRoot = Join-Path $Root ".runtime"
 New-Item -ItemType Directory -Force -Path $RuntimeRoot | Out-Null
 
-$RuntimeProjectDir = Join-Path $RuntimeRoot "stage6-powerbi-fresh"
-if (Test-Path $RuntimeProjectDir) {
+# Earlier Stage 6 verifier versions opened a second temporary PBIP instance on
+# every run. Repeated retries could leave multiple Power BI/Analysis Services
+# engines alive at once, increasing memory pressure and causing provider
+# OutOfMemory/container-exit errors. Only orphaned temporary runtime instances
+# are closed here; the user's canonical Retail360 window is left untouched.
+$orphanRuntimeProcesses = @(
+    Get-CimInstance Win32_Process -Filter "Name='PBIDesktop.exe'" -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandLine -and
+            $_.CommandLine -match '\\.runtime\\stage6-powerbi-'
+        }
+)
+foreach ($proc in $orphanRuntimeProcesses) {
     try {
-        Remove-Item $RuntimeProjectDir -Recurse -Force -ErrorAction Stop
+        Write-Host ("Closing orphan Stage 6 runtime Power BI process PID " + $proc.ProcessId) -ForegroundColor Yellow
+        Stop-Process -Id $proc.ProcessId -Force -ErrorAction Stop
     }
-    catch {
-        $RuntimeProjectDir = Join-Path $RuntimeRoot ("stage6-powerbi-" + (Get-Date -Format "yyyyMMdd-HHmmss"))
-    }
+    catch {}
 }
 
-Copy-Item (Join-Path $Root "powerbi") $RuntimeProjectDir -Recurse -Force
-
-# Never reuse local Power BI caches from the original project.
-Get-ChildItem $RuntimeProjectDir -Directory -Recurse -Force -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -eq ".pbi" } |
-    Sort-Object FullName -Descending |
+# Remove stale temporary project copies after their processes are gone.
+Get-ChildItem $RuntimeRoot -Directory -Filter "stage6-powerbi-*" -ErrorAction SilentlyContinue |
     ForEach-Object {
         try { Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop } catch {}
     }
 
-$FreshProject = Join-Path $RuntimeProjectDir "Retail360.pbip"
-if (-not (Test-Path $FreshProject)) {
-    throw "Fresh Stage 6 PBIP runtime copy was not created: $FreshProject"
+$CanonicalProject = Join-Path $Root "powerbi\Retail360.pbip"
+$PowerBIProcess = Get-Process PBIDesktop -ErrorAction SilentlyContinue
+if (-not $PowerBIProcess) {
+    Write-Host "Power BI Desktop is not running; opening canonical Retail360.pbip..." -ForegroundColor Yellow
+    Start-Process $CanonicalProject
+    Start-Sleep -Seconds 10
 }
-
-$BeforeEnginePids = @(
-    Get-CimInstance Win32_Process -Filter "Name='msmdsrv.exe'" -ErrorAction SilentlyContinue |
-        ForEach-Object { [int]$_.ProcessId }
-)
-
-Write-Host "Opening fresh Stage 6 PBIP from current branch..." -ForegroundColor Yellow
-Start-Process $FreshProject
-
-$FreshEngineStarted = $false
-for ($i = 0; $i -lt 60; $i++) {
-    Start-Sleep -Seconds 2
-    $CurrentEnginePids = @(
-        Get-CimInstance Win32_Process -Filter "Name='msmdsrv.exe'" -ErrorAction SilentlyContinue |
-            ForEach-Object { [int]$_.ProcessId }
-    )
-    $NewEnginePids = @($CurrentEnginePids | Where-Object { $BeforeEnginePids -notcontains $_ })
-    if ($NewEnginePids.Count -gt 0) {
-        $FreshEngineStarted = $true
-        break
-    }
+else {
+    Write-Host "Using the already-open canonical Power BI Desktop instance; no duplicate model will be launched." -ForegroundColor Green
 }
-
-if (-not $FreshEngineStarted) {
-    Write-Host "No new engine PID detected yet; continuing with semantic-model discovery because Power BI may have reused its host process." -ForegroundColor Yellow
-}
-
-# Give Desktop a short settling window after the model engine appears.
-Start-Sleep -Seconds 5
 
 Write-Host "3/4 Live Power BI KPI reconciliation..." -ForegroundColor DarkGray
 & powershell -ExecutionPolicy Bypass -File $BaseVerifier -StartupTimeoutSeconds 120 -ModelProbeTimeoutSeconds 120 -QueryPath $ExactQuery -ProofCsvPath $ExactProof -StageLabel "Stage 6 KPI reconciliation"

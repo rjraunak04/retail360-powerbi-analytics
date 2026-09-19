@@ -87,6 +87,10 @@ def main() -> None:
                 fail(f"{table}.tmdl is not parameterized to PostgreSQL")
             if "\t\tmode: import" not in t:
                 fail(f"{table}.tmdl is not Import mode")
+            if 'Query="SELECT' not in t or "FROM analytics." not in t:
+                fail(f"{table}.tmdl must use an explicit direct SQL import")
+            if 'Item="' in t:
+                fail(f"{table}.tmdl still uses navigator lookup and may reintroduce evaluation cycles")
         else:
             if f"partition {MEASURE_HOST_TABLE} = m" not in t:
                 fail(f"{MEASURE_HOST_TABLE} must use a static M partition")
@@ -102,12 +106,6 @@ def main() -> None:
     )
     if MEASURE_HOST_TABLE not in query_order_line:
         fail("static KPI_Measures table must appear in Power Query order")
-
-    fact_inventory_text = (table_dir / "FactInventory.tmdl").read_text(encoding="utf-8")
-    if 'Query="SELECT product_key, date_key, movement_date, unit_cost, units_in, units_out, units_balance, net_units_movement, inventory_value FROM analytics.fact_inventory"' not in fact_inventory_text:
-        fail("FactInventory must use the direct SQL import path to avoid navigator evaluation cycles")
-    if 'Item="fact_inventory"' in fact_inventory_text:
-        fail("FactInventory still uses navigator lookup and may reintroduce cyclic evaluation")
 
     expr = (DEFINITION / "expressions.tmdl").read_text(encoding="utf-8")
     if "expression pServer" not in expr or "expression pDatabase" not in expr:
@@ -135,7 +133,7 @@ def main() -> None:
     print("Semantic tables:        13/13 PASS")
     print("Reserved table names:   PASS")
     print("KPI measure host:       KPI_Measures static-M PASS")
-    print("FactInventory import:   direct SQL PASS")
+    print("Source imports:         12/12 direct SQL PASS")
     print("Relationships:          14/14 PASS")
     print("Inactive date roles:     2/2 PASS")
     print("PostgreSQL parameters:  PASS")
