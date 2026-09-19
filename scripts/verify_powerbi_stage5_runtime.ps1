@@ -22,7 +22,7 @@ if (-not (Test-Path $Project)) {
     throw "Retail360 PBIP project not found: $Project"
 }
 if (-not (Test-Path $QueryPath)) {
-    throw "Stage 5 DAX QA query not found: $QueryPath"
+    throw "$StageLabel DAX QA query not found: $QueryPath"
 }
 
 function Recordset-ToObjects {
@@ -274,7 +274,7 @@ function Ensure-PowerBIModelRunning {
     throw "Power BI Desktop opened but its semantic-model engine did not start within $StartupTimeoutSeconds seconds."
 }
 
-Write-Host "Retail360 Stage 5 Power BI runtime verifier" -ForegroundColor Cyan
+Write-Host "Retail360 $StageLabel Power BI runtime verifier" -ForegroundColor Cyan
 Write-Host ("Project: " + $Project) -ForegroundColor DarkGray
 
 # PostgreSQL must remain reachable because Power BI may refresh on open.
@@ -373,7 +373,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
 
 if (-not $runtimeRows) {
     $details = if ($lastProbeError) { " Last probe error: $lastProbeError" } else { "" }
-    throw "Could not connect to the open Retail360 semantic model within $ModelProbeTimeoutSeconds seconds.$details If the error mentions MSOLAP, repair/update Power BI Desktop so its Analysis Services OLE DB provider is registered."
+    throw "Could not validate the Retail360 semantic model within $ModelProbeTimeoutSeconds seconds.$details"
 }
 
 Write-Host "Connected to Retail360 Power BI semantic model on localhost:$selectedPort" -ForegroundColor Green
@@ -382,7 +382,7 @@ Write-Host "Power BI model database: $selectedDatabase" -ForegroundColor DarkGra
 $rows = $runtimeRows
 
 if (-not $rows -or $rows.Count -eq 0) {
-    throw "The Stage 5 DAX QA query returned no rows."
+    throw "The $StageLabel DAX QA query returned no rows."
 }
 
 $proofDir = Split-Path -Parent $ProofCsvPath
@@ -407,7 +407,7 @@ Write-Host ("-" * 92)
 Write-Host "Runtime proof CSV: $ProofCsvPath"
 
 if ($failures -gt 0) {
-    throw "Stage 5 Power BI runtime QA FAILED: $failures check(s) failed."
+    throw "$StageLabel Power BI runtime QA FAILED: $failures check(s) failed."
 }
 
 Write-Host ""

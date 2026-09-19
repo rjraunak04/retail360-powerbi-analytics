@@ -15,7 +15,9 @@ SOURCE_TABLES = {
     "DimGeography", "DimSalesTerritory", "DimPromotion", "DimCurrency",
     "DimChannel", "FactSales", "FactInventory",
 }
-EXPECTED_TABLES = SOURCE_TABLES | {"Measures"}
+MEASURE_HOST_TABLE = "KPI_Measures"
+EXPECTED_TABLES = SOURCE_TABLES | {MEASURE_HOST_TABLE}
+RESERVED_TABLE_NAMES = {"Measures"}
 
 
 def fail(message: str) -> None:
@@ -61,7 +63,13 @@ def main() -> None:
         fail("definition.pbism must be version 4.0+")
 
     model_text = (DEFINITION / "model.tmdl").read_text(encoding="utf-8")
-    table_files = {p.stem for p in (DEFINITION / "tables").glob("*.tmdl")}
+    table_dir = DEFINITION / "tables"
+    table_files = {p.stem for p in table_dir.glob("*.tmdl")}
+
+    reserved = table_files & RESERVED_TABLE_NAMES
+    if reserved:
+        fail(f"reserved/unsupported Power BI table name(s): {sorted(reserved)}")
+
     if table_files != EXPECTED_TABLES:
         fail(f"table-file set mismatch: {sorted(table_files)}")
 
@@ -69,17 +77,30 @@ def main() -> None:
         if f"ref table {table}" not in model_text:
             fail(f"model.tmdl missing ref table {table}")
 
-        t = (DEFINITION / "tables" / f"{table}.tmdl").read_text(encoding="utf-8")
+        t = (table_dir / f"{table}.tmdl").read_text(encoding="utf-8")
         if f"table {table}" not in t:
             fail(f"{table}.tmdl missing table declaration")
+
         if table in SOURCE_TABLES:
             if "PostgreSQL.Database(pServer, pDatabase" not in t:
                 fail(f"{table}.tmdl is not parameterized to PostgreSQL")
             if "\t\tmode: import" not in t:
                 fail(f"{table}.tmdl is not Import mode")
         else:
-            if "partition Measures = calculated" not in t:
-                fail("Measures table is not a calculated measure-host table")
+            if f"partition {MEASURE_HOST_TABLE} = calculated" not in t:
+                fail(f"{MEASURE_HOST_TABLE} is not a calculated measure-host table")
+            if 'source = ROW("Value", 0)' not in t:
+                fail(f"{MEASURE_HOST_TABLE} calculated partition source is invalid")
+
+    if '"Measures"' in model_text or "ref table Measures" in model_text:
+        fail('model.tmdl still contains the reserved table name "Measures"')
+
+    query_order_line = next(
+        (line for line in model_text.splitlines() if line.startswith("annotation PBI_QueryOrder")),
+        "",
+    )
+    if MEASURE_HOST_TABLE in query_order_line:
+        fail("calculated KPI_Measures table must not appear in Power Query order")
 
     expr = (DEFINITION / "expressions.tmdl").read_text(encoding="utf-8")
     if "expression pServer" not in expr or "expression pDatabase" not in expr:
@@ -102,14 +123,16 @@ def main() -> None:
 
     print("Retail360 PBIP scaffold")
     print("-" * 72)
-    print("PBIP shortcut:        PASS")
-    print("Report -> Model path: PASS")
-    print("Semantic tables:      13/13 PASS")
-    print("Relationships:        14/14 PASS")
-    print("Inactive date roles:   2/2 PASS")
-    print("PostgreSQL parameters: PASS")
-    print("Source partitions:    12/12 PASS")
-    print("Starter report page:  PASS")
+    print("PBIP shortcut:          PASS")
+    print("Report -> Model path:   PASS")
+    print("Semantic tables:        13/13 PASS")
+    print("Reserved table names:   PASS")
+    print("KPI measure host:       KPI_Measures PASS")
+    print("Relationships:          14/14 PASS")
+    print("Inactive date roles:     2/2 PASS")
+    print("PostgreSQL parameters:  PASS")
+    print("Source partitions:      12/12 PASS")
+    print("Starter report page:    PASS")
     print("-" * 72)
     print("PBIP scaffold validation PASSED.")
 

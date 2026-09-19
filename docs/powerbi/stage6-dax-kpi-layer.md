@@ -6,9 +6,9 @@ Repository implementation and PostgreSQL benchmark reconciliation are complete. 
 
 ## Design
 
-A dedicated calculated table named `Measures` hosts **78 governed report-facing measures**. The table contains a single hidden dummy column and is excluded from business analysis except as a measure container.
+A dedicated calculated table named `KPI_Measures` hosts **78 governed report-facing measures**. The table contains a single hidden dummy column and is excluded from business analysis except as a measure container.
 
-The layer covers:
+The host is intentionally named `KPI_Measures` because `Measures` is a reserved/unsupported Power BI table name in current Desktop/PBIP builds.\n\nThe layer covers:
 
 - sales and volume
 - profitability

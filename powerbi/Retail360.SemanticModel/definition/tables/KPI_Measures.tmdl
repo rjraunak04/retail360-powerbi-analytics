@@ -1,7 +1,7 @@
 /// Governed DAX KPI layer for Retail360.
 /// Currency symbols are intentionally omitted because the source dataset contains
 /// multiple CurrencyKey values and no currency-rate fact is loaded in this project.
-table Measures
+table KPI_Measures
 
 	/// Total sales amount in current filter context.
 	measure 'Total Sales' = SUM(FactSales[Sales Amount])
@@ -506,6 +506,6 @@ table Measures
 		summarizeBy: none
 		sourceColumn: [Value]
 
-	partition Measures = calculated
+	partition KPI_Measures = calculated
 		mode: import
 		source = ROW("Value", 0)
