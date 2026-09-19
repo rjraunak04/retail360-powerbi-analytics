@@ -8,6 +8,8 @@ MEASURES = ROOT / "powerbi" / "Retail360.SemanticModel" / "definition" / "tables
 MODEL = ROOT / "powerbi" / "Retail360.SemanticModel" / "definition" / "model.tmdl"
 QA = ROOT / "powerbi" / "Retail360.SemanticModel" / "DAXQueries" / "Stage6 KPI QA.dax"
 QA_COPY = ROOT / "dax" / "qa" / "stage6_kpi_qa.dax"
+SMOKE = ROOT / "powerbi" / "Retail360.SemanticModel" / "DAXQueries" / "Stage6 Measure Smoke QA.dax"
+SMOKE_COPY = ROOT / "dax" / "qa" / "stage6_measure_smoke_qa.dax"
 
 REQUIRED_MEASURES = {
     "Total Sales", "Units Sold", "Sales Lines", "Distinct Orders",
@@ -66,7 +68,7 @@ def fail(message: str) -> None:
 
 
 def main() -> None:
-    for required in (MEASURES, MODEL, QA, QA_COPY):
+    for required in (MEASURES, MODEL, QA, QA_COPY, SMOKE, SMOKE_COPY):
         if not required.exists():
             fail(f"missing {required.relative_to(ROOT)}")
 
@@ -74,9 +76,13 @@ def main() -> None:
     model = MODEL.read_text(encoding="utf-8")
     qa = QA.read_text(encoding="utf-8")
     qa_copy = QA_COPY.read_text(encoding="utf-8")
+    smoke = SMOKE.read_text(encoding="utf-8")
+    smoke_copy = SMOKE_COPY.read_text(encoding="utf-8")
 
     if qa != qa_copy:
         fail("the source QA query and PBIP DAXQueries copy have drifted")
+    if smoke != smoke_copy:
+        fail("the source measure-smoke query and PBIP DAXQueries copy have drifted")
 
     names = set(
         re.findall(
@@ -134,6 +140,19 @@ def main() -> None:
     if check_count != 26:
         fail(f"Stage 6 runtime QA must contain exactly 26 checks, found {check_count}")
 
+    smoke_count = smoke.count('ROW("Check"')
+    if smoke_count != len(REQUIRED_MEASURES):
+        fail(
+            f"Stage 6 measure smoke QA must contain {len(REQUIRED_MEASURES)} checks, "
+            f"found {smoke_count}"
+        )
+    missing_smoke = {
+        name for name in REQUIRED_MEASURES
+        if f'ROW("Check", "{name}"' not in smoke
+    }
+    if missing_smoke:
+        fail(f"measure smoke QA is missing governed measures: {sorted(missing_smoke)}")
+
     required_qa_checks = {
         "Gross Margin identity",
         "Channel reconciliation",
@@ -165,7 +184,8 @@ def main() -> None:
     print("Product ranking/contribution: PASS")
     print("Neutral currency formatting:  PASS")
     print("QA copies synchronized:       PASS")
-    print("Runtime QA contract:         26/26 checks defined")
+    print("Exact runtime QA:             26/26 checks defined")
+    print(f"All-measure smoke QA:         {smoke_count}/{len(REQUIRED_MEASURES)} checks defined")
     print("-" * 76)
     print("Stage 6 DAX contract PASSED.")
 
