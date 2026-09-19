@@ -82,15 +82,16 @@ def main() -> None:
             fail(f"{table}.tmdl missing table declaration")
 
         if table in SOURCE_TABLES:
-            if "PostgreSQL.Database(pServer, pDatabase" not in t:
+            compact_t = "".join(t.split())
+            if "PostgreSQL.Database(pServer,pDatabase" not in compact_t:
                 fail(f"{table}.tmdl is not parameterized to PostgreSQL")
             if "\t\tmode: import" not in t:
                 fail(f"{table}.tmdl is not Import mode")
         else:
-            if f"partition {MEASURE_HOST_TABLE} = calculated" not in t:
-                fail(f"{MEASURE_HOST_TABLE} is not a calculated measure-host table")
-            if 'source = ROW("Value", 0)' not in t:
-                fail(f"{MEASURE_HOST_TABLE} calculated partition source is invalid")
+            if f"partition {MEASURE_HOST_TABLE} = m" not in t:
+                fail(f"{MEASURE_HOST_TABLE} must use a static M partition")
+            if '#table(type table [Value = Int64.Type], {{0}})' not in t:
+                fail(f"{MEASURE_HOST_TABLE} static M partition source is invalid")
 
     if '"Measures"' in model_text or "ref table Measures" in model_text:
         fail('model.tmdl still contains the reserved table name "Measures"')
@@ -99,8 +100,14 @@ def main() -> None:
         (line for line in model_text.splitlines() if line.startswith("annotation PBI_QueryOrder")),
         "",
     )
-    if MEASURE_HOST_TABLE in query_order_line:
-        fail("calculated KPI_Measures table must not appear in Power Query order")
+    if MEASURE_HOST_TABLE not in query_order_line:
+        fail("static KPI_Measures table must appear in Power Query order")
+
+    fact_inventory_text = (table_dir / "FactInventory.tmdl").read_text(encoding="utf-8")
+    if 'Query="SELECT product_key, date_key, movement_date, unit_cost, units_in, units_out, units_balance, net_units_movement, inventory_value FROM analytics.fact_inventory"' not in fact_inventory_text:
+        fail("FactInventory must use the direct SQL import path to avoid navigator evaluation cycles")
+    if 'Item="fact_inventory"' in fact_inventory_text:
+        fail("FactInventory still uses navigator lookup and may reintroduce cyclic evaluation")
 
     expr = (DEFINITION / "expressions.tmdl").read_text(encoding="utf-8")
     if "expression pServer" not in expr or "expression pDatabase" not in expr:
@@ -127,7 +134,8 @@ def main() -> None:
     print("Report -> Model path:   PASS")
     print("Semantic tables:        13/13 PASS")
     print("Reserved table names:   PASS")
-    print("KPI measure host:       KPI_Measures PASS")
+    print("KPI measure host:       KPI_Measures static-M PASS")
+    print("FactInventory import:   direct SQL PASS")
     print("Relationships:          14/14 PASS")
     print("Inactive date roles:     2/2 PASS")
     print("PostgreSQL parameters:  PASS")

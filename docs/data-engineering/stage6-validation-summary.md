@@ -91,3 +91,9 @@ The local verifier writes temporary evidence under the ignored `.runtime/` direc
 - `.runtime/stage6-measure-smoke-proof.csv`
 
 After the live gate passes, reviewed canonical copies are committed under `docs/data-engineering/`. Stage 6 is marked COMPLETE only after live evidence shows **34/34 exact KPI checks PASS** and **78/78 governed measures evaluate successfully**.
+
+
+## Load-stability hardening
+
+- `KPI_Measures` uses a one-row static M table so the measure host does not participate in calculated-table dependency evaluation.
+- `FactInventory` uses a direct parameterized PostgreSQL SQL query instead of navigator lookup. This preserves the same imported columns while avoiding Power Query navigator evaluation cycles observed in Desktop.

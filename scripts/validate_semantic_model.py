@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,9 +55,14 @@ def main() -> None:
             fail(f"missing Power Query file: {m_file.relative_to(ROOT)}")
 
         m_text = m_file.read_text(encoding="utf-8")
-        if f'Item="{spec["source"]}"' not in m_text:
+        compact_m = re.sub(r"\s+", "", m_text)
+
+        navigator_target = f'Item="{spec["source"]}"' in m_text
+        direct_sql_target = f"analytics.{spec['source']}" in m_text
+        if not (navigator_target or direct_sql_target):
             fail(f"{table_name} Power Query does not target analytics.{spec['source']}")
-        if "PostgreSQL.Database(pServer, pDatabase" not in m_text:
+
+        if "PostgreSQL.Database(pServer,pDatabase" not in compact_m:
             fail(f"{table_name} Power Query does not use governed parameters")
 
     rel_names = set()
