@@ -10,11 +10,12 @@ REPORT = PBI / "Retail360.Report"
 MODEL = PBI / "Retail360.SemanticModel"
 DEFINITION = MODEL / "definition"
 
-EXPECTED_TABLES = {
+SOURCE_TABLES = {
     "DimDate", "DimProduct", "DimCustomer", "DimReseller", "DimEmployee",
     "DimGeography", "DimSalesTerritory", "DimPromotion", "DimCurrency",
     "DimChannel", "FactSales", "FactInventory",
 }
+EXPECTED_TABLES = SOURCE_TABLES | {"Measures"}
 
 
 def fail(message: str) -> None:
@@ -71,10 +72,14 @@ def main() -> None:
         t = (DEFINITION / "tables" / f"{table}.tmdl").read_text(encoding="utf-8")
         if f"table {table}" not in t:
             fail(f"{table}.tmdl missing table declaration")
-        if "PostgreSQL.Database(pServer, pDatabase" not in t:
-            fail(f"{table}.tmdl is not parameterized to PostgreSQL")
-        if "\t\tmode: import" not in t:
-            fail(f"{table}.tmdl is not Import mode")
+        if table in SOURCE_TABLES:
+            if "PostgreSQL.Database(pServer, pDatabase" not in t:
+                fail(f"{table}.tmdl is not parameterized to PostgreSQL")
+            if "\t\tmode: import" not in t:
+                fail(f"{table}.tmdl is not Import mode")
+        else:
+            if "partition Measures = calculated" not in t:
+                fail("Measures table is not a calculated measure-host table")
 
     expr = (DEFINITION / "expressions.tmdl").read_text(encoding="utf-8")
     if "expression pServer" not in expr or "expression pDatabase" not in expr:
@@ -99,11 +104,11 @@ def main() -> None:
     print("-" * 72)
     print("PBIP shortcut:        PASS")
     print("Report -> Model path: PASS")
-    print("Semantic tables:      12/12 PASS")
+    print("Semantic tables:      13/13 PASS")
     print("Relationships:        14/14 PASS")
     print("Inactive date roles:   2/2 PASS")
     print("PostgreSQL parameters: PASS")
-    print("Import partitions:    12/12 PASS")
+    print("Source partitions:    12/12 PASS")
     print("Starter report page:  PASS")
     print("-" * 72)
     print("PBIP scaffold validation PASSED.")

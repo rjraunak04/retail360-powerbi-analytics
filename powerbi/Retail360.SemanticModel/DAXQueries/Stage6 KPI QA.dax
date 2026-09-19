@@ -1,0 +1,49 @@
+// Retail360 Stage 6 DAX KPI runtime contract.
+// Run against the loaded PBIP semantic model. Every row must return PASS.
+
+DEFINE
+    VAR _TotalSales = [Total Sales]
+    VAR _TotalCost = [Total Product Cost]
+    VAR _GrossProfit = [Gross Profit]
+    VAR _Units = [Units Sold]
+    VAR _Orders = [Distinct Orders]
+    VAR _GrossMargin = [Gross Margin %]
+    VAR _ChannelReconciliation = [Internet Sales] + [Reseller Sales]
+    VAR _DueDateSales = [Sales by Due Date]
+    VAR _ShipDateSales = [Sales by Ship Date]
+    VAR _DiscountedSales = [Discounted Sales]
+    VAR _RepeatPct = [Repeat Customer %]
+    VAR _CurrentInventoryValue = [Current Inventory Value]
+    VAR _CurrentInventoryUnits = [Current Inventory Units]
+    VAR _InventoryHealth = [Inventory Health %]
+    VAR _BelowReorder = [Products Below Reorder Point]
+    VAR _ProductsWithInventory = [Products With Inventory]
+    VAR _Customers = [Customers]
+    VAR _Resellers = [Resellers]
+    VAR _ProductsSold = [Products Sold]
+    VAR _LatestInventoryDate = [Latest Inventory Date]
+
+EVALUATE
+UNION(
+    ROW("Check", "Total Sales", "Actual", _TotalSales, "Expected", 109809274.2030, "Status", IF(ABS(_TotalSales - 109809274.2030) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Total Product Cost", "Actual", _TotalCost, "Expected", 97257907.9547, "Status", IF(ABS(_TotalCost - 97257907.9547) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Gross Profit", "Actual", _GrossProfit, "Expected", 12551366.2483, "Status", IF(ABS(_GrossProfit - 12551366.2483) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Units Sold", "Actual", _Units, "Expected", 274776, "Status", IF(_Units = 274776, "PASS", "FAIL")),
+    ROW("Check", "Distinct Orders", "Actual", _Orders, "Expected", 31455, "Status", IF(_Orders = 31455, "PASS", "FAIL")),
+    ROW("Check", "Gross Margin identity", "Actual", _GrossMargin, "Expected", DIVIDE(_GrossProfit, _TotalSales), "Status", IF(ABS(_GrossMargin - DIVIDE(_GrossProfit, _TotalSales)) < 0.0000001, "PASS", "FAIL")),
+    ROW("Check", "Channel reconciliation", "Actual", _ChannelReconciliation, "Expected", _TotalSales, "Status", IF(ABS(_ChannelReconciliation - _TotalSales) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Due-date relationship reconciliation", "Actual", _DueDateSales, "Expected", _TotalSales, "Status", IF(ABS(_DueDateSales - _TotalSales) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Ship-date relationship reconciliation", "Actual", _ShipDateSales, "Expected", _TotalSales, "Status", IF(ABS(_ShipDateSales - _TotalSales) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Discounted Sales valid", "Actual", _DiscountedSales, "Expected", _TotalSales, "Status", IF(_DiscountedSales >= 0 && _DiscountedSales <= _TotalSales, "PASS", "FAIL")),
+    ROW("Check", "Repeat Customer % range", "Actual", _RepeatPct, "Expected", 1, "Status", IF(_RepeatPct >= 0 && _RepeatPct <= 1, "PASS", "FAIL")),
+    ROW("Check", "Current Inventory Value positive", "Actual", _CurrentInventoryValue, "Expected", 0, "Status", IF(_CurrentInventoryValue > 0, "PASS", "FAIL")),
+    ROW("Check", "Current Inventory Units positive", "Actual", _CurrentInventoryUnits, "Expected", 0, "Status", IF(_CurrentInventoryUnits > 0, "PASS", "FAIL")),
+    ROW("Check", "Inventory Health % range", "Actual", _InventoryHealth, "Expected", 1, "Status", IF(_InventoryHealth >= 0 && _InventoryHealth <= 1, "PASS", "FAIL")),
+    ROW("Check", "Reorder risk bounded", "Actual", _BelowReorder, "Expected", _ProductsWithInventory, "Status", IF(_BelowReorder >= 0 && _BelowReorder <= _ProductsWithInventory, "PASS", "FAIL")),
+    ROW("Check", "Customers positive", "Actual", _Customers, "Expected", 0, "Status", IF(_Customers > 0, "PASS", "FAIL")),
+    ROW("Check", "Resellers positive", "Actual", _Resellers, "Expected", 0, "Status", IF(_Resellers > 0, "PASS", "FAIL")),
+    ROW("Check", "Products Sold positive", "Actual", _ProductsSold, "Expected", 0, "Status", IF(_ProductsSold > 0, "PASS", "FAIL")),
+    ROW("Check", "Latest Inventory Date present", "Actual", INT(_LatestInventoryDate), "Expected", 0, "Status", IF(NOT ISBLANK(_LatestInventoryDate), "PASS", "FAIL")),
+    ROW("Check", "Sales YTD nonnegative", "Actual", [Sales YTD], "Expected", 0, "Status", IF([Sales YTD] >= 0, "PASS", "FAIL"))
+)
+ORDER BY [Check]
