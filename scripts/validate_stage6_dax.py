@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MEASURES = ROOT / "powerbi" / "Retail360.SemanticModel" / "definition" / "tables" / "Measures.tmdl"
+MEASURES = ROOT / "powerbi" / "Retail360.SemanticModel" / "definition" / "tables" / "KPI_Measures.tmdl"
 MODEL = ROOT / "powerbi" / "Retail360.SemanticModel" / "definition" / "model.tmdl"
 QA = ROOT / "powerbi" / "Retail360.SemanticModel" / "DAXQueries" / "Stage6 KPI QA.dax"
 QA_COPY = ROOT / "dax" / "qa" / "stage6_kpi_qa.dax"
