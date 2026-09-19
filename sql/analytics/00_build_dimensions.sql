@@ -43,9 +43,10 @@ SELECT
     year_month_key, year_month
 FROM staging.dim_date;
 
-INSERT INTO analytics.dim_date (date_key, day_name, month_name, year_month)
-VALUES (0, 'Unknown', 'Unknown', 'Unknown')
-ON CONFLICT (date_key) DO NOTHING;
+-- No synthetic unknown row is inserted into DimDate.
+-- All sales and inventory date foreign keys are validated and non-null, so a
+-- blank Date member is unnecessary and would prevent Power BI from marking
+-- DimDate[Date] as the model date key.
 
 CREATE UNIQUE INDEX ux_dim_date_date
     ON analytics.dim_date(date)
