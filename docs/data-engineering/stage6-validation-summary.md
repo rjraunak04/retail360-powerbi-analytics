@@ -8,7 +8,7 @@ Final exit gate still requires the live Power BI Desktop runtime query to return
 
 ## Governed semantic layer
 
-Stage 6 provides a dedicated `Measures` table with **76 explicit report-facing measures** across:
+Stage 6 provides a dedicated `Measures` table with **78 explicit report-facing measures** across:
 
 - Sales & Volume
 - Profitability
@@ -51,6 +51,8 @@ Verified benchmark values:
 | Products Below Reorder Point | 0 |
 | Sales 2013 | 49,926,384.4972 |
 | Sales 2014 | 45,694.7200 |
+| Due-date Sales 2013 | 52,285,231.9952 |
+| Ship-date Sales 2013 | 52,522,104.8347 |
 | Gross Profit 2013 | 6,273,540.9644 |
 | Gross Profit 2014 | 25,552.9376 |
 
@@ -66,7 +68,7 @@ Repository validation enforces:
 - neutral numeric currency formatting because no exchange-rate fact is in scope
 - one display-folder assignment for every governed measure
 - synchronized source and PBIP runtime QA files
-- exactly **26 live runtime checks**
+- exactly **34 live exact runtime checks**
 
 ## Runtime gate
 
@@ -80,12 +82,12 @@ The script performs four gates in sequence:
 
 1. PostgreSQL KPI reconciliation
 2. DAX/TMDL contract validation
-3. live Power BI exact KPI reconciliation (26 checks)
-4. live Power BI all-measure smoke validation (76 measures)
+3. live Power BI exact KPI reconciliation (34 checks)
+4. live Power BI all-measure smoke validation (78 measures)
 
 The generated runtime evidence files are:
 
 - `docs/data-engineering/stage6-powerbi-runtime-proof.csv`
 - `docs/data-engineering/stage6-measure-smoke-proof.csv`
 
-Stage 6 is marked COMPLETE only after live evidence shows **26/26 exact KPI checks PASS** and **76/76 governed measures evaluate successfully**.
+Stage 6 is marked COMPLETE only after live evidence shows **34/34 exact KPI checks PASS** and **78/78 governed measures evaluate successfully**.
