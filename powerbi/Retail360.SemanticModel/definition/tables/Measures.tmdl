@@ -231,7 +231,7 @@ table Measures
 	measure 'Reseller Orders' =
 			CALCULATE(
 			    [Distinct Orders],
-			    DimChannel[Channel] = "Reseller"
+			    KEEPFILTERS(DimChannel[Channel] = "Reseller")
 			)
 		formatString: #,0
 		displayFolder: Customer & Reseller
@@ -285,7 +285,7 @@ table Measures
 	measure 'Internet Sales' =
 			CALCULATE(
 			    [Total Sales],
-			    DimChannel[Channel] = "Internet"
+			    KEEPFILTERS(DimChannel[Channel] = "Internet")
 			)
 		formatString: #,0.00
 		displayFolder: Channel
@@ -293,7 +293,7 @@ table Measures
 	measure 'Reseller Sales' =
 			CALCULATE(
 			    [Total Sales],
-			    DimChannel[Channel] = "Reseller"
+			    KEEPFILTERS(DimChannel[Channel] = "Reseller")
 			)
 		formatString: #,0.00
 		displayFolder: Channel
@@ -309,7 +309,7 @@ table Measures
 	measure 'Internet Orders' =
 			CALCULATE(
 			    [Distinct Orders],
-			    DimChannel[Channel] = "Internet"
+			    KEEPFILTERS(DimChannel[Channel] = "Internet")
 			)
 		formatString: #,0
 		displayFolder: Channel
@@ -362,7 +362,8 @@ table Measures
 	measure 'Latest Inventory Date' =
 			CALCULATE(
 			    MAX(FactInventory[Movement Date]),
-			    REMOVEFILTERS(DimDate)
+			    REMOVEFILTERS(DimDate),
+			    REMOVEFILTERS(DimProduct)
 			)
 		formatString: yyyy-mm-dd
 		displayFolder: Inventory
@@ -460,8 +461,19 @@ table Measures
 		formatString: #,0
 		displayFolder: Inventory
 
+	measure 'Safety Stock Risk %' =
+			DIVIDE([Products Below Safety Stock], [Products With Inventory], 0)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Inventory
+
+	measure 'Reorder Risk %' =
+			DIVIDE([Products Below Reorder Point], [Products With Inventory], 0)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Inventory
+
+	/// Share of products at or above their safety-stock level on the global latest snapshot.
 	measure 'Inventory Health %' =
-			1 - DIVIDE([Products Below Reorder Point], [Products With Inventory], 0)
+			1 - [Safety Stock Risk %]
 		formatString: 0.00%;-0.00%;0.00%
 		displayFolder: Inventory
 
