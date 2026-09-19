@@ -41,13 +41,53 @@ function Recordset-ToObjects {
 }
 
 function Open-AdodbConnection {
-    param([int]$Port)
+    param(
+        [int]$Port,
+        [string]$Database = ""
+    )
 
     $conn = New-Object -ComObject ADODB.Connection
     $conn.CommandTimeout = 120
     $conn.ConnectionTimeout = 10
-    $conn.Open("Provider=MSOLAP;Data Source=localhost:$Port;Integrated Security=SSPI;")
+
+    $connectionString = "Provider=MSOLAP;Data Source=127.0.0.1:$Port;Integrated Security=SSPI;"
+    if ($Database) {
+        $connectionString += "Initial Catalog=$Database;"
+    }
+
+    $conn.Open($connectionString)
     return $conn
+}
+
+function Get-AnalysisServicesCatalogs {
+    param(
+        [int]$Port
+    )
+
+    $conn = $null
+    try {
+        $conn = Open-AdodbConnection -Port $Port
+        $rs = $conn.Execute('SELECT [CATALOG_NAME] FROM $SYSTEM.DBSCHEMA_CATALOGS')
+        $catalogs = New-Object System.Collections.Generic.List[string]
+
+        while (-not $rs.EOF) {
+            $name = [string]$rs.Fields.Item("CATALOG_NAME").Value
+            if ($name) {
+                $catalogs.Add($name)
+            }
+            $rs.MoveNext()
+        }
+
+        $rs.Close()
+        $conn.Close()
+        return @($catalogs)
+    }
+    catch {
+        if ($conn -and $conn.State -eq 1) {
+            try { $conn.Close() } catch {}
+        }
+        throw
+    }
 }
 
 function Get-MsmdsrvPorts {
@@ -126,6 +166,38 @@ function Get-MsmdsrvPorts {
         }
     }
 
+    # netstat fallback: Power BI Desktop's local Analysis Services engine listens
+    # on a dynamically assigned TCP port. Microsoft documents netstat as a
+    # supported way to discover that port.
+    try {
+        $pids = @(
+            Get-CimInstance Win32_Process -Filter "Name='msmdsrv.exe'" -ErrorAction SilentlyContinue |
+                ForEach-Object { [int]$_.ProcessId }
+        )
+
+        if ($pids.Count -gt 0) {
+            $netstat = netstat -ano -p tcp
+            foreach ($line in $netstat) {
+                if ($line -notmatch "LISTENING") { continue }
+
+                $parts = ($line -replace '^\s+', '') -split '\s+'
+                if ($parts.Count -lt 5) { continue }
+
+                $pid = 0
+                if (-not [int]::TryParse($parts[4], [ref]$pid)) { continue }
+                if ($pids -notcontains $pid) { continue }
+
+                $local = $parts[1]
+                $portText = ($local -split ':')[-1]
+                $port = 0
+                if ([int]::TryParse($portText, [ref]$port) -and $port -gt 0) {
+                    [void]$ports.Add($port)
+                }
+            }
+        }
+    }
+    catch {}
+
     return @($ports)
 }
 
@@ -178,37 +250,51 @@ Write-Host "Searching for the Retail360 Power BI semantic model..." -ForegroundC
 $probeDeadline = (Get-Date).AddSeconds($ModelProbeTimeoutSeconds)
 $selectedConnection = $null
 $selectedPort = $null
+$selectedDatabase = $null
 $lastProbeError = $null
 
 while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
     $ports = Get-MsmdsrvPorts
 
     foreach ($port in $ports) {
-        $conn = $null
         try {
-            $conn = Open-AdodbConnection -Port $port
-            $probe = $conn.Execute('EVALUATE ROW("FactSales Rows", COUNTROWS(FactSales), "DimDate Rows", COUNTROWS(DimDate))')
-            $probeRows = Recordset-ToObjects -Recordset $probe
-            $probe.Close()
-
-            if (
-                $probeRows.Count -eq 1 -and
-                [int64]$probeRows[0].'FactSales Rows' -eq 121253 -and
-                [int64]$probeRows[0].'DimDate Rows' -eq 3652
-            ) {
-                $selectedConnection = $conn
-                $selectedPort = $port
-                break
-            }
-
-            $conn.Close()
+            $catalogs = Get-AnalysisServicesCatalogs -Port $port
         }
         catch {
-            $lastProbeError = $_.Exception.Message
-            if ($conn -and $conn.State -eq 1) {
-                try { $conn.Close() } catch {}
+            $lastProbeError = "Port $port catalog discovery: $($_.Exception.Message)"
+            continue
+        }
+
+        foreach ($catalog in $catalogs) {
+            $conn = $null
+            try {
+                $conn = Open-AdodbConnection -Port $port -Database $catalog
+                $probe = $conn.Execute('EVALUATE ROW("FactSales Rows", COUNTROWS(FactSales), "DimDate Rows", COUNTROWS(DimDate))')
+                $probeRows = Recordset-ToObjects -Recordset $probe
+                $probe.Close()
+
+                if (
+                    $probeRows.Count -eq 1 -and
+                    [int64]$probeRows[0].'FactSales Rows' -eq 121253 -and
+                    [int64]$probeRows[0].'DimDate Rows' -eq 3652
+                ) {
+                    $selectedConnection = $conn
+                    $selectedPort = $port
+                    $selectedDatabase = $catalog
+                    break
+                }
+
+                $conn.Close()
+            }
+            catch {
+                $lastProbeError = "Port $port catalog $catalog: $($_.Exception.Message)"
+                if ($conn -and $conn.State -eq 1) {
+                    try { $conn.Close() } catch {}
+                }
             }
         }
+
+        if ($selectedConnection) { break }
     }
 
     if (-not $selectedConnection) {
@@ -221,7 +307,8 @@ if (-not $selectedConnection) {
     throw "Could not connect to the open Retail360 semantic model within $ModelProbeTimeoutSeconds seconds.$details"
 }
 
-Write-Host "Connected to Retail360 Power BI semantic model on localhost:$selectedPort" -ForegroundColor Green
+Write-Host "Connected to Retail360 Power BI semantic model on 127.0.0.1:$selectedPort" -ForegroundColor Green
+Write-Host "Power BI model database: $selectedDatabase" -ForegroundColor DarkGray
 
 $query = Get-Content $QueryPath -Raw
 $recordset = $selectedConnection.Execute($query)
