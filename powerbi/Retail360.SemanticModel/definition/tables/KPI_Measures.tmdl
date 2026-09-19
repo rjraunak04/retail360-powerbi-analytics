@@ -1,0 +1,511 @@
+/// Governed DAX KPI layer for Retail360.
+/// Currency symbols are intentionally omitted because the source dataset contains
+/// multiple CurrencyKey values and no currency-rate fact is loaded in this project.
+table KPI_Measures
+
+	/// Total sales amount in current filter context.
+	measure 'Total Sales' = SUM(FactSales[Sales Amount])
+		formatString: #,0.00
+		displayFolder: Sales & Volume
+
+	/// Total sold quantity.
+	measure 'Units Sold' = SUM(FactSales[Order Quantity])
+		formatString: #,0
+		displayFolder: Sales & Volume
+
+	/// Number of sales fact rows.
+	measure 'Sales Lines' = COUNTROWS(FactSales)
+		formatString: #,0
+		displayFolder: Sales & Volume
+
+	/// Distinct business orders across Internet and Reseller channels.
+	measure 'Distinct Orders' =
+			COUNTROWS(
+			    SUMMARIZE(
+			        FactSales,
+			        FactSales[Channel Key],
+			        FactSales[Sales Order Number]
+			    )
+			)
+		formatString: #,0
+		displayFolder: Sales & Volume
+
+	/// Realized sales amount per sold unit.
+	measure 'Average Selling Price' = DIVIDE([Total Sales], [Units Sold])
+		formatString: #,0.00
+		displayFolder: Sales & Volume
+
+	/// Sales amount per distinct order.
+	measure 'Average Order Value' = DIVIDE([Total Sales], [Distinct Orders])
+		formatString: #,0.00
+		displayFolder: Sales & Volume
+
+	/// Average units contained in an order.
+	measure 'Average Units per Order' = DIVIDE([Units Sold], [Distinct Orders])
+		formatString: #,0.00
+		displayFolder: Sales & Volume
+
+	/// Total line discount amount.
+	measure 'Total Discount Amount' = SUM(FactSales[Discount Amount])
+		formatString: #,0.00
+		displayFolder: Sales & Volume
+
+	/// Discount amount as a share of pre-discount extended amount.
+	measure 'Discount Rate' = DIVIDE([Total Discount Amount], SUM(FactSales[Extended Amount]))
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Sales & Volume
+
+	measure 'Total Tax' = SUM(FactSales[Tax Amount])
+		formatString: #,0.00
+		displayFolder: Sales & Volume
+
+	measure 'Total Freight' = SUM(FactSales[Freight])
+		formatString: #,0.00
+		displayFolder: Sales & Volume
+
+	/// Total product cost associated with sold lines.
+	measure 'Total Product Cost' = SUM(FactSales[Total Product Cost])
+		formatString: #,0.00
+		displayFolder: Profitability
+
+	/// Sales minus total product cost.
+	measure 'Gross Profit' = SUM(FactSales[Gross Profit])
+		formatString: #,0.00
+		displayFolder: Profitability
+
+	/// Weighted gross margin. Do not average the row-level gross-margin column.
+	measure 'Gross Margin %' = DIVIDE([Gross Profit], [Total Sales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Profitability
+
+	measure 'Profit per Unit' = DIVIDE([Gross Profit], [Units Sold])
+		formatString: #,0.00
+		displayFolder: Profitability
+
+	measure 'Profit per Order' = DIVIDE([Gross Profit], [Distinct Orders])
+		formatString: #,0.00
+		displayFolder: Profitability
+
+	measure 'Sales MTD' = CALCULATE([Total Sales], DATESMTD(DimDate[Date]))
+		formatString: #,0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Sales QTD' = CALCULATE([Total Sales], DATESQTD(DimDate[Date]))
+		formatString: #,0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Sales YTD' = CALCULATE([Total Sales], DATESYTD(DimDate[Date]))
+		formatString: #,0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Sales PY' = CALCULATE([Total Sales], SAMEPERIODLASTYEAR(DimDate[Date]))
+		formatString: #,0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Sales YoY' = [Total Sales] - [Sales PY]
+		formatString: #,0.00;-#,0.00;0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Sales YoY %' = DIVIDE([Sales YoY], [Sales PY])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Sales Previous Month' = CALCULATE([Total Sales], DATEADD(DimDate[Date], -1, MONTH))
+		formatString: #,0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Sales MoM' = [Total Sales] - [Sales Previous Month]
+		formatString: #,0.00;-#,0.00;0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Sales MoM %' = DIVIDE([Sales MoM], [Sales Previous Month])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Profit YTD' = CALCULATE([Gross Profit], DATESYTD(DimDate[Date]))
+		formatString: #,0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Profit PY' = CALCULATE([Gross Profit], SAMEPERIODLASTYEAR(DimDate[Date]))
+		formatString: #,0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Profit YoY' = [Gross Profit] - [Profit PY]
+		formatString: #,0.00;-#,0.00;0.00
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Profit YoY %' = DIVIDE([Profit YoY], [Profit PY])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Units YTD' = CALCULATE([Units Sold], DATESYTD(DimDate[Date]))
+		formatString: #,0
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Units PY' = CALCULATE([Units Sold], SAMEPERIODLASTYEAR(DimDate[Date]))
+		formatString: #,0
+		displayFolder: Growth & Time Intelligence
+
+	measure 'Units YoY %' = DIVIDE([Units Sold] - [Units PY], [Units PY])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Growth & Time Intelligence
+
+	/// Uses the inactive Due Date relationship.
+	measure 'Sales by Due Date' =
+			CALCULATE(
+			    [Total Sales],
+			    CROSSFILTER(FactSales[Order Date Key], DimDate[Date Key], NONE),
+			    USERELATIONSHIP(FactSales[Due Date Key], DimDate[Date Key])
+			)
+		formatString: #,0.00
+		displayFolder: Role-Playing Dates
+
+	/// Uses the inactive Ship Date relationship.
+	measure 'Sales by Ship Date' =
+			CALCULATE(
+			    [Total Sales],
+			    CROSSFILTER(FactSales[Order Date Key], DimDate[Date Key], NONE),
+			    USERELATIONSHIP(FactSales[Ship Date Key], DimDate[Date Key])
+			)
+		formatString: #,0.00
+		displayFolder: Role-Playing Dates
+
+	measure 'Orders by Due Date' =
+			CALCULATE(
+			    [Distinct Orders],
+			    CROSSFILTER(FactSales[Order Date Key], DimDate[Date Key], NONE),
+			    USERELATIONSHIP(FactSales[Due Date Key], DimDate[Date Key])
+			)
+		formatString: #,0
+		displayFolder: Role-Playing Dates
+
+	measure 'Orders by Ship Date' =
+			CALCULATE(
+			    [Distinct Orders],
+			    CROSSFILTER(FactSales[Order Date Key], DimDate[Date Key], NONE),
+			    USERELATIONSHIP(FactSales[Ship Date Key], DimDate[Date Key])
+			)
+		formatString: #,0
+		displayFolder: Role-Playing Dates
+
+	measure Customers =
+			CALCULATE(
+			    DISTINCTCOUNT(FactSales[Customer Key]),
+			    FactSales[Customer Key] <> 0
+			)
+		formatString: #,0
+		displayFolder: Customer & Reseller
+
+	/// Internet-channel sales per identified retail customer.
+	measure 'Revenue per Customer' = DIVIDE([Internet Sales], [Customers])
+		formatString: #,0.00
+		displayFolder: Customer & Reseller
+
+	measure 'Repeat Customers' =
+			COUNTROWS(
+			    FILTER(
+			        VALUES(DimCustomer[Customer Key]),
+			        DimCustomer[Customer Key] <> 0
+			            && CALCULATE([Distinct Orders]) > 1
+			    )
+			)
+		formatString: #,0
+		displayFolder: Customer & Reseller
+
+	measure 'Repeat Customer %' = DIVIDE([Repeat Customers], [Customers])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customer & Reseller
+
+	measure Resellers =
+			CALCULATE(
+			    DISTINCTCOUNT(FactSales[Reseller Key]),
+			    FactSales[Reseller Key] <> 0
+			)
+		formatString: #,0
+		displayFolder: Customer & Reseller
+
+	measure 'Revenue per Reseller' = DIVIDE([Reseller Sales], [Resellers])
+		formatString: #,0.00
+		displayFolder: Customer & Reseller
+
+	measure 'Reseller Orders' =
+			CALCULATE(
+			    [Distinct Orders],
+			    KEEPFILTERS(DimChannel[Channel] = "Reseller")
+			)
+		formatString: #,0
+		displayFolder: Customer & Reseller
+
+	measure 'Products Sold' =
+			CALCULATE(
+			    DISTINCTCOUNT(FactSales[Product Key]),
+			    FactSales[Product Key] <> 0
+			)
+		formatString: #,0
+		displayFolder: Product
+
+	measure 'Product Sales Share %' =
+			DIVIDE(
+			    [Total Sales],
+			    CALCULATE([Total Sales], ALLSELECTED(DimProduct))
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Product
+
+	measure 'Product Rank by Sales' =
+			RANKX(
+			    ALLSELECTED(DimProduct[Product Name]),
+			    [Total Sales],
+			    ,
+			    DESC,
+			    Dense
+			)
+		formatString: #,0
+		displayFolder: Product
+
+	measure 'Category Sales Share %' =
+			DIVIDE(
+			    [Total Sales],
+			    CALCULATE([Total Sales], ALLSELECTED(DimProduct[Category]))
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Product
+
+	measure 'Category Rank by Sales' =
+			RANKX(
+			    ALLSELECTED(DimProduct[Category]),
+			    [Total Sales],
+			    ,
+			    DESC,
+			    Dense
+			)
+		formatString: #,0
+		displayFolder: Product
+
+	measure 'Internet Sales' =
+			CALCULATE(
+			    [Total Sales],
+			    KEEPFILTERS(DimChannel[Channel] = "Internet")
+			)
+		formatString: #,0.00
+		displayFolder: Channel
+
+	measure 'Reseller Sales' =
+			CALCULATE(
+			    [Total Sales],
+			    KEEPFILTERS(DimChannel[Channel] = "Reseller")
+			)
+		formatString: #,0.00
+		displayFolder: Channel
+
+	measure 'Internet Sales %' = DIVIDE([Internet Sales], [Total Sales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Channel
+
+	measure 'Reseller Sales %' = DIVIDE([Reseller Sales], [Total Sales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Channel
+
+	measure 'Internet Orders' =
+			CALCULATE(
+			    [Distinct Orders],
+			    KEEPFILTERS(DimChannel[Channel] = "Internet")
+			)
+		formatString: #,0
+		displayFolder: Channel
+
+	measure 'Discounted Sales' =
+			CALCULATE(
+			    [Total Sales],
+			    FactSales[Discount Amount] > 0
+			)
+		formatString: #,0.00
+		displayFolder: Promotion
+
+	measure 'Discounted Sales %' = DIVIDE([Discounted Sales], [Total Sales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Promotion
+
+	measure 'Discounted Orders' =
+			CALCULATE(
+			    [Distinct Orders],
+			    FactSales[Discount Amount] > 0
+			)
+		formatString: #,0
+		displayFolder: Promotion
+
+	measure 'Average Discount per Discounted Order' = DIVIDE([Total Discount Amount], [Discounted Orders])
+		formatString: #,0.00
+		displayFolder: Promotion
+
+	/// Additive only within a single snapshot/date context. Prefer Current Inventory Value for headline KPIs.
+	measure 'Inventory Value (Snapshot Context)' = SUM(FactInventory[Inventory Value])
+		formatString: #,0.00
+		displayFolder: Inventory
+
+	measure 'Inventory Units Balance' = SUM(FactInventory[Units Balance])
+		formatString: #,0
+		displayFolder: Inventory
+
+	measure 'Inventory Units In' = SUM(FactInventory[Units In])
+		formatString: #,0
+		displayFolder: Inventory
+
+	measure 'Inventory Units Out' = SUM(FactInventory[Units Out])
+		formatString: #,0
+		displayFolder: Inventory
+
+	measure 'Net Inventory Movement' = SUM(FactInventory[Net Units Movement])
+		formatString: #,0
+		displayFolder: Inventory
+
+	measure 'Latest Inventory Date' =
+			CALCULATE(
+			    MAX(FactInventory[Movement Date]),
+			    REMOVEFILTERS(DimDate),
+			    REMOVEFILTERS(DimProduct)
+			)
+		formatString: yyyy-mm-dd
+		displayFolder: Inventory
+
+	measure 'Current Inventory Value' =
+			VAR LatestDate = [Latest Inventory Date]
+			RETURN
+			    CALCULATE(
+			        SUM(FactInventory[Inventory Value]),
+			        REMOVEFILTERS(DimDate),
+			        FactInventory[Movement Date] = LatestDate
+			    )
+		formatString: #,0.00
+		displayFolder: Inventory
+
+	measure 'Current Inventory Units' =
+			VAR LatestDate = [Latest Inventory Date]
+			RETURN
+			    CALCULATE(
+			        SUM(FactInventory[Units Balance]),
+			        REMOVEFILTERS(DimDate),
+			        FactInventory[Movement Date] = LatestDate
+			    )
+		formatString: #,0
+		displayFolder: Inventory
+
+	measure 'Average Inventory Value' =
+			AVERAGEX(
+			    VALUES(DimDate[Date]),
+			    CALCULATE(SUM(FactInventory[Inventory Value]))
+			)
+		formatString: #,0.00
+		displayFolder: Inventory
+
+	/// Cost of sold products divided by average inventory value in the selected period.
+	measure 'Inventory Turnover' = DIVIDE([Total Product Cost], [Average Inventory Value])
+		formatString: 0.00
+		displayFolder: Inventory
+
+	measure 'Products With Inventory' =
+			VAR LatestDate = [Latest Inventory Date]
+			RETURN
+			    COUNTROWS(
+			        FILTER(
+			            FILTER(VALUES(DimProduct[Product Key]), DimProduct[Product Key] <> 0),
+			            NOT ISBLANK(
+			                CALCULATE(
+			                    SUM(FactInventory[Units Balance]),
+			                    REMOVEFILTERS(DimDate),
+			                    FactInventory[Movement Date] = LatestDate
+			                )
+			            )
+			        )
+			    )
+		formatString: #,0
+		displayFolder: Inventory
+
+	measure 'Products Below Safety Stock' =
+			VAR LatestDate = [Latest Inventory Date]
+			RETURN
+			    COUNTROWS(
+			        FILTER(
+			            FILTER(VALUES(DimProduct[Product Key]), DimProduct[Product Key] <> 0),
+			            VAR CurrentBalance =
+			                CALCULATE(
+			                    SUM(FactInventory[Units Balance]),
+			                    REMOVEFILTERS(DimDate),
+			                    FactInventory[Movement Date] = LatestDate
+			                )
+			            VAR SafetyStock = CALCULATE(MAX(DimProduct[Safety Stock Level]))
+			            RETURN
+			                NOT ISBLANK(CurrentBalance) && CurrentBalance < SafetyStock
+			        )
+			    )
+		formatString: #,0
+		displayFolder: Inventory
+
+	measure 'Products Below Reorder Point' =
+			VAR LatestDate = [Latest Inventory Date]
+			RETURN
+			    COUNTROWS(
+			        FILTER(
+			            FILTER(VALUES(DimProduct[Product Key]), DimProduct[Product Key] <> 0),
+			            VAR CurrentBalance =
+			                CALCULATE(
+			                    SUM(FactInventory[Units Balance]),
+			                    REMOVEFILTERS(DimDate),
+			                    FactInventory[Movement Date] = LatestDate
+			                )
+			            VAR ReorderPoint = CALCULATE(MAX(DimProduct[Reorder Point]))
+			            RETURN
+			                NOT ISBLANK(CurrentBalance) && CurrentBalance < ReorderPoint
+			        )
+			    )
+		formatString: #,0
+		displayFolder: Inventory
+
+	measure 'Safety Stock Risk %' =
+			DIVIDE([Products Below Safety Stock], [Products With Inventory], 0)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Inventory
+
+	measure 'Reorder Risk %' =
+			DIVIDE([Products Below Reorder Point], [Products With Inventory], 0)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Inventory
+
+	/// Share of products at or above their safety-stock level on the global latest snapshot.
+	measure 'Inventory Health %' =
+			1 - [Safety Stock Risk %]
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Inventory
+
+	measure 'Selected Period Label' =
+			VAR MinDate = MIN(DimDate[Date])
+			VAR MaxDate = MAX(DimDate[Date])
+			RETURN
+			    IF(
+			        ISBLANK(MinDate) || ISBLANK(MaxDate),
+			        "No period selected",
+			        FORMAT(MinDate, "dd MMM yyyy") & " – " & FORMAT(MaxDate, "dd MMM yyyy")
+			    )
+		displayFolder: UX & Dynamic Titles
+
+	measure 'Executive Overview Title' = "Retail360 | Executive Overview | " & [Selected Period Label]
+		displayFolder: UX & Dynamic Titles
+
+	measure 'Sales Growth Title' = "Sales & Growth | " & [Selected Period Label]
+		displayFolder: UX & Dynamic Titles
+
+	measure 'Product Profitability Title' = "Product & Profitability | " & [Selected Period Label]
+		displayFolder: UX & Dynamic Titles
+
+	measure 'Inventory Title' = "Inventory Analytics | Latest snapshot " & FORMAT([Latest Inventory Date], "dd MMM yyyy")
+		displayFolder: UX & Dynamic Titles
+
+	column Value
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: [Value]
+
+	partition KPI_Measures = calculated
+		mode: import
+		source = ROW("Value", 0)
