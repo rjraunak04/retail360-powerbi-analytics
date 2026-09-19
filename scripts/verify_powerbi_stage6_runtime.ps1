@@ -8,8 +8,8 @@ Set-Location $Root
 $BaseVerifier = Join-Path $Root "scripts\verify_powerbi_stage5_runtime.ps1"
 $ExactQuery = Join-Path $Root "powerbi\Retail360.SemanticModel\DAXQueries\Stage6 KPI QA.dax"
 $SmokeQuery = Join-Path $Root "powerbi\Retail360.SemanticModel\DAXQueries\Stage6 Measure Smoke QA.dax"
-$ExactProof = Join-Path $Root "docs\data-engineering\stage6-powerbi-runtime-proof.csv"
-$SmokeProof = Join-Path $Root "docs\data-engineering\stage6-measure-smoke-proof.csv"
+$ExactProof = Join-Path $Root ".runtime\stage6-powerbi-runtime-proof.csv"
+$SmokeProof = Join-Path $Root ".runtime\stage6-measure-smoke-proof.csv"
 
 foreach ($required in @(
     $BaseVerifier,
