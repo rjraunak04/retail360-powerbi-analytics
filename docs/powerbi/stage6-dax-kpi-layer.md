@@ -40,7 +40,7 @@ Live Power BI QA:
 
 `powerbi/Retail360.SemanticModel/DAXQueries/Stage6 KPI QA.dax`
 
-The runtime QA contains 26 exact reconciliation, role-date, customer, channel, inventory, and time-intelligence checks. The one-command full gate is `scripts/verify_powerbi_stage6_runtime.ps1`.
+The runtime gate contains 26 exact reconciliation, role-date, customer, channel, inventory, and time-intelligence checks plus a 76-measure live smoke suite. The one-command full gate is `scripts/verify_powerbi_stage6_runtime.ps1`.
 
 
 ## Repository benchmark
