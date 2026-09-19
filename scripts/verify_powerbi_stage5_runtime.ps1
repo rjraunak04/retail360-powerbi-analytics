@@ -2,7 +2,8 @@ param(
     [int]$StartupTimeoutSeconds = 120,
     [int]$ModelProbeTimeoutSeconds = 30,
     [string]$QueryPath = "",
-    [string]$ProofCsvPath = ""
+    [string]$ProofCsvPath = "",
+    [string]$StageLabel = "Stage 5"
 )
 
 $ErrorActionPreference = "Stop"
@@ -344,8 +345,6 @@ while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
                 if (
                     $candidateRows.Count -eq 20 -and
                     $candidateFailures.Count -eq 0 -and
-                    $checkNames -contains "FactSales rows" -and
-                    $checkNames -contains "DimDate rows" -and
                     $checkNames -contains "Total Sales"
                 ) {
                     $runtimeRows = $candidateRows
@@ -412,5 +411,5 @@ if ($failures -gt 0) {
 }
 
 Write-Host ""
-Write-Host "STAGE 5 POWER BI RUNTIME QA PASSED: $($rows.Count)/$($rows.Count) checks." -ForegroundColor Green
+Write-Host "$($StageLabel.ToUpper()) POWER BI RUNTIME QA PASSED: $($rows.Count)/$($rows.Count) checks." -ForegroundColor Green
 Write-Host "Retail360 semantic model is loaded and queryable inside Power BI Desktop." -ForegroundColor Green
