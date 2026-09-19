@@ -34,11 +34,11 @@ Sales MTD/QTD/YTD, prior-year, YoY absolute/percentage, previous-month, MoM abso
 
 ## Role-Playing Dates
 
-`Sales by Due Date`, `Sales by Ship Date`, `Orders by Due Date`, and `Orders by Ship Date` activate the inactive warehouse date relationships through `USERELATIONSHIP`.
+`Sales by Due Date`, `Sales by Ship Date`, `Orders by Due Date`, and `Orders by Ship Date` explicitly disable the active Order Date relationship with `CROSSFILTER(..., NONE)` and then activate the required inactive date relationship through `USERELATIONSHIP`. This prevents Order Date and Due/Ship Date filters from intersecting accidentally.
 
 ## Customer & Reseller
 
-Customer and reseller counts exclude key 0 (Not Applicable/Unknown). Repeat customers are customers with more than one distinct order in the current context.
+Customer and reseller counts exclude key 0 (Not Applicable/Unknown). `Revenue per Customer` uses Internet Sales only because the customer dimension represents the Internet/individual-customer channel, while `Revenue per Reseller` uses Reseller Sales only. Repeat customers are customers with more than one distinct order in the current context.
 
 ## Product
 
@@ -54,13 +54,15 @@ Discount-focused measures use actual positive `Discount Amount` on sales rows. T
 
 ## Inventory
 
-Inventory is a snapshot fact. Headline inventory KPIs therefore use the latest available snapshot rather than summing inventory value across all historical dates.
+Inventory is a snapshot fact. Headline inventory KPIs therefore use the global latest available snapshot rather than summing inventory value across all historical dates. Product filters do not redefine what "latest" means.
 
 - Current Inventory Value / Units: latest snapshot
 - Average Inventory Value: average daily snapshot value in the selected period
 - Inventory Turnover: Total Product Cost / Average Inventory Value
 - Products Below Safety Stock / Reorder Point: latest-snapshot product risk counts
-- Inventory Health %: 1 - Products Below Reorder Point / Products With Inventory
+- Safety Stock Risk %: Products Below Safety Stock / Products With Inventory
+- Reorder Risk %: Products Below Reorder Point / Products With Inventory
+- Inventory Health %: 1 - Safety Stock Risk %
 
 ## Currency note
 

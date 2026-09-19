@@ -1,19 +1,70 @@
 param()
 
+$ErrorActionPreference = "Stop"
+
 $Root = Split-Path -Parent $PSScriptRoot
+Set-Location $Root
+
 $BaseVerifier = Join-Path $Root "scripts\verify_powerbi_stage5_runtime.ps1"
-$Query = Join-Path $Root "powerbi\Retail360.SemanticModel\DAXQueries\Stage6 KPI QA.dax"
-$Proof = Join-Path $Root "docs\data-engineering\stage6-powerbi-runtime-proof.csv"
+$ExactQuery = Join-Path $Root "powerbi\Retail360.SemanticModel\DAXQueries\Stage6 KPI QA.dax"
+$SmokeQuery = Join-Path $Root "powerbi\Retail360.SemanticModel\DAXQueries\Stage6 Measure Smoke QA.dax"
+$ExactProof = Join-Path $Root "docs\data-engineering\stage6-powerbi-runtime-proof.csv"
+$SmokeProof = Join-Path $Root "docs\data-engineering\stage6-measure-smoke-proof.csv"
 
-if (-not (Test-Path $BaseVerifier)) {
-    throw "Base Power BI runtime verifier is missing."
+foreach ($required in @(
+    $BaseVerifier,
+    $ExactQuery,
+    $SmokeQuery,
+    (Join-Path $Root "scripts\qa_stage6_kpis.py"),
+    (Join-Path $Root "scripts\validate_stage6_dax.py")
+)) {
+    if (-not (Test-Path $required)) {
+        throw "Required Stage 6 validation artifact is missing: $required"
+    }
 }
 
-# Stage6 QA intentionally has 20 rows and includes the core check names the
-# generic verifier uses to identify the Retail360 model.
-& powershell -ExecutionPolicy Bypass -File $BaseVerifier -QueryPath $Query -ProofCsvPath $Proof
+Write-Host "Retail360 Stage 6 full validation gate" -ForegroundColor Cyan
+
+Write-Host "Starting/checking PostgreSQL..." -ForegroundColor DarkGray
+docker info *> $null
 if ($LASTEXITCODE -ne 0) {
-    exit $LASTEXITCODE
+    throw "Docker Desktop is not running. Start Docker Desktop and rerun this command."
+}
+docker compose up -d postgres | Out-Host
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not start the Retail360 PostgreSQL container."
 }
 
-Write-Host "Stage 6 runtime proof written to: $Proof" -ForegroundColor Green
+$ready = $false
+for ($i = 0; $i -lt 30; $i++) {
+    docker compose exec -T postgres pg_isready -U postgres *> $null
+    if ($LASTEXITCODE -eq 0) {
+        $ready = $true
+        break
+    }
+    Start-Sleep -Seconds 2
+}
+if (-not $ready) {
+    throw "Retail360 PostgreSQL did not become ready within 60 seconds."
+}
+
+Write-Host "1/4 PostgreSQL KPI reconciliation..." -ForegroundColor DarkGray
+python scripts/qa_stage6_kpis.py
+if ($LASTEXITCODE -ne 0) { throw "Stage 6 PostgreSQL KPI reconciliation failed." }
+
+Write-Host "2/4 DAX/TMDL contract validation..." -ForegroundColor DarkGray
+python scripts/validate_stage6_dax.py
+if ($LASTEXITCODE -ne 0) { throw "Stage 6 DAX/TMDL contract validation failed." }
+
+Write-Host "3/4 Live Power BI KPI reconciliation..." -ForegroundColor DarkGray
+& powershell -ExecutionPolicy Bypass -File $BaseVerifier -QueryPath $ExactQuery -ProofCsvPath $ExactProof -StageLabel "Stage 6 KPI reconciliation"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+Write-Host "4/4 Live Power BI all-measure smoke test..." -ForegroundColor DarkGray
+& powershell -ExecutionPolicy Bypass -File $BaseVerifier -QueryPath $SmokeQuery -ProofCsvPath $SmokeProof -StageLabel "Stage 6 measure smoke"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+Write-Host ""
+Write-Host "STAGE 6 FULL VALIDATION PASSED." -ForegroundColor Green
+Write-Host "Exact KPI proof:   $ExactProof" -ForegroundColor Green
+Write-Host "Measure smoke proof: $SmokeProof" -ForegroundColor Green
