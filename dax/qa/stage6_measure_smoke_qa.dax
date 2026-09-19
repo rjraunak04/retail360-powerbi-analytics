@@ -74,6 +74,8 @@ UNION(
     ROW("Check", "Products With Inventory", "Actual", IF(ISBLANK([Products With Inventory]), "BLANK", "VALUE"), "Expected", "evaluates", "Status", IFERROR(IF(ISBLANK([Products With Inventory]), "PASS", "PASS"), "FAIL")),
     ROW("Check", "Products Below Safety Stock", "Actual", IF(ISBLANK([Products Below Safety Stock]), "BLANK", "VALUE"), "Expected", "evaluates", "Status", IFERROR(IF(ISBLANK([Products Below Safety Stock]), "PASS", "PASS"), "FAIL")),
     ROW("Check", "Products Below Reorder Point", "Actual", IF(ISBLANK([Products Below Reorder Point]), "BLANK", "VALUE"), "Expected", "evaluates", "Status", IFERROR(IF(ISBLANK([Products Below Reorder Point]), "PASS", "PASS"), "FAIL")),
+    ROW("Check", "Safety Stock Risk %", "Actual", IF(ISBLANK([Safety Stock Risk %]), "BLANK", "VALUE"), "Expected", "evaluates", "Status", IFERROR(IF(ISBLANK([Safety Stock Risk %]), "PASS", "PASS"), "FAIL")),
+    ROW("Check", "Reorder Risk %", "Actual", IF(ISBLANK([Reorder Risk %]), "BLANK", "VALUE"), "Expected", "evaluates", "Status", IFERROR(IF(ISBLANK([Reorder Risk %]), "PASS", "PASS"), "FAIL")),
     ROW("Check", "Inventory Health %", "Actual", IF(ISBLANK([Inventory Health %]), "BLANK", "VALUE"), "Expected", "evaluates", "Status", IFERROR(IF(ISBLANK([Inventory Health %]), "PASS", "PASS"), "FAIL")),
     ROW("Check", "Selected Period Label", "Actual", IF(ISBLANK([Selected Period Label]), "BLANK", "VALUE"), "Expected", "evaluates", "Status", IFERROR(IF(ISBLANK([Selected Period Label]), "PASS", "PASS"), "FAIL")),
     ROW("Check", "Executive Overview Title", "Actual", IF(ISBLANK([Executive Overview Title]), "BLANK", "VALUE"), "Expected", "evaluates", "Status", IFERROR(IF(ISBLANK([Executive Overview Title]), "PASS", "PASS"), "FAIL")),
