@@ -53,3 +53,6 @@ docs/data-model/raw-data-profile.csv
 docs/data-model/source-data-dictionary.csv
 docs/data-model/table-integrity-report.csv
 docs/data-model/foreign-key-report.csv
+
+# Local runtime validation evidence (canonical proof is committed after review)
+.runtime/
