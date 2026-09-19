@@ -506,6 +506,13 @@ table KPI_Measures
 		summarizeBy: none
 		sourceColumn: [Value]
 
-	partition KPI_Measures = calculated
+	partition KPI_Measures = m
 		mode: import
-		source = ROW("Value", 0)
+		source =
+				let
+					Source = #table(type table [Value = Int64.Type], {{0}})
+				in
+					Source
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table
