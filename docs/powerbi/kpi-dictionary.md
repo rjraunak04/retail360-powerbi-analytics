@@ -1,6 +1,6 @@
 # Retail360 — KPI Dictionary
 
-Stage 6 centralizes report logic in the dedicated `Measures` table. Report visuals should use these explicit measures rather than implicit column aggregations.
+Stage 6 centralizes report logic in the dedicated `KPI_Measures` table. Report visuals should use these explicit measures rather than implicit column aggregations.
 
 ## Sales & Volume
 
