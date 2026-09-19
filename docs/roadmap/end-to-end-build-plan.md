@@ -79,7 +79,7 @@ Exit gate:
 - no accidental many-to-many relationships
 
 ## Stage 5 — Power BI Semantic Model
-Status: REPOSITORY COMPLETE — DESKTOP MATERIALIZATION PENDING
+Status: COMPLETE
 
 
 Deliverables:
