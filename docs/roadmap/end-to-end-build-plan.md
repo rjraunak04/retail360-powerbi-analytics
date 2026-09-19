@@ -92,7 +92,7 @@ Deliverables:
 - Date table marked properly
 
 ## Stage 6 — DAX KPI Layer
-Status: NEXT
+Status: REPOSITORY COMPLETE — RUNTIME QA PENDING
 
 
 Core KPI groups:

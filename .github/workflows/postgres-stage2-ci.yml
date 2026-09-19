@@ -76,6 +76,9 @@ jobs:
       - name: Validate ready-to-open PBIP scaffold
         run: python scripts/validate_pbip_project.py
 
+      - name: Validate Stage 6 DAX KPI contract
+        run: python scripts/validate_stage6_dax.py
+
       - name: Parse Stage 5 PowerShell runtime verifier
         shell: pwsh
         run: |
