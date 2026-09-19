@@ -22,7 +22,7 @@ if (-not (Test-Path $Project)) {
     throw "Retail360 PBIP project not found: $Project"
 }
 if (-not (Test-Path $QueryPath)) {
-    throw "Stage 5 DAX QA query not found: $QueryPath"
+    throw "$StageLabel DAX QA query not found: $QueryPath"
 }
 
 function Recordset-ToObjects {
@@ -274,7 +274,7 @@ function Ensure-PowerBIModelRunning {
     throw "Power BI Desktop opened but its semantic-model engine did not start within $StartupTimeoutSeconds seconds."
 }
 
-Write-Host "Retail360 Stage 5 Power BI runtime verifier" -ForegroundColor Cyan
+Write-Host "Retail360 $StageLabel Power BI runtime verifier" -ForegroundColor Cyan
 Write-Host ("Project: " + $Project) -ForegroundColor DarkGray
 
 # PostgreSQL must remain reachable because Power BI may refresh on open.
@@ -335,7 +335,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
                 $conn.Close()
 
                 if (-not $candidateRows -or $candidateRows.Count -eq 0) {
-                    $lastProbeError = "Port $port catalog ${catalog} returned no Stage 5 QA rows."
+                    $lastProbeError = "Port $port catalog ${catalog} returned no $StageLabel QA rows."
                     continue
                 }
 
@@ -353,7 +353,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
                     break
                 }
 
-                $lastProbeError = "Port $port catalog ${catalog} ran Stage 5 QA but returned $($candidateRows.Count) row(s) with $($candidateFailures.Count) failure(s)."
+                $lastProbeError = "Port $port catalog ${catalog} ran $StageLabel QA but returned $($candidateRows.Count) row(s) with $($candidateFailures.Count) failure(s)."
             }
             catch {
                 $lastProbeError = "Port $port catalog ${catalog}: $($_.Exception.Message)"
@@ -382,7 +382,7 @@ Write-Host "Power BI model database: $selectedDatabase" -ForegroundColor DarkGra
 $rows = $runtimeRows
 
 if (-not $rows -or $rows.Count -eq 0) {
-    throw "The Stage 5 DAX QA query returned no rows."
+    throw "The $StageLabel DAX QA query returned no rows."
 }
 
 $proofDir = Split-Path -Parent $ProofCsvPath
@@ -407,7 +407,7 @@ Write-Host ("-" * 92)
 Write-Host "Runtime proof CSV: $ProofCsvPath"
 
 if ($failures -gt 0) {
-    throw "Stage 5 Power BI runtime QA FAILED: $failures check(s) failed."
+    throw "$StageLabel Power BI runtime QA FAILED: $failures check(s) failed."
 }
 
 Write-Host ""
