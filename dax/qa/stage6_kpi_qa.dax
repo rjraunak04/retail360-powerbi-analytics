@@ -1,4 +1,4 @@
-// Retail360 Stage 6 DAX KPI runtime contract.
+// Retail360 Stage 6 exact DAX KPI runtime contract.
 // Executes against the loaded PBIP semantic model.
 // Every row must return Status = PASS.
 
@@ -9,23 +9,45 @@ DEFINE
     VAR _Units = [Units Sold]
     VAR _Orders = [Distinct Orders]
     VAR _GrossMargin = [Gross Margin %]
+    VAR _AverageSellingPrice = [Average Selling Price]
+    VAR _AverageOrderValue = [Average Order Value]
+
     VAR _InternetSales = [Internet Sales]
     VAR _ResellerSales = [Reseller Sales]
     VAR _ChannelReconciliation = _InternetSales + _ResellerSales
+
     VAR _DueDateSales = [Sales by Due Date]
     VAR _ShipDateSales = [Sales by Ship Date]
+    VAR _DueDateSales2013 =
+        CALCULATE(
+            [Sales by Due Date],
+            DimDate[Calendar Year] = 2013
+        )
+    VAR _ShipDateSales2013 =
+        CALCULATE(
+            [Sales by Ship Date],
+            DimDate[Calendar Year] = 2013
+        )
+
     VAR _DiscountedSales = [Discounted Sales]
+
     VAR _Customers = [Customers]
     VAR _RepeatCustomers = [Repeat Customers]
+    VAR _RevenuePerCustomer = [Revenue per Customer]
     VAR _Resellers = [Resellers]
+    VAR _RevenuePerReseller = [Revenue per Reseller]
     VAR _ProductsSold = [Products Sold]
+
     VAR _LatestInventoryDate = [Latest Inventory Date]
     VAR _CurrentInventoryValue = [Current Inventory Value]
     VAR _CurrentInventoryUnits = [Current Inventory Units]
     VAR _ProductsWithInventory = [Products With Inventory]
     VAR _BelowSafetyStock = [Products Below Safety Stock]
     VAR _BelowReorder = [Products Below Reorder Point]
+    VAR _SafetyStockRisk = [Safety Stock Risk %]
+    VAR _ReorderRisk = [Reorder Risk %]
     VAR _InventoryHealth = [Inventory Health %]
+
     VAR _SalesPY2014 =
         CALCULATE(
             [Sales PY],
@@ -50,23 +72,37 @@ UNION(
     ROW("Check", "Units Sold", "Actual", _Units, "Expected", 274776, "Status", IF(_Units = 274776, "PASS", "FAIL")),
     ROW("Check", "Distinct Orders", "Actual", _Orders, "Expected", 31455, "Status", IF(_Orders = 31455, "PASS", "FAIL")),
     ROW("Check", "Gross Margin identity", "Actual", _GrossMargin, "Expected", DIVIDE(_GrossProfit, _TotalSales), "Status", IF(ABS(_GrossMargin - DIVIDE(_GrossProfit, _TotalSales)) < 0.0000001, "PASS", "FAIL")),
+    ROW("Check", "Average Selling Price identity", "Actual", _AverageSellingPrice, "Expected", DIVIDE(_TotalSales, _Units), "Status", IF(ABS(_AverageSellingPrice - DIVIDE(_TotalSales, _Units)) < 0.0000001, "PASS", "FAIL")),
+    ROW("Check", "Average Order Value identity", "Actual", _AverageOrderValue, "Expected", DIVIDE(_TotalSales, _Orders), "Status", IF(ABS(_AverageOrderValue - DIVIDE(_TotalSales, _Orders)) < 0.0000001, "PASS", "FAIL")),
+
     ROW("Check", "Channel reconciliation", "Actual", _ChannelReconciliation, "Expected", _TotalSales, "Status", IF(ABS(_ChannelReconciliation - _TotalSales) < 0.0001, "PASS", "FAIL")),
     ROW("Check", "Internet Sales", "Actual", _InternetSales, "Expected", 29358677.2207, "Status", IF(ABS(_InternetSales - 29358677.2207) < 0.0001, "PASS", "FAIL")),
     ROW("Check", "Reseller Sales", "Actual", _ResellerSales, "Expected", 80450596.9823, "Status", IF(ABS(_ResellerSales - 80450596.9823) < 0.0001, "PASS", "FAIL")),
+
     ROW("Check", "Due-date relationship reconciliation", "Actual", _DueDateSales, "Expected", _TotalSales, "Status", IF(ABS(_DueDateSales - _TotalSales) < 0.0001, "PASS", "FAIL")),
     ROW("Check", "Ship-date relationship reconciliation", "Actual", _ShipDateSales, "Expected", _TotalSales, "Status", IF(ABS(_ShipDateSales - _TotalSales) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Due-date Sales 2013", "Actual", _DueDateSales2013, "Expected", 52285231.9952, "Status", IF(ABS(_DueDateSales2013 - 52285231.9952) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Ship-date Sales 2013", "Actual", _ShipDateSales2013, "Expected", 52522104.8347, "Status", IF(ABS(_ShipDateSales2013 - 52522104.8347) < 0.0001, "PASS", "FAIL")),
+
     ROW("Check", "Discounted Sales", "Actual", _DiscountedSales, "Expected", 5422689.0264, "Status", IF(ABS(_DiscountedSales - 5422689.0264) < 0.0001, "PASS", "FAIL")),
+
     ROW("Check", "Customers", "Actual", _Customers, "Expected", 18484, "Status", IF(_Customers = 18484, "PASS", "FAIL")),
     ROW("Check", "Repeat Customers", "Actual", _RepeatCustomers, "Expected", 6865, "Status", IF(_RepeatCustomers = 6865, "PASS", "FAIL")),
+    ROW("Check", "Revenue per Customer identity", "Actual", _RevenuePerCustomer, "Expected", DIVIDE(_InternetSales, _Customers), "Status", IF(ABS(_RevenuePerCustomer - DIVIDE(_InternetSales, _Customers)) < 0.0000001, "PASS", "FAIL")),
     ROW("Check", "Resellers", "Actual", _Resellers, "Expected", 635, "Status", IF(_Resellers = 635, "PASS", "FAIL")),
+    ROW("Check", "Revenue per Reseller identity", "Actual", _RevenuePerReseller, "Expected", DIVIDE(_ResellerSales, _Resellers), "Status", IF(ABS(_RevenuePerReseller - DIVIDE(_ResellerSales, _Resellers)) < 0.0000001, "PASS", "FAIL")),
     ROW("Check", "Products Sold", "Actual", _ProductsSold, "Expected", 350, "Status", IF(_ProductsSold = 350, "PASS", "FAIL")),
+
     ROW("Check", "Latest Inventory Date", "Actual", INT(_LatestInventoryDate), "Expected", INT(DATE(2014, 6, 30)), "Status", IF(INT(_LatestInventoryDate) = INT(DATE(2014, 6, 30)), "PASS", "FAIL")),
     ROW("Check", "Current Inventory Value", "Actual", _CurrentInventoryValue, "Expected", 23603975.5700, "Status", IF(ABS(_CurrentInventoryValue - 23603975.5700) < 0.0001, "PASS", "FAIL")),
     ROW("Check", "Current Inventory Units", "Actual", _CurrentInventoryUnits, "Expected", 258981, "Status", IF(_CurrentInventoryUnits = 258981, "PASS", "FAIL")),
     ROW("Check", "Products With Inventory", "Actual", _ProductsWithInventory, "Expected", 606, "Status", IF(_ProductsWithInventory = 606, "PASS", "FAIL")),
     ROW("Check", "Products Below Safety Stock", "Actual", _BelowSafetyStock, "Expected", 543, "Status", IF(_BelowSafetyStock = 543, "PASS", "FAIL")),
     ROW("Check", "Products Below Reorder Point", "Actual", _BelowReorder, "Expected", 0, "Status", IF(_BelowReorder = 0, "PASS", "FAIL")),
-    ROW("Check", "Inventory Health %", "Actual", _InventoryHealth, "Expected", 1.0, "Status", IF(ABS(_InventoryHealth - 1.0) < 0.0000001, "PASS", "FAIL")),
+    ROW("Check", "Safety Stock Risk % identity", "Actual", _SafetyStockRisk, "Expected", DIVIDE(543, 606), "Status", IF(ABS(_SafetyStockRisk - DIVIDE(543, 606)) < 0.0000001, "PASS", "FAIL")),
+    ROW("Check", "Reorder Risk % identity", "Actual", _ReorderRisk, "Expected", 0.0, "Status", IF(ABS(_ReorderRisk) < 0.0000001, "PASS", "FAIL")),
+    ROW("Check", "Inventory Health % identity", "Actual", _InventoryHealth, "Expected", 1 - DIVIDE(543, 606), "Status", IF(ABS(_InventoryHealth - (1 - DIVIDE(543, 606))) < 0.0000001, "PASS", "FAIL")),
+
     ROW("Check", "Sales PY under 2014 context", "Actual", _SalesPY2014, "Expected", 49926384.4972, "Status", IF(ABS(_SalesPY2014 - 49926384.4972) < 0.0001, "PASS", "FAIL")),
     ROW("Check", "Sales YTD under 2013 context", "Actual", _SalesYTD2013, "Expected", 49926384.4972, "Status", IF(ABS(_SalesYTD2013 - 49926384.4972) < 0.0001, "PASS", "FAIL")),
     ROW("Check", "Profit PY under 2014 context", "Actual", _ProfitPY2014, "Expected", 6273540.9644, "Status", IF(ABS(_ProfitPY2014 - 6273540.9644) < 0.0001, "PASS", "FAIL"))
