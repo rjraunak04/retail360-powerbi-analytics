@@ -290,14 +290,15 @@ catch {
 Ensure-PowerBIModelRunning
 
 Write-Host "Searching for the Retail360 Power BI semantic model..." -ForegroundColor DarkGray
+$query = Get-Content $QueryPath -Raw
 $probeDeadline = (Get-Date).AddSeconds($ModelProbeTimeoutSeconds)
-$selectedConnection = $null
+$runtimeRows = $null
 $selectedPort = $null
 $selectedDatabase = $null
 $lastProbeError = $null
 $reportedCandidates = New-Object System.Collections.Generic.HashSet[string]
 
-while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
+while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
     $ports = Get-MsmdsrvPorts
     if ($reportedCandidates.Add("ports:" + (($ports | Sort-Object) -join ","))) {
         Write-Host ("Candidate local ports: " + $ports.Count + " -> " + (($ports | Sort-Object) -join ", ")) -ForegroundColor DarkGray
@@ -323,28 +324,37 @@ while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
             $conn = $null
             try {
                 $conn = Open-AdodbConnection -Port $port -Database $catalog
-                $probe = $conn.Execute('EVALUATE ROW("FactSales Rows", COUNTROWS(FactSales), "DimDate Rows", COUNTROWS(DimDate))')
 
-                $factSalesRows = $null
-                $dimDateRows = $null
-                if (-not $probe.EOF -and $probe.Fields.Count -ge 2) {
-                    $factSalesRows = [int64]$probe.Fields.Item(0).Value
-                    $dimDateRows = [int64]$probe.Fields.Item(1).Value
+                # Execute the real Stage 5 proof directly. This is both model
+                # identification and runtime validation, avoiding provider-
+                # specific assumptions about probe column names.
+                $recordset = $conn.Execute($query)
+                $candidateRows = Recordset-ToObjects -Recordset $recordset
+                $recordset.Close()
+                $conn.Close()
+
+                if (-not $candidateRows -or $candidateRows.Count -eq 0) {
+                    $lastProbeError = "Port $port catalog ${catalog} returned no Stage 5 QA rows."
+                    continue
                 }
-                $probe.Close()
+
+                $candidateFailures = @($candidateRows | Where-Object { [string]$_.Status -ne "PASS" })
+                $checkNames = @($candidateRows | ForEach-Object { [string]$_.Check })
 
                 if (
-                    $factSalesRows -eq 121253 -and
-                    $dimDateRows -eq 3652
+                    $candidateRows.Count -eq 20 -and
+                    $candidateFailures.Count -eq 0 -and
+                    $checkNames -contains "FactSales rows" -and
+                    $checkNames -contains "DimDate rows" -and
+                    $checkNames -contains "Total Sales"
                 ) {
-                    $selectedConnection = $conn
+                    $runtimeRows = $candidateRows
                     $selectedPort = $port
                     $selectedDatabase = $catalog
                     break
                 }
 
-                $lastProbeError = "Port $port catalog ${catalog} responded, but row counts were FactSales=$factSalesRows and DimDate=$dimDateRows."
-                $conn.Close()
+                $lastProbeError = "Port $port catalog ${catalog} ran Stage 5 QA but returned $($candidateRows.Count) row(s) with $($candidateFailures.Count) failure(s)."
             }
             catch {
                 $lastProbeError = "Port $port catalog ${catalog}: $($_.Exception.Message)"
@@ -354,15 +364,15 @@ while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
             }
         }
 
-        if ($selectedConnection) { break }
+        if ($runtimeRows) { break }
     }
 
-    if (-not $selectedConnection) {
+    if (-not $runtimeRows) {
         Start-Sleep -Seconds 3
     }
 }
 
-if (-not $selectedConnection) {
+if (-not $runtimeRows) {
     $details = if ($lastProbeError) { " Last probe error: $lastProbeError" } else { "" }
     throw "Could not connect to the open Retail360 semantic model within $ModelProbeTimeoutSeconds seconds.$details If the error mentions MSOLAP, repair/update Power BI Desktop so its Analysis Services OLE DB provider is registered."
 }
@@ -370,11 +380,7 @@ if (-not $selectedConnection) {
 Write-Host "Connected to Retail360 Power BI semantic model on localhost:$selectedPort" -ForegroundColor Green
 Write-Host "Power BI model database: $selectedDatabase" -ForegroundColor DarkGray
 
-$query = Get-Content $QueryPath -Raw
-$recordset = $selectedConnection.Execute($query)
-$rows = Recordset-ToObjects -Recordset $recordset
-$recordset.Close()
-$selectedConnection.Close()
+$rows = $runtimeRows
 
 if (-not $rows -or $rows.Count -eq 0) {
     throw "The Stage 5 DAX QA query returned no rows."
