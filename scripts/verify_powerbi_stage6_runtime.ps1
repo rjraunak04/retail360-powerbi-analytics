@@ -1,4 +1,6 @@
-param()
+param(
+    [switch]$SkipCleanRestart
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -97,6 +99,86 @@ Write-Host "2/4 DAX/TMDL contract validation..." -ForegroundColor DarkGray
 python scripts/validate_stage6_dax.py
 if ($LASTEXITCODE -ne 0) { throw "Stage 6 DAX/TMDL contract validation failed." }
 
+
+function Invoke-CleanPowerBIRestart {
+    param(
+        [string]$ProjectPath
+    )
+
+    Write-Host "Preparing a clean Power BI Desktop runtime..." -ForegroundColor DarkGray
+
+    $desktopProcesses = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
+    if ($desktopProcesses.Count -gt 0) {
+        Write-Host ("Power BI Desktop instance(s) detected: " + $desktopProcesses.Count) -ForegroundColor Yellow
+        Write-Host "Requesting a graceful close so stale semantic-model state and memory are released..." -ForegroundColor Yellow
+
+        foreach ($proc in $desktopProcesses) {
+            try { [void]$proc.CloseMainWindow() } catch {}
+        }
+
+        $closeDeadline = (Get-Date).AddSeconds(30)
+        do {
+            Start-Sleep -Seconds 2
+            $desktopProcesses = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
+        } while ($desktopProcesses.Count -gt 0 -and (Get-Date) -lt $closeDeadline)
+
+        if ($desktopProcesses.Count -gt 0) {
+            throw "Power BI Desktop is still open. Save/close any Power BI window or Save dialog, then rerun this verifier. The verifier will not force-kill Desktop because that could discard unsaved work."
+        }
+    }
+
+    # With Desktop closed, any remaining local Analysis Services process is
+    # orphaned. Clearing these prevents memory pressure and stale catalog reuse.
+    $orphanEngines = @(Get-Process msmdsrv -ErrorAction SilentlyContinue)
+    foreach ($engine in $orphanEngines) {
+        try {
+            Write-Host ("Stopping orphan Analysis Services engine PID " + $engine.Id) -ForegroundColor Yellow
+            Stop-Process -Id $engine.Id -Force -ErrorAction Stop
+        }
+        catch {}
+    }
+
+    # Remove only repository-local Power BI caches. These are ignored by Git.
+    Get-ChildItem (Join-Path $Root "powerbi") -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq ".pbi" } |
+        Sort-Object FullName -Descending |
+        ForEach-Object {
+            try {
+                Write-Host ("Removing repository-local Power BI cache: " + $_.FullName) -ForegroundColor DarkGray
+                Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop
+            }
+            catch {}
+        }
+
+    # Remove stale verifier scratch state.
+    if (Test-Path $RuntimeRoot) {
+        Get-ChildItem $RuntimeRoot -Force -ErrorAction SilentlyContinue |
+            ForEach-Object {
+                try { Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop } catch {}
+            }
+    }
+
+    # Basic host-memory preflight. This model is modest; extremely low free
+    # memory usually means another application is starving msmdsrv.
+    try {
+        $os = Get-CimInstance Win32_OperatingSystem
+        $freeGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
+        Write-Host ("Free physical memory before Power BI launch: " + $freeGb + " GB") -ForegroundColor DarkGray
+        if ($freeGb -lt 2.0) {
+            throw "Only $freeGb GB RAM is free. Close memory-heavy applications and rerun Stage 6 verification."
+        }
+    }
+    catch {
+        if ($_.Exception.Message -like "Only * GB RAM is free*") { throw }
+        Write-Host "Memory preflight unavailable; continuing." -ForegroundColor Yellow
+    }
+
+    Write-Host "Opening canonical Retail360.pbip in a clean Power BI Desktop process..." -ForegroundColor Yellow
+    Start-Process $ProjectPath
+    Start-Sleep -Seconds 12
+}
+
+
 Write-Host "Preparing single-instance Power BI runtime..." -ForegroundColor DarkGray
 
 $RuntimeRoot = Join-Path $Root ".runtime"
@@ -129,33 +211,23 @@ Get-ChildItem $RuntimeRoot -Directory -Filter "stage6-powerbi-*" -ErrorAction Si
     }
 
 $CanonicalProject = Join-Path $Root "powerbi\Retail360.pbip"
-$PowerBIProcess = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
 
-if ($PowerBIProcess.Count -gt 1) {
-    throw "Multiple Power BI Desktop instances are running ($($PowerBIProcess.Count)). Save and close all Power BI Desktop windows, then rerun this verifier. Multiple semantic-model engines can exhaust memory and cause false cyclic-reference/provider failures."
-}
-
-if (-not $PowerBIProcess) {
-    # Clear only repository-local Power BI caches before a clean start. These
-    # folders are ignored by Git and can preserve stale semantic-model state
-    # after a failed PBIP load.
-    Get-ChildItem (Join-Path $Root "powerbi") -Directory -Recurse -Force -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -eq ".pbi" } |
-        Sort-Object FullName -Descending |
-        ForEach-Object {
-            try {
-                Write-Host ("Removing stale local Power BI cache: " + $_.FullName) -ForegroundColor DarkGray
-                Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop
-            }
-            catch {}
-        }
-
-    Write-Host "Power BI Desktop is not running; opening canonical Retail360.pbip..." -ForegroundColor Yellow
-    Start-Process $CanonicalProject
-    Start-Sleep -Seconds 12
+if ($SkipCleanRestart) {
+    $PowerBIProcess = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
+    if ($PowerBIProcess.Count -gt 1) {
+        throw "Multiple Power BI Desktop instances are running ($($PowerBIProcess.Count)). Close them and rerun."
+    }
+    if ($PowerBIProcess.Count -eq 0) {
+        Write-Host "Power BI Desktop is not running; opening canonical Retail360.pbip..." -ForegroundColor Yellow
+        Start-Process $CanonicalProject
+        Start-Sleep -Seconds 12
+    }
+    else {
+        Write-Host "SkipCleanRestart requested; using the single already-open Power BI Desktop instance." -ForegroundColor Yellow
+    }
 }
 else {
-    Write-Host "Using the single already-open canonical Power BI Desktop instance; no duplicate model will be launched." -ForegroundColor Green
+    Invoke-CleanPowerBIRestart -ProjectPath $CanonicalProject
 }
 
 Write-Host "3/4 Live Power BI KPI reconciliation..." -ForegroundColor DarkGray
