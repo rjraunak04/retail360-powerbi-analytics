@@ -15,7 +15,7 @@ SOURCE_TABLES = {
     "DimGeography", "DimSalesTerritory", "DimPromotion", "DimCurrency",
     "DimChannel", "FactSales", "FactInventory",
 }
-EXPECTED_TABLES = SOURCE_TABLES | {"Measures"}
+MEASURE_HOST_TABLE = "KPI_Measures"\nEXPECTED_TABLES = SOURCE_TABLES | {MEASURE_HOST_TABLE}\nRESERVED_TABLE_NAMES = {"Measures"}
 
 
 def fail(message: str) -> None:
