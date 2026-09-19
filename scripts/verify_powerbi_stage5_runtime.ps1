@@ -32,7 +32,11 @@ function Recordset-ToObjects {
         $row = [ordered]@{}
         for ($i = 0; $i -lt $Recordset.Fields.Count; $i++) {
             $field = $Recordset.Fields.Item($i)
-            $row[$field.Name] = $field.Value
+            $name = [string]$field.Name
+            if ($name.StartsWith("[") -and $name.EndsWith("]")) {
+                $name = $name.Substring(1, $name.Length - 2)
+            }
+            $row[$name] = $field.Value
         }
         $rows.Add([pscustomobject]$row)
         $Recordset.MoveNext()
@@ -291,10 +295,13 @@ $selectedConnection = $null
 $selectedPort = $null
 $selectedDatabase = $null
 $lastProbeError = $null
+$reportedCandidates = New-Object System.Collections.Generic.HashSet[string]
 
 while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
     $ports = Get-MsmdsrvPorts
-    Write-Host ("Candidate local ports: " + $ports.Count) -ForegroundColor DarkGray
+    if ($reportedCandidates.Add("ports:" + (($ports | Sort-Object) -join ","))) {
+        Write-Host ("Candidate local ports: " + $ports.Count + " -> " + (($ports | Sort-Object) -join ", ")) -ForegroundColor DarkGray
+    }
 
     foreach ($port in $ports) {
         try {
@@ -303,7 +310,9 @@ while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
                 $lastProbeError = "Port $port responded but returned no Analysis Services catalogs."
                 continue
             }
-            Write-Host ("Port " + $port + " catalogs: " + ($catalogs -join ", ")) -ForegroundColor DarkGray
+            if ($reportedCandidates.Add("catalogs:" + $port + ":" + ($catalogs -join ","))) {
+                Write-Host ("Port " + $port + " catalogs: " + ($catalogs -join ", ")) -ForegroundColor DarkGray
+            }
         }
         catch {
             $lastProbeError = "Port $port catalog discovery: $($_.Exception.Message)"
@@ -315,13 +324,18 @@ while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
             try {
                 $conn = Open-AdodbConnection -Port $port -Database $catalog
                 $probe = $conn.Execute('EVALUATE ROW("FactSales Rows", COUNTROWS(FactSales), "DimDate Rows", COUNTROWS(DimDate))')
-                $probeRows = Recordset-ToObjects -Recordset $probe
+
+                $factSalesRows = $null
+                $dimDateRows = $null
+                if (-not $probe.EOF -and $probe.Fields.Count -ge 2) {
+                    $factSalesRows = [int64]$probe.Fields.Item(0).Value
+                    $dimDateRows = [int64]$probe.Fields.Item(1).Value
+                }
                 $probe.Close()
 
                 if (
-                    $probeRows.Count -eq 1 -and
-                    [int64]$probeRows[0].'FactSales Rows' -eq 121253 -and
-                    [int64]$probeRows[0].'DimDate Rows' -eq 3652
+                    $factSalesRows -eq 121253 -and
+                    $dimDateRows -eq 3652
                 ) {
                     $selectedConnection = $conn
                     $selectedPort = $port
@@ -329,6 +343,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
                     break
                 }
 
+                $lastProbeError = "Port $port catalog ${catalog} responded, but row counts were FactSales=$factSalesRows and DimDate=$dimDateRows."
                 $conn.Close()
             }
             catch {
