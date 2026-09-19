@@ -287,7 +287,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $selectedConnection) {
                 $conn.Close()
             }
             catch {
-                $lastProbeError = "Port $port catalog $catalog: $($_.Exception.Message)"
+                $lastProbeError = "Port $port catalog ${catalog}: $($_.Exception.Message)"
                 if ($conn -and $conn.State -eq 1) {
                     try { $conn.Close() } catch {}
                 }
