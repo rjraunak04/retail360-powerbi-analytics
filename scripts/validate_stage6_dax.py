@@ -131,10 +131,12 @@ def main() -> None:
         if token not in text:
             fail(f"required {label} DAX pattern missing: {token}")
 
-    if "ref table Measures" not in model:
-        fail("model.tmdl does not reference Measures")
-    if "partition Measures = calculated" not in text:
-        fail("Measures table must use a calculated one-row partition")
+    if "ref table KPI_Measures" not in model:
+        fail("model.tmdl does not reference KPI_Measures")
+    if "ref table Measures" in model or "table Measures" in text:
+        fail('reserved Power BI table name "Measures" must not be used')
+    if "partition KPI_Measures = calculated" not in text:
+        fail("KPI_Measures table must use a calculated one-row partition")
     if 'source = ROW("Value", 0)' not in text:
         fail("Measures calculated partition source is not the expected one-row table")
 
@@ -196,6 +198,7 @@ def main() -> None:
     print("Role-playing dates:           PASS")
     print("Latest-snapshot inventory:    PASS")
     print("Product ranking/contribution: PASS")
+    print("Reserved table-name policy:   PASS")
     print("Neutral currency formatting:  PASS")
     print("QA copies synchronized:       PASS")
     print("Exact runtime QA:             34/34 checks defined")
