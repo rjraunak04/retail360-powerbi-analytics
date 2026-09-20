@@ -104,7 +104,7 @@ Deliverables:
 - PBIP/PBIX strategy
 - enterprise runtime QA
 
-## Stage 9 — GitHub and Recruiter Packaging
+## Stage 9 — Repository & Portfolio Packaging
 Status: COMPLETE
 
 Deliverables:
@@ -112,12 +112,10 @@ Deliverables:
 - architecture and star-schema diagrams
 - 10 dashboard screenshots
 - KPI dictionary
-- SQL examples
-- project decisions / trade-offs
+- business-analysis SQL examples
+- architecture decisions / trade-offs
 - setup instructions
-- interview talking points
-- CV bullets
-- LinkedIn/GitHub project copy
+- repository packaging validation
 
 ## Stage 10 — Deployment
 Status: COMPLETE — PORTFOLIO/FALLBACK DEPLOYMENT
