@@ -118,6 +118,28 @@ jobs:
             exit 1
           }
 
+      - name: Build Stage 10 release package
+        shell: pwsh
+        run: |
+          ./scripts/package_stage10_release.ps1 -Version "1.0.0-portfolio" -OutputRoot "dist"
+          if (-not (Test-Path "dist/Retail360-1.0.0-portfolio.zip")) {
+            throw "Stage 10 release ZIP was not created."
+          }
+          if (-not (Test-Path "dist/Retail360-1.0.0-portfolio/SHA256SUMS.txt")) {
+            throw "Stage 10 checksum manifest was not created."
+          }
+
+      - name: Upload Stage 10 deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Retail360-1.0.0-portfolio
+          path: |
+            dist/Retail360-1.0.0-portfolio.zip
+            dist/Retail360-1.0.0-portfolio/RELEASE_INFO.txt
+            dist/Retail360-1.0.0-portfolio/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Parse Stage 9 screenshot capture helper
         shell: pwsh
         run: |
