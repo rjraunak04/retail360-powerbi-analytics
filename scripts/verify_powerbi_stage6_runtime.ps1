@@ -158,15 +158,34 @@ function Invoke-CleanPowerBIRestart {
             }
     }
 
-    # Basic host-memory preflight. This model is modest; extremely low free
-    # memory usually means another application is starving msmdsrv.
+    # Basic host-memory preflight. The earlier Desktop failures included
+    # System.OutOfMemoryException/container exits, so do not start msmdsrv while
+    # the host has almost no free RAM. Instead of failing immediately, print
+    # the heaviest processes and wait briefly while the user closes anything
+    # nonessential.
     try {
-        $os = Get-CimInstance Win32_OperatingSystem
-        $freeGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
-        Write-Host ("Free physical memory before Power BI launch: " + $freeGb + " GB") -ForegroundColor DarkGray
-        if ($freeGb -lt 2.0) {
-            throw "Only $freeGb GB RAM is free. Close memory-heavy applications and rerun Stage 6 verification."
-        }
+        $memoryDeadline = (Get-Date).AddMinutes(3)
+        do {
+            $os = Get-CimInstance Win32_OperatingSystem
+            $freeGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
+            Write-Host ("Free physical memory before Power BI launch: " + $freeGb + " GB") -ForegroundColor DarkGray
+
+            if ($freeGb -ge 2.0) { break }
+
+            Write-Host "Stage 6 needs at least 2 GB free RAM before launching Power BI." -ForegroundColor Yellow
+            Write-Host "Largest current processes:" -ForegroundColor Yellow
+            Get-Process -ErrorAction SilentlyContinue |
+                Sort-Object WorkingSet64 -Descending |
+                Select-Object -First 10 Name, Id, @{Name="RAM_GB";Expression={[math]::Round($_.WorkingSet64 / 1GB, 2)}} |
+                Format-Table -AutoSize | Out-Host
+
+            if ((Get-Date) -ge $memoryDeadline) {
+                throw "Only $freeGb GB RAM is free after waiting 3 minutes. Close memory-heavy applications (browser tabs, IDEs, extra Power BI instances, etc.) and rerun Stage 6 verification."
+            }
+
+            Write-Host "Close nonessential applications now; rechecking RAM in 15 seconds..." -ForegroundColor Yellow
+            Start-Sleep -Seconds 15
+        } while ($true)
     }
     catch {
         if ($_.Exception.Message -like "Only * GB RAM is free*") { throw }
