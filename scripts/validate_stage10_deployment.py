@@ -77,6 +77,7 @@ def main() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     script = (ROOT / "scripts/package_stage10_release.ps1").read_text(encoding="utf-8")
     gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    workflow = (ROOT / ".github/workflows/postgres-stage2-ci.yml").read_text(encoding="utf-8")
 
     required_summary_tokens = [
         "COMPLETE (portfolio/fallback deployment path)",
@@ -123,6 +124,15 @@ def main() -> None:
     if "dist/" not in gitignore:
         fail("generated dist/ release output must be ignored")
 
+    for token in [
+        "Build Stage 10 release package",
+        "Upload Stage 10 deployment artifact",
+        "Retail360-1.0.0-portfolio.zip",
+        "actions/upload-artifact@v4",
+    ]:
+        if token not in workflow:
+            fail(f"CI workflow missing Stage 10 packaging token: {token}")
+
     if any(secret in (summary + checklist + script) for secret in [
         "Retail360BI2026",
         "Retail360_Local_2026",
@@ -142,6 +152,7 @@ def main() -> None:
     print("Release manifest:         PASS")
     print("Dashboard evidence:       10/10 PASS")
     print("Release packaging helper: PASS")
+    print("CI release artifact:       PASS")
     print("Secret-exclusion policy:  PASS")
     print("Generated dist/ ignored:  PASS")
     print("Service claim boundary:   PASS")
