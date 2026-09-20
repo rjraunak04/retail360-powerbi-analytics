@@ -92,7 +92,7 @@ Deliverables:
 - Date table marked properly
 
 ## Stage 6 — DAX KPI Layer
-Status: REPOSITORY COMPLETE — RUNTIME QA PENDING
+Status: COMPLETE
 
 
 Core KPI groups:
@@ -106,6 +106,7 @@ Core KPI groups:
 - Inventory: Units Balance, Inventory Value, inventory movement
 
 ## Stage 7 — Recruiter-Grade Report UX
+Status: NEXT
 
 Pages:
 1. Executive Overview
