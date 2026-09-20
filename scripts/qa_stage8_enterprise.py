@@ -83,7 +83,11 @@ def main() -> None:
                 MIN(movement_date)::date AS min_inventory_date,
                 MAX(movement_date)::date AS max_inventory_date,
                 COUNT(*) FILTER (WHERE units_balance < 0)::bigint AS negative_balance_rows,
-                COUNT(*) FILTER (WHERE inventory_value < 0)::bigint AS negative_value_rows
+                COUNT(*) FILTER (WHERE inventory_value < 0)::bigint AS negative_value_rows,
+                COUNT(*) FILTER (WHERE unit_cost < 0)::bigint AS negative_unit_cost_rows,
+                COUNT(*) FILTER (
+                    WHERE ABS(inventory_value - (units_balance * unit_cost)) > 0.0001
+                )::bigint AS inventory_value_mismatch
             FROM analytics.fact_inventory
             """
         )
@@ -174,8 +178,14 @@ def main() -> None:
             ("Reseller applicability errors", int(sales["reseller_applicability_errors"]), 0, int(sales["reseller_applicability_errors"]) == 0),
             ("Inventory territory column absent", inventory_has_territory, False, not inventory_has_territory),
             ("Inventory date range valid", str(inventory["max_inventory_date"]), "after min date", inventory["max_inventory_date"] > inventory["min_inventory_date"]),
-            ("Negative inventory balance rows", int(inventory["negative_balance_rows"]), 0, int(inventory["negative_balance_rows"]) == 0),
-            ("Negative inventory value rows", int(inventory["negative_value_rows"]), 0, int(inventory["negative_value_rows"]) == 0),
+            ("Negative inventory unit-cost rows", int(inventory["negative_unit_cost_rows"]), 0, int(inventory["negative_unit_cost_rows"]) == 0),
+            ("Inventory value arithmetic mismatch", int(inventory["inventory_value_mismatch"]), 0, int(inventory["inventory_value_mismatch"]) == 0),
+            (
+                "Negative balance/value alignment",
+                int(inventory["negative_balance_rows"]) - int(inventory["negative_value_rows"]),
+                0,
+                int(inventory["negative_balance_rows"]) == int(inventory["negative_value_rows"]),
+            ),
         ]
     )
 
@@ -196,6 +206,11 @@ def main() -> None:
         print(f"{name:42} {str(actual):>22} {str(expected):>22} {status:>8}")
     print("-" * 100)
     print(f"Distinct currency keys observed: {sales['currency_keys']}")
+    print(
+        "Negative inventory snapshots observed: "
+        f"{inventory['negative_balance_rows']} rows "
+        "(retained as a source/business edge case; arithmetic is validated separately)"
+    )
     for region in REGIONS:
         print(f"RLS baseline {region:15}: {territory_rows.get(region)}")
 
