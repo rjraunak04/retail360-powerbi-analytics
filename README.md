@@ -1,8 +1,42 @@
-# Retail360 — Retail Analytics Platform
+<div align="center">
 
-[![PostgreSQL Warehouse CI](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/postgres-stage2-ci.yml/badge.svg?branch=develop)](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/postgres-stage2-ci.yml)
+# 🛒 Retail360 — Enterprise Retail Analytics Platform
 
-Retail360 is a source-controlled Power BI analytics project built on Microsoft AdventureWorksDW. It takes raw CSV extracts through a PostgreSQL warehouse, dimensional model, Power BI semantic layer and a multi-page analytical report, with automated checks around data quality, KPI reconciliation, model structure and report metadata.
+**End-to-end retail BI engineering with PostgreSQL, Power Query, dimensional modeling, governed DAX, PBIP/TMDL and automated QA.**
+
+[![Power BI](https://img.shields.io/badge/Power%20BI-PBIP%20%7C%20TMDL-F2C811?logo=powerbi&logoColor=black)](powerbi/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](sql/)
+[![DAX](https://img.shields.io/badge/DAX-78%20Governed%20Measures-2563EB)](docs/powerbi/kpi-dictionary.md)
+[![Power Query](https://img.shields.io/badge/Power%20Query-M-00B294)](power-query/)
+[![Python](https://img.shields.io/badge/Python-QA%20%26%20Automation-3776AB?logo=python&logoColor=white)](scripts/)
+[![Docker](https://img.shields.io/badge/Docker-Local%20Warehouse-2496ED?logo=docker&logoColor=white)](compose.yml)
+[![CI](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/postgres-stage2-ci.yml/badge.svg?branch=develop)](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/postgres-stage2-ci.yml)
+
+**Sales • Profitability • Customers • Products • Resellers • Promotions • Territory • Inventory**
+
+[Architecture](docs/architecture/retail360-architecture.md) •
+[Star Schema](docs/architecture/star-schema.md) •
+[KPI Dictionary](docs/powerbi/kpi-dictionary.md) •
+[Dashboard Gallery](docs/screenshots/README.md) •
+[Setup](docs/project/setup.md)
+
+</div>
+
+---
+
+Retail360 is a source-controlled analytics platform built on **Microsoft AdventureWorksDW**. It takes raw CSV extracts through a reproducible **PostgreSQL warehouse → staging layer → analytics star schema → Power BI semantic model → governed DAX layer → report**, with automated validation at each stage.
+
+### ⚡ At a glance
+
+| Area | Implementation |
+|---|---|
+| 🗄️ Warehouse | PostgreSQL 16 with `raw`, `staging`, `analytics`, `audit` schemas |
+| ⭐ Data model | Governed star schema with Sales + Inventory facts |
+| 🧮 Semantic layer | PBIP / TMDL / PBIR source-controlled Power BI model |
+| 📊 DAX | 78 explicit governed measures |
+| ✅ QA | SQL reconciliation, semantic-model checks and runtime DAX tests |
+| 🐳 Local setup | Docker-based PostgreSQL environment |
+| 🔁 CI | GitHub Actions regression validation |
 
 ![Retail360 Executive Overview](docs/screenshots/01-executive-overview.png)
 
