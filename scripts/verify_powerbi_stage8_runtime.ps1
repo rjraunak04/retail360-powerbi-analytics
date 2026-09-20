@@ -45,7 +45,7 @@ else {
     Write-Host "3/4 Stage 6 regression gate skipped by request." -ForegroundColor Yellow
 }
 
-Write-Host "4/4 Stage 8 live regional RLS validation..." -ForegroundColor DarkGray
+Write-Host "4/4 Stage 8 live regional RLS-equivalent validation..." -ForegroundColor DarkGray
 
 $Runtime = Join-Path $Root ".runtime"
 New-Item -ItemType Directory -Force -Path $Runtime | Out-Null
@@ -58,7 +58,7 @@ $roleTests = @(
 
 $passedRoles = 0
 foreach ($test in $roleTests) {
-    Write-Host ("Validating role " + $test.Role + "...") -ForegroundColor DarkGray
+    Write-Host ("Validating role semantics " + $test.Role + "...") -ForegroundColor DarkGray
     $invokeArgs = @(
         "-ExecutionPolicy", "Bypass",
         "-File", $BaseVerifier,
@@ -66,9 +66,8 @@ foreach ($test in $roleTests) {
         "-ModelProbeTimeoutSeconds", "60",
         "-QueryPath", $test.Query,
         "-ProofCsvPath", $test.Proof,
-        "-StageLabel", $test.Label,
-        "-RoleName", $test.Role,
-        "-MinimumRows", "5",
+        "-StageLabel", ($test.Label + " equivalent"),
+        "-MinimumRows", "6",
         "-RequiredCheck", "Total Sales"
     )
     & powershell @invokeArgs
@@ -82,6 +81,8 @@ Write-Host "STAGE 8 FULL VALIDATION PASSED." -ForegroundColor Green
 Write-Host "Enterprise SQL / edge-case QA: PASS" -ForegroundColor Green
 Write-Host "Semantic / relationship / DAX QA: PASS" -ForegroundColor Green
 Write-Host ("Stage 6 regression gate: " + $stage6Status) -ForegroundColor Green
-Write-Host ("Regional RLS roles: " + $passedRoles + "/3 PASS") -ForegroundColor Green
+Write-Host ("Regional RLS definitions + local runtime semantics: " + $passedRoles + "/3 PASS") -ForegroundColor Green
 Write-Host "Performance-review contract: PASS" -ForegroundColor Green
 Write-Host ("Runtime evidence folder: " + $Runtime) -ForegroundColor Green
+Write-Host "RLS runtime note: local Desktop validation applies the exact source-controlled role filters explicitly in DAX." -ForegroundColor DarkGray
+Write-Host "Actual role impersonation is reserved for Power BI Desktop View As / Power BI Service Test as role." -ForegroundColor DarkGray
