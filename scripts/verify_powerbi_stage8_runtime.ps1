@@ -55,7 +55,7 @@ $roleTests = @(
 $passedRoles = 0
 foreach ($test in $roleTests) {
     Write-Host ("Validating role " + $test.Role + "...") -ForegroundColor DarkGray
-    $args = @(
+    $invokeArgs = @(
         "-ExecutionPolicy", "Bypass",
         "-File", $BaseVerifier,
         "-StartupTimeoutSeconds", "120",
@@ -67,7 +67,7 @@ foreach ($test in $roleTests) {
         "-MinimumRows", "5",
         "-RequiredCheck", "Total Sales"
     )
-    & powershell @args
+    & powershell @invokeArgs
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     $passedRoles++
 }
