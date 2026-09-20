@@ -1,0 +1,68 @@
+// Retail360 Stage 5 final runtime proof.
+// Run this in Power BI Desktop > DAX Query View after a successful refresh.
+// Every row should return Status = PASS.
+
+DEFINE
+    VAR _FactSalesRows = COUNTROWS(FactSales)
+    VAR _FactInventoryRows = COUNTROWS(FactInventory)
+    VAR _DimDateRows = COUNTROWS(DimDate)
+    VAR _DimProductRows = COUNTROWS(DimProduct)
+    VAR _DimCustomerRows = COUNTROWS(DimCustomer)
+    VAR _DimResellerRows = COUNTROWS(DimReseller)
+    VAR _DimEmployeeRows = COUNTROWS(DimEmployee)
+    VAR _DimGeographyRows = COUNTROWS(DimGeography)
+    VAR _DimSalesTerritoryRows = COUNTROWS(DimSalesTerritory)
+    VAR _DimPromotionRows = COUNTROWS(DimPromotion)
+    VAR _DimCurrencyRows = COUNTROWS(DimCurrency)
+    VAR _DimChannelRows = COUNTROWS(DimChannel)
+
+    VAR _InternetRows =
+        CALCULATE(
+            COUNTROWS(FactSales),
+            DimChannel[Channel] = "Internet"
+        )
+
+    VAR _ResellerRows =
+        CALCULATE(
+            COUNTROWS(FactSales),
+            DimChannel[Channel] = "Reseller"
+        )
+
+    VAR _TotalSales = SUM(FactSales[Sales Amount])
+    VAR _TotalProductCost = SUM(FactSales[Total Product Cost])
+    VAR _GrossProfit = SUM(FactSales[Gross Profit])
+    VAR _UnitsSold = SUM(FactSales[Order Quantity])
+    VAR _DistinctOrders =
+        COUNTROWS(
+            SUMMARIZE(
+                FactSales,
+                FactSales[Channel Key],
+                FactSales[Sales Order Number]
+            )
+        )
+    VAR _InventoryValueAllSnapshots = SUM(FactInventory[Inventory Value])
+
+EVALUATE
+UNION(
+    ROW("Check", "FactSales rows", "Actual", _FactSalesRows, "Expected", 121253, "Status", IF(_FactSalesRows = 121253, "PASS", "FAIL")),
+    ROW("Check", "FactInventory rows", "Actual", _FactInventoryRows, "Expected", 776286, "Status", IF(_FactInventoryRows = 776286, "PASS", "FAIL")),
+    ROW("Check", "DimDate rows", "Actual", _DimDateRows, "Expected", 3652, "Status", IF(_DimDateRows = 3652, "PASS", "FAIL")),
+    ROW("Check", "DimProduct rows", "Actual", _DimProductRows, "Expected", 607, "Status", IF(_DimProductRows = 607, "PASS", "FAIL")),
+    ROW("Check", "DimCustomer rows", "Actual", _DimCustomerRows, "Expected", 18485, "Status", IF(_DimCustomerRows = 18485, "PASS", "FAIL")),
+    ROW("Check", "DimReseller rows", "Actual", _DimResellerRows, "Expected", 702, "Status", IF(_DimResellerRows = 702, "PASS", "FAIL")),
+    ROW("Check", "DimEmployee rows", "Actual", _DimEmployeeRows, "Expected", 297, "Status", IF(_DimEmployeeRows = 297, "PASS", "FAIL")),
+    ROW("Check", "DimGeography rows", "Actual", _DimGeographyRows, "Expected", 656, "Status", IF(_DimGeographyRows = 656, "PASS", "FAIL")),
+    ROW("Check", "DimSalesTerritory rows", "Actual", _DimSalesTerritoryRows, "Expected", 12, "Status", IF(_DimSalesTerritoryRows = 12, "PASS", "FAIL")),
+    ROW("Check", "DimPromotion rows", "Actual", _DimPromotionRows, "Expected", 17, "Status", IF(_DimPromotionRows = 17, "PASS", "FAIL")),
+    ROW("Check", "DimCurrency rows", "Actual", _DimCurrencyRows, "Expected", 106, "Status", IF(_DimCurrencyRows = 106, "PASS", "FAIL")),
+    ROW("Check", "DimChannel rows", "Actual", _DimChannelRows, "Expected", 3, "Status", IF(_DimChannelRows = 3, "PASS", "FAIL")),
+    ROW("Check", "Internet sales lines", "Actual", _InternetRows, "Expected", 60398, "Status", IF(_InternetRows = 60398, "PASS", "FAIL")),
+    ROW("Check", "Reseller sales lines", "Actual", _ResellerRows, "Expected", 60855, "Status", IF(_ResellerRows = 60855, "PASS", "FAIL")),
+    ROW("Check", "Total Sales", "Actual", _TotalSales, "Expected", 109809274.2030, "Status", IF(ABS(_TotalSales - 109809274.2030) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Total Product Cost", "Actual", _TotalProductCost, "Expected", 97257907.9547, "Status", IF(ABS(_TotalProductCost - 97257907.9547) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Gross Profit", "Actual", _GrossProfit, "Expected", 12551366.2483, "Status", IF(ABS(_GrossProfit - 12551366.2483) < 0.0001, "PASS", "FAIL")),
+    ROW("Check", "Units Sold", "Actual", _UnitsSold, "Expected", 274776, "Status", IF(_UnitsSold = 274776, "PASS", "FAIL")),
+    ROW("Check", "Distinct Orders", "Actual", _DistinctOrders, "Expected", 31455, "Status", IF(_DistinctOrders = 31455, "PASS", "FAIL")),
+    ROW("Check", "Inventory Value (all snapshots)", "Actual", _InventoryValueAllSnapshots, "Expected", 29713024789.8300, "Status", IF(ABS(_InventoryValueAllSnapshots - 29713024789.8300) < 0.0001, "PASS", "FAIL"))
+)
+ORDER BY [Check]

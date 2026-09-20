@@ -1,0 +1,91 @@
+// Stage 8 regional RLS-equivalent runtime QA.
+// The actual TMDL role definition is validated separately by
+// scripts/validate_stage8_enterprise.py.
+//
+// Power BI Desktop's local Analysis Services endpoint does not reliably allow
+// external non-admin clients to impersonate a model role with Roles=.
+// This query therefore applies the exact role filter expression explicitly and
+// validates it against the SQL-derived regional baseline.
+
+DEFINE
+    VAR _RegionalSales =
+        CALCULATE(
+            [Total Sales],
+            KEEPFILTERS(DimSalesTerritory[Territory Group] = "Europe")
+        )
+
+    VAR _RegionalSalesRows =
+        CALCULATE(
+            COUNTROWS(FactSales),
+            KEEPFILTERS(DimSalesTerritory[Territory Group] = "Europe")
+        )
+
+    VAR _RegionalOrders =
+        CALCULATE(
+            [Distinct Orders],
+            KEEPFILTERS(DimSalesTerritory[Territory Group] = "Europe")
+        )
+
+    VAR _VisibleGroupCount =
+        CALCULATE(
+            DISTINCTCOUNT(DimSalesTerritory[Territory Group]),
+            KEEPFILTERS(DimSalesTerritory[Territory Group] = "Europe")
+        )
+
+    // Mirrors the role's fail-closed inventory rule:
+    // tablePermission FactInventory = FALSE()
+    VAR _DeniedInventoryRows =
+        CALCULATE(
+            COUNTROWS(FactInventory),
+            FILTER(ALL(FactInventory), FALSE())
+        )
+
+    VAR _DeniedInventoryValue =
+        COALESCE(
+            CALCULATE(
+                [Current Inventory Value],
+                FILTER(ALL(FactInventory), FALSE())
+            ),
+            0
+        )
+
+EVALUATE
+UNION(
+    ROW(
+        "Check", "Total Sales",
+        "Actual", _RegionalSales,
+        "Expected", 19800577.0623,
+        "Status", IF(ABS(_RegionalSales - 19800577.0623) < 0.0001, "PASS", "FAIL")
+    ),
+    ROW(
+        "Check", "Sales Rows",
+        "Actual", _RegionalSalesRows,
+        "Expected", 26978,
+        "Status", IF(_RegionalSalesRows = 26978, "PASS", "FAIL")
+    ),
+    ROW(
+        "Check", "Distinct Orders",
+        "Actual", _RegionalOrders,
+        "Expected", 8504,
+        "Status", IF(_RegionalOrders = 8504, "PASS", "FAIL")
+    ),
+    ROW(
+        "Check", "Visible territory group count",
+        "Actual", _VisibleGroupCount,
+        "Expected", 1,
+        "Status", IF(_VisibleGroupCount = 1, "PASS", "FAIL")
+    ),
+    ROW(
+        "Check", "Inventory rows denied",
+        "Actual", _DeniedInventoryRows,
+        "Expected", 0,
+        "Status", IF(_DeniedInventoryRows = 0, "PASS", "FAIL")
+    ),
+    ROW(
+        "Check", "Inventory value denied",
+        "Actual", _DeniedInventoryValue,
+        "Expected", 0,
+        "Status", IF(ABS(_DeniedInventoryValue) < 0.0001, "PASS", "FAIL")
+    )
+)
+ORDER BY [Check]

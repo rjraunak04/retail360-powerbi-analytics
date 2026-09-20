@@ -1,0 +1,201 @@
+name: PostgreSQL Warehouse CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  postgres-warehouse:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: retail360
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download AdventureWorksDW source files
+        run: python scripts/download_adventureworks.py
+
+      - name: Validate source integrity
+        run: python scripts/validate_source_integrity.py
+
+      - name: Load PostgreSQL raw warehouse
+        run: python scripts/load_postgres_raw.py
+
+      - name: Reconcile PostgreSQL row counts
+        run: python scripts/qa_postgres_raw.py
+
+      - name: Apply Stage 3 staging transformations
+        run: python scripts/apply_staging.py
+
+      - name: Validate Stage 3 staging layer
+        run: python scripts/qa_staging.py
+
+      - name: Build Stage 4 analytics star schema
+        run: python scripts/build_analytics.py
+
+      - name: Validate Stage 4 analytics star schema
+        run: python scripts/qa_analytics.py
+
+      - name: Validate Stage 5 semantic-model contract
+        run: python scripts/validate_semantic_model.py
+
+      - name: Validate ready-to-open PBIP scaffold
+        run: python scripts/validate_pbip_project.py
+
+      - name: Validate Stage 6 SQL KPI benchmark
+        run: python scripts/qa_stage6_kpis.py
+
+      - name: Validate Stage 6 DAX KPI contract
+        run: python scripts/validate_stage6_dax.py
+
+      - name: Validate Stage 7 PBIR report UX
+        run: python scripts/validate_stage7_report.py
+
+      - name: Validate Stage 8 enterprise SQL / edge-case QA
+        run: python scripts/qa_stage8_enterprise.py
+
+      - name: Validate Stage 8 enterprise semantic / performance contract
+        run: python scripts/validate_stage8_enterprise.py
+
+      - name: Validate Stage 9 recruiter packaging
+        run: |
+          if [ -f docs/screenshots/01-executive-overview.png ]; then
+            python scripts/validate_stage9_packaging.py --require-screenshots
+          else
+            python scripts/validate_stage9_packaging.py
+          fi
+
+
+      - name: Validate Stage 10 deployment contract
+        run: python scripts/validate_stage10_deployment.py
+
+      - name: Parse Stage 10 release packaging helper
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/package_stage10_release.ps1",
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
+      - name: Build Stage 10 release package
+        shell: pwsh
+        run: |
+          ./scripts/package_stage10_release.ps1 -Version "1.0.0-portfolio" -OutputRoot "dist"
+          if (-not (Test-Path "dist/Retail360-1.0.0-portfolio.zip")) {
+            throw "Stage 10 release ZIP was not created."
+          }
+          if (-not (Test-Path "dist/Retail360-1.0.0-portfolio/SHA256SUMS.txt")) {
+            throw "Stage 10 checksum manifest was not created."
+          }
+
+      - name: Upload Stage 10 deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Retail360-1.0.0-portfolio
+          path: |
+            dist/Retail360-1.0.0-portfolio.zip
+            dist/Retail360-1.0.0-portfolio/RELEASE_INFO.txt
+            dist/Retail360-1.0.0-portfolio/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Parse Stage 9 screenshot capture helper
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/capture_stage9_screenshots.ps1",
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
+      - name: Parse Stage 5 PowerShell runtime verifier
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/verify_powerbi_stage5_runtime.ps1",
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
+      - name: Parse Stage 6 PowerShell runtime verifier
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/verify_powerbi_stage6_runtime.ps1",
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
+      - name: Parse Stage 8 PowerShell runtime verifier
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/verify_powerbi_stage8_runtime.ps1",
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }

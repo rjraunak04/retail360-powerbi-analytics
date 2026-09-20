@@ -1,0 +1,38 @@
+{
+  "project": "Retail360",
+  "release_version": "1.0.0-portfolio",
+  "stage": 10,
+  "stage_status": "complete-fallback-deployment",
+  "deployment_mode": "portfolio-local-fallback",
+  "canonical_artifact": "powerbi/Retail360.pbip",
+  "semantic_model_format": "PBIP/TMDL",
+  "report_format": "PBIR",
+  "refresh_mode": "Import",
+  "source_system": "PostgreSQL 16",
+  "local_source_endpoint": "127.0.0.1:5432",
+  "power_bi_service_status": "optional-not-claimed",
+  "power_bi_service_requirements": [
+    "authenticated Power BI workspace",
+    "configured PostgreSQL connection or on-premises data gateway",
+    "environment-specific credentials",
+    "RLS membership assignment",
+    "successful Service refresh validation"
+  ],
+  "portfolio_distribution": {
+    "generated_directory": "dist/Retail360-1.0.0-portfolio",
+    "generated_archive": "dist/Retail360-1.0.0-portfolio.zip",
+    "checksum_file": "SHA256SUMS.txt",
+    "committed_to_git": false,
+    "ci_artifact_name": "Retail360-1.0.0-portfolio",
+    "ci_retention_days": 14
+  },
+  "validated_report_pages": 10,
+  "hidden_tooltip_pages": 1,
+  "governed_dax_measures": 78,
+  "screenshots": 10,
+  "security_roles": [
+    "RLS_North_America",
+    "RLS_Europe",
+    "RLS_Pacific"
+  ]
+}

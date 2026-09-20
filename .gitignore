@@ -1,0 +1,61 @@
+# ========================================
+# Retail360 - Git Ignore
+# ========================================
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Secrets / credentials
+*.env
+.env.*
+credentials.*
+secrets.*
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+~$*
+
+# Power BI temporary/cache files
+*.pbit.cache
+*.pbix.autosave
+*.localSettings.json
+**/.pbi/
+
+# Large/raw data
+data/raw/*
+!data/raw/.gitkeep
+
+data/processed/*
+!data/processed/.gitkeep
+
+# Generated data-quality reports (reproducible)
+docs/data-model/raw-data-profile.csv
+docs/data-model/source-data-dictionary.csv
+docs/data-model/table-integrity-report.csv
+docs/data-model/foreign-key-report.csv
+
+# Local runtime validation evidence (canonical proof is committed after review)
+.runtime/
+
+# Generated Stage 10 release packages
+dist/

@@ -1,0 +1,232 @@
+table FactSales
+	column 'Sales Line Id'
+		dataType: string
+		isHidden
+		isKey
+		summarizeBy: none
+		sourceColumn: sales_line_id
+
+	column 'Channel Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: channel_key
+
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: product_key
+
+	column 'Order Date Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: order_date_key
+
+	column 'Due Date Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: due_date_key
+
+	column 'Ship Date Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: ship_date_key
+
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	column 'Reseller Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: reseller_key
+
+	column 'Employee Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: employee_key
+
+	column 'Promotion Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: promotion_key
+
+	column 'Currency Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: currency_key
+
+	column 'Sales Territory Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: sales_territory_key
+
+	column 'Geography Key'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: geography_key
+
+	column 'Sales Order Number'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: sales_order_number
+
+	column 'Sales Order Line Number'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: sales_order_line_number
+
+	column 'Revision Number'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: revision_number
+
+	column 'Order Quantity'
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: order_quantity
+
+	column 'Unit Price'
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: unit_price
+
+	column 'Extended Amount'
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: extended_amount
+
+	column 'Unit Price Discount Pct'
+		dataType: decimal
+		isHidden
+		formatString: 0.00%
+		summarizeBy: none
+		sourceColumn: unit_price_discount_pct
+
+	column 'Discount Amount'
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: discount_amount
+
+	column 'Product Standard Cost'
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: product_standard_cost
+
+	column 'Total Product Cost'
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: total_product_cost
+
+	column 'Sales Amount'
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: sales_amount
+
+	column 'Tax Amount'
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: tax_amount
+
+	column 'Freight'
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: freight
+
+	column 'Gross Profit'
+		dataType: decimal
+		isHidden
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: gross_profit
+
+	column 'Gross Margin Pct'
+		dataType: decimal
+		isHidden
+		formatString: 0.00%
+		summarizeBy: none
+		sourceColumn: gross_margin_pct
+
+	column 'Order Date'
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: order_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Due Date'
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: due_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Ship Date'
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: ship_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition FactSales = m
+		mode: import
+		source =
+				let
+					Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+					Analytics = Source{[Schema="analytics", Item="fact_sales"]}[Data]
+				in
+					Analytics
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table

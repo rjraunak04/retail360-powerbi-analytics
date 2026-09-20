@@ -1,0 +1,21 @@
+Check,Actual,Expected,Status
+DimChannel rows,3,3,PASS
+DimCurrency rows,106,106,PASS
+DimCustomer rows,18485,18485,PASS
+DimDate rows,3652,3652,PASS
+DimEmployee rows,297,297,PASS
+DimGeography rows,656,656,PASS
+DimProduct rows,607,607,PASS
+DimPromotion rows,17,17,PASS
+DimReseller rows,702,702,PASS
+DimSalesTerritory rows,12,12,PASS
+Distinct Orders,31455,31455,PASS
+FactInventory rows,776286,776286,PASS
+FactSales rows,121253,121253,PASS
+Gross Profit,12551366.2483,12551366.2483,PASS
+Internet sales lines,60398,60398,PASS
+Inventory Value (all snapshots),29713024789.83,29713024789.83,PASS
+Reseller sales lines,60855,60855,PASS
+Total Product Cost,97257907.9547003,97257907.9547,PASS
+Total Sales,109809274.203,109809274.203,PASS
+Units Sold,274776,274776,PASS

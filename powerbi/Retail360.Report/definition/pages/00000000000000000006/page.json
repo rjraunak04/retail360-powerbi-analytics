@@ -1,0 +1,14 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "00000000000000000006",
+  "displayName": "Geography & Territory",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "annotations": [
+    {
+      "name": "Retail360.Stage7Purpose",
+      "value": "Territory-level revenue and profitability."
+    }
+  ]
+}

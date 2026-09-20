@@ -1,0 +1,79 @@
+Check,Actual,Expected,Status
+Average Discount per Discounted Order,VALUE,evaluates,PASS
+Average Inventory Value,VALUE,evaluates,PASS
+Average Order Value,VALUE,evaluates,PASS
+Average Selling Price,VALUE,evaluates,PASS
+Average Units per Order,VALUE,evaluates,PASS
+Category Rank by Sales,VALUE,evaluates,PASS
+Category Sales Share %,VALUE,evaluates,PASS
+Current Inventory Units,VALUE,evaluates,PASS
+Current Inventory Value,VALUE,evaluates,PASS
+Customers,VALUE,evaluates,PASS
+Discount Rate,VALUE,evaluates,PASS
+Discounted Orders,VALUE,evaluates,PASS
+Discounted Sales,VALUE,evaluates,PASS
+Discounted Sales %,VALUE,evaluates,PASS
+Distinct Orders,VALUE,evaluates,PASS
+Executive Overview Title,VALUE,evaluates,PASS
+Gross Margin %,VALUE,evaluates,PASS
+Gross Profit,VALUE,evaluates,PASS
+Internet Orders,VALUE,evaluates,PASS
+Internet Sales,VALUE,evaluates,PASS
+Internet Sales %,VALUE,evaluates,PASS
+Inventory Health %,VALUE,evaluates,PASS
+Inventory Title,VALUE,evaluates,PASS
+Inventory Turnover,VALUE,evaluates,PASS
+Inventory Units Balance,VALUE,evaluates,PASS
+Inventory Units In,VALUE,evaluates,PASS
+Inventory Units Out,VALUE,evaluates,PASS
+Inventory Value (Snapshot Context),VALUE,evaluates,PASS
+Latest Inventory Date,VALUE,evaluates,PASS
+Net Inventory Movement,VALUE,evaluates,PASS
+Orders by Due Date,VALUE,evaluates,PASS
+Orders by Ship Date,VALUE,evaluates,PASS
+Product Profitability Title,VALUE,evaluates,PASS
+Product Rank by Sales,VALUE,evaluates,PASS
+Product Sales Share %,VALUE,evaluates,PASS
+Products Below Reorder Point,BLANK,evaluates,PASS
+Products Below Safety Stock,VALUE,evaluates,PASS
+Products Sold,VALUE,evaluates,PASS
+Products With Inventory,VALUE,evaluates,PASS
+Profit per Order,VALUE,evaluates,PASS
+Profit per Unit,VALUE,evaluates,PASS
+Profit PY,VALUE,evaluates,PASS
+Profit YoY,VALUE,evaluates,PASS
+Profit YoY %,VALUE,evaluates,PASS
+Profit YTD,VALUE,evaluates,PASS
+Reorder Risk %,BLANK,evaluates,PASS
+Repeat Customer %,VALUE,evaluates,PASS
+Repeat Customers,VALUE,evaluates,PASS
+Reseller Orders,VALUE,evaluates,PASS
+Reseller Sales,VALUE,evaluates,PASS
+Reseller Sales %,VALUE,evaluates,PASS
+Resellers,VALUE,evaluates,PASS
+Revenue per Customer,VALUE,evaluates,PASS
+Revenue per Reseller,VALUE,evaluates,PASS
+Safety Stock Risk %,VALUE,evaluates,PASS
+Sales by Due Date,VALUE,evaluates,PASS
+Sales by Ship Date,VALUE,evaluates,PASS
+Sales Growth Title,VALUE,evaluates,PASS
+Sales Lines,VALUE,evaluates,PASS
+Sales MoM,VALUE,evaluates,PASS
+Sales MoM %,VALUE,evaluates,PASS
+Sales MTD,BLANK,evaluates,PASS
+Sales Previous Month,VALUE,evaluates,PASS
+Sales PY,VALUE,evaluates,PASS
+Sales QTD,BLANK,evaluates,PASS
+Sales YoY,VALUE,evaluates,PASS
+Sales YoY %,VALUE,evaluates,PASS
+Sales YTD,VALUE,evaluates,PASS
+Selected Period Label,VALUE,evaluates,PASS
+Total Discount Amount,VALUE,evaluates,PASS
+Total Freight,VALUE,evaluates,PASS
+Total Product Cost,VALUE,evaluates,PASS
+Total Sales,VALUE,evaluates,PASS
+Total Tax,VALUE,evaluates,PASS
+Units PY,VALUE,evaluates,PASS
+Units Sold,VALUE,evaluates,PASS
+Units YoY %,VALUE,evaluates,PASS
+Units YTD,VALUE,evaluates,PASS

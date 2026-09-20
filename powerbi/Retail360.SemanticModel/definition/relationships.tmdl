@@ -1,0 +1,58 @@
+relationship 11111111-1111-4111-8111-111111111111
+	fromColumn: FactSales.'Channel Key'
+	toColumn: DimChannel.'Channel Key'
+
+relationship 22222222-2222-4222-8222-222222222222
+	fromColumn: FactSales.'Product Key'
+	toColumn: DimProduct.'Product Key'
+
+relationship 33333333-3333-4333-8333-333333333333
+	fromColumn: FactSales.'Order Date Key'
+	toColumn: DimDate.'Date Key'
+
+relationship 44444444-4444-4444-8444-444444444444
+	fromColumn: FactSales.'Due Date Key'
+	toColumn: DimDate.'Date Key'
+	isActive: false
+
+relationship 55555555-5555-4555-8555-555555555555
+	fromColumn: FactSales.'Ship Date Key'
+	toColumn: DimDate.'Date Key'
+	isActive: false
+
+relationship 66666666-6666-4666-8666-666666666666
+	fromColumn: FactSales.'Customer Key'
+	toColumn: DimCustomer.'Customer Key'
+
+relationship 77777777-7777-4777-8777-777777777777
+	fromColumn: FactSales.'Reseller Key'
+	toColumn: DimReseller.'Reseller Key'
+
+relationship 88888888-8888-4888-8888-888888888888
+	fromColumn: FactSales.'Employee Key'
+	toColumn: DimEmployee.'Employee Key'
+
+relationship 99999999-9999-4999-8999-999999999999
+	fromColumn: FactSales.'Promotion Key'
+	toColumn: DimPromotion.'Promotion Key'
+
+relationship aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+	fromColumn: FactSales.'Currency Key'
+	toColumn: DimCurrency.'Currency Key'
+
+relationship bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb
+	fromColumn: FactSales.'Sales Territory Key'
+	toColumn: DimSalesTerritory.'Sales Territory Key'
+
+relationship cccccccc-cccc-4ccc-8ccc-cccccccccccc
+	fromColumn: FactSales.'Geography Key'
+	toColumn: DimGeography.'Geography Key'
+
+relationship dddddddd-dddd-4ddd-8ddd-dddddddddddd
+	fromColumn: FactInventory.'Product Key'
+	toColumn: DimProduct.'Product Key'
+
+relationship eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee
+	fromColumn: FactInventory.'Date Key'
+	toColumn: DimDate.'Date Key'
+

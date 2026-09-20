@@ -1,0 +1,87 @@
+table DimReseller
+	column 'Reseller Key'
+		dataType: int64
+		isHidden
+		isKey
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: reseller_key
+
+	column 'Reseller Code'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: reseller_code
+
+	column 'Reseller Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: reseller_name
+
+	column 'Business Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: business_type
+
+	column 'Number Employees'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: number_employees
+
+	column 'Order Frequency'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: order_frequency
+
+	column 'Order Month'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: order_month
+
+	column 'First Order Year'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: first_order_year
+
+	column 'Last Order Year'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: last_order_year
+
+	column 'Product Line'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_line
+
+	column 'Annual Sales'
+		dataType: decimal
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: annual_sales
+
+	column 'Annual Revenue'
+		dataType: decimal
+		formatString: #,0.00
+		summarizeBy: none
+		sourceColumn: annual_revenue
+
+	column 'Year Opened'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: year_opened
+
+	partition DimReseller = m
+		mode: import
+		source =
+				let
+					Source = PostgreSQL.Database(pServer, pDatabase, [CreateNavigationProperties=false]),
+					Analytics = Source{[Schema="analytics", Item="dim_reseller"]}[Data]
+				in
+					Analytics
+
+	annotation PBI_NavigationStepName = Navigation
+	annotation PBI_ResultType = Table
