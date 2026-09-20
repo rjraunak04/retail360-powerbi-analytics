@@ -1,5 +1,5 @@
 param(
-    [switch]$SkipCleanRestart
+    [switch]$CleanRestart
 )
 
 $ErrorActionPreference = "Stop"
@@ -219,6 +219,7 @@ function Invoke-CleanPowerBIRestart {
 
 
 Write-Host "Preparing single-instance Power BI runtime..." -ForegroundColor DarkGray
+Write-Host "Default mode reuses one already-open Retail360 model; use -CleanRestart only when a cold restart is specifically required." -ForegroundColor DarkGray
 
 $RuntimeRoot = Join-Path $Root ".runtime"
 New-Item -ItemType Directory -Force -Path $RuntimeRoot | Out-Null
@@ -250,23 +251,31 @@ Get-ChildItem $RuntimeRoot -Directory -Filter "stage6-powerbi-*" -ErrorAction Si
     }
 
 $CanonicalProject = Join-Path $Root "powerbi\Retail360.pbip"
+$PowerBIProcess = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
 
-if ($SkipCleanRestart) {
-    $PowerBIProcess = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
-    if ($PowerBIProcess.Count -gt 1) {
-        throw "Multiple Power BI Desktop instances are running ($($PowerBIProcess.Count)). Close them and rerun."
-    }
-    if ($PowerBIProcess.Count -eq 0) {
-        Write-Host "Power BI Desktop is not running; opening canonical Retail360.pbip..." -ForegroundColor Yellow
-        Start-Process $CanonicalProject
-        Start-Sleep -Seconds 12
-    }
-    else {
-        Write-Host "SkipCleanRestart requested; using the single already-open Power BI Desktop instance." -ForegroundColor Yellow
-    }
+if ($PowerBIProcess.Count -gt 1) {
+    throw "Multiple Power BI Desktop instances are running ($($PowerBIProcess.Count)). Close extra Power BI windows and rerun. Stage 6 verification requires exactly one semantic-model engine."
+}
+
+if ($CleanRestart) {
+    Invoke-CleanPowerBIRestart -ProjectPath $CanonicalProject
+}
+elseif ($PowerBIProcess.Count -eq 1) {
+    Write-Host "Using the single already-open Retail360 Power BI Desktop instance for live Stage 6 QA." -ForegroundColor Green
 }
 else {
-    Invoke-CleanPowerBIRestart -ProjectPath $CanonicalProject
+    Write-Host "Power BI Desktop is not running; opening canonical Retail360.pbip..." -ForegroundColor Yellow
+
+    # Cold-start cache cleanup is safe only when Desktop is already closed.
+    Get-ChildItem (Join-Path $Root "powerbi") -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq ".pbi" } |
+        Sort-Object FullName -Descending |
+        ForEach-Object {
+            try { Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop } catch {}
+        }
+
+    Start-Process $CanonicalProject
+    Start-Sleep -Seconds 12
 }
 
 Write-Host "3/4 Live Power BI KPI reconciliation..." -ForegroundColor DarkGray
