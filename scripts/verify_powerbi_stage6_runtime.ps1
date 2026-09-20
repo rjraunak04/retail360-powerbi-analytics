@@ -158,37 +158,57 @@ function Invoke-CleanPowerBIRestart {
             }
     }
 
-    # Basic host-memory preflight. The earlier Desktop failures included
-    # System.OutOfMemoryException/container exits, so do not start msmdsrv while
-    # the host has almost no free RAM. Instead of failing immediately, print
-    # the heaviest processes and wait briefly while the user closes anything
-    # nonessential.
+    # Memory preflight.
+    #
+    # The previous verifier used a hard 2 GB free-physical-RAM gate. That was a
+    # conservative diagnostic guard, not a Power BI requirement, and on an
+    # 8-GB-class Windows machine it could block forever even when Windows had
+    # enough virtual-memory/pagefile headroom to load this ~922k-row model.
+    #
+    # First reclaim disposable WSL/Linux page cache (best effort) without
+    # stopping Docker/PostgreSQL, then gate only on genuinely dangerous memory
+    # pressure: <0.50 GB free physical RAM or <2 GB free virtual memory.
     try {
-        $memoryDeadline = (Get-Date).AddMinutes(3)
-        do {
-            $os = Get-CimInstance Win32_OperatingSystem
-            $freeGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
-            Write-Host ("Free physical memory before Power BI launch: " + $freeGb + " GB") -ForegroundColor DarkGray
-
-            if ($freeGb -ge 2.0) { break }
-
-            Write-Host "Stage 6 needs at least 2 GB free RAM before launching Power BI." -ForegroundColor Yellow
-            Write-Host "Largest current processes:" -ForegroundColor Yellow
-            Get-Process -ErrorAction SilentlyContinue |
-                Sort-Object WorkingSet64 -Descending |
-                Select-Object -First 10 Name, Id, @{Name="RAM_GB";Expression={[math]::Round($_.WorkingSet64 / 1GB, 2)}} |
-                Format-Table -AutoSize | Out-Host
-
-            if ((Get-Date) -ge $memoryDeadline) {
-                throw "Only $freeGb GB RAM is free after waiting 3 minutes. Close memory-heavy applications (browser tabs, IDEs, extra Power BI instances, etc.) and rerun Stage 6 verification."
-            }
-
-            Write-Host "Close nonessential applications now; rechecking RAM in 15 seconds..." -ForegroundColor Yellow
-            Start-Sleep -Seconds 15
-        } while ($true)
+        Write-Host "Reclaiming disposable Docker/WSL cache before Power BI launch..." -ForegroundColor DarkGray
+        & wsl.exe -d docker-desktop -u root sh -lc "sync; echo 3 > /proc/sys/vm/drop_caches" *> $null
+        Start-Sleep -Seconds 2
     }
     catch {
-        if ($_.Exception.Message -like "Only * GB RAM is free*") { throw }
+        # Some Docker Desktop versions do not expose a docker-desktop distro.
+        # Cache reclamation is optional; continue with the Windows memory check.
+    }
+
+    try {
+        $os = Get-CimInstance Win32_OperatingSystem
+        $freePhysicalGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
+        $freeVirtualGb = [math]::Round(($os.FreeVirtualMemory * 1KB) / 1GB, 2)
+
+        Write-Host ("Free physical memory before Power BI launch: " + $freePhysicalGb + " GB") -ForegroundColor DarkGray
+        Write-Host ("Free virtual memory before Power BI launch:  " + $freeVirtualGb + " GB") -ForegroundColor DarkGray
+
+        if ($freePhysicalGb -lt 0.50) {
+            throw "Only $freePhysicalGb GB physical RAM is free. Close one memory-heavy application and rerun Stage 6 verification."
+        }
+        if ($freeVirtualGb -lt 2.0) {
+            throw "Only $freeVirtualGb GB virtual memory is free. Increase/enable the Windows pagefile or close a memory-heavy application, then rerun Stage 6 verification."
+        }
+
+        if ($freePhysicalGb -lt 1.50) {
+            Write-Host "Low-memory mode: continuing because virtual-memory headroom is sufficient." -ForegroundColor Yellow
+            Write-Host "Largest current processes (informational only):" -ForegroundColor Yellow
+            Get-Process -ErrorAction SilentlyContinue |
+                Sort-Object WorkingSet64 -Descending |
+                Select-Object -First 8 Name, Id, @{Name="RAM_GB";Expression={[math]::Round($_.WorkingSet64 / 1GB, 2)}} |
+                Format-Table -AutoSize | Out-Host
+        }
+    }
+    catch {
+        if (
+            $_.Exception.Message -like "Only * physical RAM is free*" -or
+            $_.Exception.Message -like "Only * virtual memory is free*"
+        ) {
+            throw
+        }
         Write-Host "Memory preflight unavailable; continuing." -ForegroundColor Yellow
     }
 
