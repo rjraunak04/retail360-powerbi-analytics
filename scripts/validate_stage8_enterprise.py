@@ -129,13 +129,17 @@ def validate_dax() -> None:
 
     forbidden = {
         "average row gross margin": "AVERAGE(FactSales[Gross Margin Pct])",
-        "fact-table FILTER iterator": "FILTER(FactSales",
         "implicit currency symbol USD": "$#,",
         "implicit currency symbol INR": "₹",
     }
     for label, token in forbidden.items():
         if token in text:
             fail(f"forbidden DAX/performance pattern: {label}")
+
+    # Match an actual FILTER iterator on the full sales fact, but do not
+    # confuse CROSSFILTER(FactSales[...]) with FILTER(FactSales,...).
+    if re.search(r"(?<!CROSS)FILTER\(\s*FactSales\s*,", text, re.I):
+        fail("forbidden DAX/performance pattern: full fact-table FILTER iterator")
 
     ratio_measures = [
         "Gross Margin %",
