@@ -60,3 +60,13 @@ The semantic model must remain a star schema:
 ## Exit gate
 
 Stage 8 repository work is complete only when the full GitHub CI pipeline passes all Stage 1–8 validations. Local Power BI Service assignment and Desktop Performance Analyzer captures are environment evidence, not source-control prerequisites.
+
+
+## Desktop-safe RLS runtime gate
+
+The local Stage 8 runtime verifier uses two complementary checks:
+
+1. the enterprise contract confirms that each source-controlled TMDL role contains the exact territory filter and `FactInventory = FALSE()` rule;
+2. the live DAX runtime queries apply those same filter expressions explicitly and reconcile them to SQL regional baselines.
+
+This avoids using the Analysis Services `Roles` connection property against the local Power BI Desktop engine, which requires administrative impersonation rights and can return an access-denied/database-not-found error for a normal Desktop user. Power BI Desktop **View As** or Power BI Service **Test as role** remains the deployment-level identity test.

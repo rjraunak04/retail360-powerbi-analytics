@@ -43,3 +43,12 @@ Stage 8 validates that:
 - no user or group identities are committed to source control
 - relationship direction remains single-direction and no new security-bidirectional relationship is introduced
 - SQL baselines reconcile territory totals back to global sales
+
+
+## Local automated RLS runtime validation
+
+The three TMDL role definitions are validated structurally in source control. For local automated runtime QA, the Stage 8 DAX queries apply the exact same territory filter expression explicitly and compare the resulting sales lines, orders and sales value with SQL-derived baselines. They also apply the same fail-closed inventory semantics used by the role.
+
+The verifier intentionally does **not** pass `Roles=<role>` to the local Power BI Desktop Analysis Services endpoint. Role impersonation through Analysis Services connection properties requires administrative permissions; a normal Desktop external connection can be rejected even though the model and role are valid.
+
+Actual identity/role behavior is therefore validated interactively with **Modeling → View As** in Power BI Desktop or **Test as role** after deployment to Power BI Service. The automated local gate verifies the source-controlled role definition and the equivalent filter semantics without pretending to impersonate an administrator.

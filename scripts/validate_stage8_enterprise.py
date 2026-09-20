@@ -18,6 +18,14 @@ EXPECTED_ROLES = {
     "RLS_Pacific": "Pacific",
 }
 
+RLS_RUNTIME_QUERIES = {
+    "RLS_North_America": ("Stage8 RLS North America QA.dax", "79353361.1796", "79217", "16108"),
+    "RLS_Europe": ("Stage8 RLS Europe QA.dax", "19800577.0623", "26978", "8504"),
+    "RLS_Pacific": ("Stage8 RLS Pacific QA.dax", "10655335.9611", "15058", "6843"),
+}
+DAX_QUERIES = ROOT / "powerbi" / "Retail360.SemanticModel" / "DAXQueries"
+STAGE8_RUNTIME = ROOT / "scripts" / "verify_powerbi_stage8_runtime.ps1"
+
 EXPECTED_RELATIONSHIPS = {
     ("FactSales", "Channel Key", "DimChannel", "Channel Key", True),
     ("FactSales", "Product Key", "DimProduct", "Product Key", True),
@@ -75,6 +83,43 @@ def validate_roles(model_text: str) -> None:
             fail(f"{role} hard-codes identity membership in source control")
         if f"ref role {role}" not in model_text:
             fail(f"model.tmdl does not register {role}")
+
+
+
+def validate_rls_runtime_contract() -> None:
+    verifier = STAGE8_RUNTIME.read_text(encoding="utf-8")
+    if '"-RoleName"' in verifier or "-RoleName" in verifier:
+        fail("Stage 8 local runtime verifier must not impersonate Desktop roles through Roles= connection semantics")
+
+    if '"-MinimumRows", "6"' not in verifier:
+        fail("Stage 8 local RLS-equivalent runtime gate must require six checks per region")
+
+    for role, group in EXPECTED_ROLES.items():
+        file_name, sales, rows, orders = RLS_RUNTIME_QUERIES[role]
+        path = DAX_QUERIES / file_name
+        if not path.exists():
+            fail(f"missing Stage 8 RLS runtime query: {file_name}")
+        text = path.read_text(encoding="utf-8")
+
+        required_tokens = [
+            f'DimSalesTerritory[Territory Group] = "{group}"',
+            f'"Expected", {sales}',
+            f'"Expected", {rows}',
+            f'"Expected", {orders}',
+            "FILTER(ALL(FactInventory), FALSE())",
+            '"Check", "Total Sales"',
+            '"Check", "Sales Rows"',
+            '"Check", "Distinct Orders"',
+            '"Check", "Inventory rows denied"',
+            '"Check", "Inventory value denied"',
+        ]
+        for token in required_tokens:
+            if token not in text:
+                fail(f"{file_name} missing runtime RLS token: {token}")
+
+        if text.count('ROW(') != 6:
+            fail(f"{file_name} must contain exactly six RLS-equivalent runtime checks")
+
 
 
 def validate_relationships() -> None:
@@ -236,6 +281,7 @@ def validate_docs() -> None:
 def main() -> None:
     model_text = MODEL_FILE.read_text(encoding="utf-8")
     validate_roles(model_text)
+    validate_rls_runtime_contract()
     validate_relationships()
     validate_dax()
     validate_report_performance_structure()
@@ -244,6 +290,7 @@ def main() -> None:
     print("Retail360 Stage 8 enterprise contract")
     print("-" * 78)
     print("RLS roles:                   3/3 PASS")
+    print("Local RLS runtime semantics:  3/3 PASS")
     print("Inventory RLS fail-closed:      PASS")
     print("Hard-coded role members:       0 PASS")
     print("Relationships:              14/14 PASS")

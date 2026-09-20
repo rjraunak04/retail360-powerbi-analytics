@@ -108,3 +108,15 @@ It reruns the Stage 6 semantic-model regression gate and validates all three RLS
 ## Stage 6 runtime reuse policy
 
 Stage 8 reuses a single healthy open Retail360 Power BI Desktop instance for the Stage 6 regression gate. It does **not** force-close and reopen Desktop on every Stage 8 run. The Stage 6 live DAX gates still prove that the loaded semantic model is the expected current model through 34 exact KPI checks and the 78-measure smoke suite. A clean start is used only when no Power BI Desktop instance is running or when explicitly requested for diagnostics.
+
+
+## Local RLS runtime implementation
+
+Local Power BI Desktop runtime QA does not impersonate a role through the MSOLAP `Roles` connection-string property. Instead, Stage 8 combines:
+
+- static validation of the exact TMDL role expressions,
+- live DAX execution of the same territory filter semantics,
+- exact reconciliation to PostgreSQL regional baselines,
+- fail-closed inventory semantics in the live DAX checks.
+
+This design is deterministic on a normal Desktop workstation and avoids a false failure caused by administrative impersonation requirements on the local Analysis Services endpoint. Interactive **View As** / Power BI Service **Test as role** remains the final identity-assignment check.
