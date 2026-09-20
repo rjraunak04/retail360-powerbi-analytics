@@ -118,13 +118,16 @@ def main() -> None:
         fail("expected exactly two inactive role-playing date relationships")
 
     pages = load_json(REPORT / "definition" / "pages" / "pages.json")
-    if len(pages.get("pageOrder", [])) != 1:
-        fail("starter report must contain exactly one page")
+    page_order = pages.get("pageOrder", [])
+    if len(page_order) < 1:
+        fail("report must contain at least one page")
+    if pages.get("activePageName") not in page_order:
+        fail("activePageName must reference a page in pageOrder")
 
-    page_id = pages["pageOrder"][0]
-    page = REPORT / "definition" / "pages" / page_id / "page.json"
-    if not page.exists():
-        fail(f"page definition missing for {page_id}")
+    for page_id in page_order:
+        page = REPORT / "definition" / "pages" / page_id / "page.json"
+        if not page.exists():
+            fail(f"page definition missing for {page_id}")
 
     print("Retail360 PBIP scaffold")
     print("-" * 72)
@@ -138,7 +141,7 @@ def main() -> None:
     print("Inactive date roles:     2/2 PASS")
     print("PostgreSQL parameters:  PASS")
     print("Source partitions:      12/12 PASS")
-    print("Starter report page:    PASS")
+    print(f"Report pages:           {len(page_order)} PASS")
     print("-" * 72)
     print("PBIP scaffold validation PASSED.")
 

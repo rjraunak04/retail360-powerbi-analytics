@@ -82,6 +82,9 @@ jobs:
       - name: Validate Stage 6 DAX KPI contract
         run: python scripts/validate_stage6_dax.py
 
+      - name: Validate Stage 7 PBIR report UX
+        run: python scripts/validate_stage7_report.py
+
       - name: Parse Stage 5 PowerShell runtime verifier
         shell: pwsh
         run: |
