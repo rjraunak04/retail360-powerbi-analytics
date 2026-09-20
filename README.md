@@ -299,6 +299,22 @@ retail360-powerbi-analytics/
 - [LinkedIn + GitHub descriptions](docs/recruiter/linkedin-github-description.md)
 - [SQL examples](docs/sql/recruiter-sql-examples.md)
 
+## Stage 10 deployment
+
+Retail360's **portfolio/fallback deployment is complete**. The canonical deployable artifact remains the source-controlled `powerbi/Retail360.pbip` project.
+
+Create the versioned recruiter/demo release package on Windows with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\package_stage10_release.ps1
+```
+
+This generates an ignored `dist/` folder containing a portable source package, ZIP archive, release metadata and SHA-256 checksums.
+
+The project is **Power BI Service ready**, but this repository does not falsely claim tenant publication. Service publication, gateway/connection credentials, refresh scheduling and RLS membership are environment-specific steps documented in [the Power BI Service checklist](docs/deployment/powerbi-service-publish-checklist.md).
+
+Stage 10 evidence: [deployment summary](docs/deployment/stage10-deployment-summary.md).
+
 ## Skills demonstrated
 
 **Data Engineering:** PostgreSQL, SQL, dimensional modelling, staging layers, data-quality checks, reproducible loading.
@@ -320,7 +336,7 @@ Those are documented extensions rather than fabricated implementation claims.
 
 ## Project status
 
-Stages 0–8 are complete and validated. Stage 9 packages the project for GitHub and recruiter review. Stage 10 covers final Power BI Service deployment / distribution evidence.
+Stages 0–10 are complete for the portfolio/fallback deployment path. Power BI Service publication remains an optional tenant-specific deployment step and is not claimed without environment evidence.
 
 See the full [project roadmap](docs/roadmap/end-to-end-build-plan.md).
 

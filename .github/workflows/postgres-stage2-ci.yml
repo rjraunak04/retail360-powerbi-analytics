@@ -99,6 +99,25 @@ jobs:
             python scripts/validate_stage9_packaging.py
           fi
 
+
+      - name: Validate Stage 10 deployment contract
+        run: python scripts/validate_stage10_deployment.py
+
+      - name: Parse Stage 10 release packaging helper
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/package_stage10_release.ps1",
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
       - name: Parse Stage 9 screenshot capture helper
         shell: pwsh
         run: |

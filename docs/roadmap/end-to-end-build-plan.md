@@ -1,10 +1,10 @@
-﻿# Retail360 â€” End-to-End Build Plan
+# Retail360 — End-to-End Build Plan
 
 ## Goal
 
 Complete Retail360 as a recruiter-ready end-to-end retail analytics portfolio project with reproducible source acquisition, data-quality validation, PostgreSQL data engineering, dimensional modelling, Power BI semantic modelling, DAX, dashboard UX, QA, documentation and deployment evidence.
 
-## Stage 0 â€” Project Foundation
+## Stage 0 — Project Foundation
 Status: COMPLETE
 
 Deliverables:
@@ -14,7 +14,7 @@ Deliverables:
 - repository structure
 - source-control conventions
 
-## Stage 1 â€” Data Foundation
+## Stage 1 — Data Foundation
 Status: COMPLETE
 
 Deliverables:
@@ -26,14 +26,8 @@ Deliverables:
 - foreign-key validation
 - documented fact grains
 
-Exit gate:
-- zero malformed rows caused by parser logic
-- zero duplicate/null grain keys
-- referential-integrity checks understood and documented
-
-## Stage 2 â€” PostgreSQL Warehouse Foundation
+## Stage 2 — PostgreSQL Warehouse Foundation
 Status: COMPLETE
-
 
 Deliverables:
 - retail360 database
@@ -43,9 +37,8 @@ Deliverables:
 - row-count reconciliation
 - SQL quality checks
 
-## Stage 3 â€” Staging and Business Transformation
+## Stage 3 — Staging and Business Transformation
 Status: COMPLETE
-
 
 Deliverables:
 - cleaned and typed staging views/tables
@@ -56,125 +49,110 @@ Deliverables:
 - date handling
 - null/unknown-member policy
 
-## Stage 4 â€” Analytics Star Schema
+## Stage 4 — Analytics Star Schema
 Status: COMPLETE
 
-
-Target semantic entities:
-- DimDate
-- DimProduct
-- DimCustomer
-- DimReseller
-- DimGeography / DimTerritory
-- DimPromotion
-- DimCurrency
-- DimEmployee (only where analytically needed)
-- FactSales (harmonised Internet + Reseller)
-- FactInventory
-
-Exit gate:
+Deliverables:
+- conformed dimensions
+- harmonised FactSales
+- FactInventory snapshot fact
 - one-to-many relationships
 - explicit fact grains
-- conformed dimensions
-- no accidental many-to-many relationships
+- controlled unknown-member policy
 
-## Stage 5 â€” Power BI Semantic Model
+## Stage 5 — Power BI Semantic Model
 Status: COMPLETE
-
 
 Deliverables:
 - PostgreSQL connection
-- Power Query staging
+- Power Query import layer
 - star-schema relationships
-- dedicated measure table
 - hidden technical keys
-- correct data categories and formatting
-- Date table marked properly
+- Date table
+- PBIP/TMDL/PBIR source control
 
-## Stage 6 â€” DAX KPI Layer
+## Stage 6 — DAX KPI Layer
 Status: COMPLETE
-
-
-Core KPI groups:
-- Sales: Total Sales, Units, Orders, ASP
-- Profitability: Total Cost, Gross Profit, Gross Margin %
-- Growth: MTD/QTD/YTD, YoY, YoY %
-- Customer: Customers, Revenue per Customer, Repeat/segment metrics where valid
-- Product: Category contribution, product ranking
-- Channel: Internet vs Reseller
-- Promotion: promoted sales, discount impact
-- Inventory: Units Balance, Inventory Value, inventory movement
-
-## Stage 7 â€” Recruiter-Grade Report UX
-Status: COMPLETE
-
-Pages:
-1. Executive Overview
-2. Sales & Growth
-3. Product & Profitability
-4. Customer Analytics
-5. Channel / Reseller Analytics
-6. Geography & Territory
-7. Promotion Analysis
-8. Inventory Analytics
-9. Drill-through Detail
-10. Model / Data Quality
-
-UX:
-- consistent grid and spacing
-- KPI cards
-- variance indicators
-- dynamic titles
-- field parameters where useful
-- report-page tooltips
-- drillthrough
-- bookmarks only where they improve navigation
-
-## Stage 8 â€” Enterprise Features and QA
-Status: COMPLETE
-
 
 Deliverables:
-- territory-based RLS roles with fail-closed inventory behavior
-- Performance Analyzer / report-structure review
-- DAX optimisation contract
-- relationship and security-direction QA
-- KPI reconciliation against PostgreSQL
-- SQL edge-case testing
-- refresh/deployment notes
-- PBIP/PBIX source-control strategy
-- one-command Stage 8 enterprise runtime gate
+- 78 governed explicit measures
+- sales/profitability/growth KPIs
+- customer/reseller/product/channel KPIs
+- role-playing date measures
+- latest-snapshot inventory logic
+- exact KPI runtime proof and all-measure smoke proof
 
-## Stage 9 â€” GitHub and Recruiter Packaging
+## Stage 7 — Recruiter-Grade Report UX
 Status: COMPLETE
 
+Deliverables:
+- 10 visible analytical pages
+- 1 hidden report-page tooltip
+- consistent grid, cards, trends and comparison visuals
+- drillthrough and tooltip behaviour
+- CI-validated PBIR structure
+
+## Stage 8 — Enterprise Features and QA
+Status: COMPLETE
+
+Deliverables:
+- territory-based demonstration RLS
+- relationship/security-direction QA
+- DAX optimisation contract
+- SQL edge-case testing
+- refresh/deployment notes
+- PBIP/PBIX strategy
+- enterprise runtime QA
+
+## Stage 9 — GitHub and Recruiter Packaging
+Status: COMPLETE
 
 Deliverables:
 - final README
-- architecture diagram
-- star-schema diagram
-- dashboard screenshots
+- architecture and star-schema diagrams
+- 10 dashboard screenshots
 - KPI dictionary
 - SQL examples
 - project decisions / trade-offs
 - setup instructions
 - interview talking points
 - CV bullets
-- LinkedIn/GitHub project description
+- LinkedIn/GitHub project copy
 
-## Stage 10 â€” Deployment
+## Stage 10 — Deployment
+Status: COMPLETE — PORTFOLIO/FALLBACK DEPLOYMENT
 
-Preferred:
-- publish to Power BI Service where account capabilities allow
-- configure credentials/refresh where feasible
-- document workspace/report deployment
+Completed:
+- canonical source-controlled PBIP distribution artifact
+- versioned release manifest
+- one-command release packaging helper
+- SHA-256 integrity manifest
+- reproducible local deployment/demo path
+- Power BI Service publication checklist
+- gateway/cloud PostgreSQL refresh guidance
+- generated release output excluded from source control
+- CI deployment-contract validation
 
-Fallback:
-- polished PBIX/PBIP in repository-compatible structure
-- screenshots and walkthrough
+Power BI Service publication is environment-dependent and is not claimed until an authenticated tenant/workspace, connection or gateway, refresh, and RLS membership are configured and evidenced.
+
+Preferred environment path:
+- publish to Power BI Service when account capabilities allow
+- configure credentials/connection or gateway
+- validate on-demand and scheduled refresh
+- assign/test RLS membership
+
+Completed fallback path:
+- polished PBIP/PBIR/TMDL repository artifact
+- screenshots and recruiter walkthrough
 - reproducible local setup
+- versioned ZIP package generated on demand
+
+Exit gate:
+- `python scripts/validate_stage10_deployment.py` passes
+- `scripts/package_stage10_release.ps1` parses successfully
+- Stage 10 CI is green
+- no credentials or machine-local caches are distributed
 
 ## Build Rule
 
-No stage is considered complete only because a file exists. Each stage must pass an explicit validation gate before the next layer is treated as production-ready.
-
+No stage is considered complete only because a file exists. Each stage must pass an explicit validation gate before it is treated as production-ready.
