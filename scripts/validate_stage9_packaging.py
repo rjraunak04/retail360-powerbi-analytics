@@ -12,12 +12,10 @@ REQUIRED_DOCS = [
     "docs/architecture/retail360-architecture.md",
     "docs/architecture/star-schema.md",
     "docs/powerbi/kpi-dictionary.md",
-    "docs/recruiter/project-decisions.md",
-    "docs/recruiter/setup-guide.md",
-    "docs/recruiter/interview-talking-points.md",
-    "docs/recruiter/cv-bullets.md",
-    "docs/recruiter/linkedin-github-description.md",
-    "docs/sql/recruiter-sql-examples.md",
+    "docs/project/architecture-decisions.md",
+    "docs/project/setup.md",
+    "docs/sql/business-analysis-examples.md",
+    "docs/qa/stage9-packaging-validation.md",
     "docs/screenshots/README.md",
 ]
 
@@ -81,11 +79,13 @@ def main() -> None:
         "10 analytical pages + 1 hidden report-page tooltip",
         "docs/architecture/retail360-architecture.md",
         "docs/architecture/star-schema.md",
-        "docs/recruiter/interview-talking-points.md",
+        "docs/project/architecture-decisions.md",
+        "docs/project/setup.md",
+        "docs/sql/business-analysis-examples.md",
     ]
     for token in required_readme_tokens:
         if token not in readme:
-            fail(f"README missing recruiter token: {token}")
+            fail(f"README missing required project token: {token}")
 
     architecture = (ROOT / "docs/architecture/retail360-architecture.md").read_text(encoding="utf-8")
     star = (ROOT / "docs/architecture/star-schema.md").read_text(encoding="utf-8")
@@ -142,18 +142,16 @@ def main() -> None:
     else:
         screenshot_status = f"{len(existing)}/10 present; local rendered-image gate is separate"
 
-    print("Retail360 Stage 9 recruiter packaging")
+    print("Retail360 Stage 9 repository packaging")
     print("-" * 76)
     print("Final README:             PASS")
     print("Architecture diagram:     PASS")
     print("Star-schema diagram:      PASS")
     print("KPI dictionary:           PASS")
     print("SQL examples:             PASS")
-    print("Project decisions:        PASS")
+    print("Architecture decisions:   PASS")
     print("Setup guide:              PASS")
-    print("Interview talking points: PASS")
-    print("CV bullets:               PASS")
-    print("LinkedIn/GitHub copy:     PASS")
+    print("Public repository scope:  PASS")
     print("Stage 6 runtime evidence: PASS")
     print("Stage 8 enterprise QA:    PASS")
     print("Report page contract:     10 visible + 1 tooltip PASS")
