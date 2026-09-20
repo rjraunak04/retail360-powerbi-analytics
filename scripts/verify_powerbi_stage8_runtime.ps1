@@ -34,7 +34,11 @@ if ($LASTEXITCODE -ne 0) { throw "Stage 8 enterprise contract validation failed.
 
 if (-not $SkipStage6Regression) {
     Write-Host "3/4 Stage 6 semantic-model regression gate..." -ForegroundColor DarkGray
-    & powershell -ExecutionPolicy Bypass -File $Stage6Verifier -ForceCleanRestart
+    # Reuse the single healthy open Retail360 Desktop instance when present.
+    # Stage 6 already validates the model through live 34-check + 78-measure
+    # gates, so forcing a restart here is unnecessary and can block on an open
+    # Power BI window or Save dialog.
+    & powershell -ExecutionPolicy Bypass -File $Stage6Verifier
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 else {
