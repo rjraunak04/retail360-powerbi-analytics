@@ -1,0 +1,30 @@
+// Stage 8 regional RLS runtime QA.
+// Run while connected using the corresponding semantic-model role.
+
+DEFINE
+    VAR _VisibleGroupCount =
+        COUNTROWS(
+            FILTER(
+                VALUES(DimSalesTerritory[Territory Group]),
+                NOT ISBLANK(DimSalesTerritory[Territory Group])
+            )
+        )
+    VAR _ExpectedGroupVisible =
+        CALCULATE(
+            COUNTROWS(DimSalesTerritory),
+            DimSalesTerritory[Territory Group] = "Pacific"
+        )
+    VAR _SalesPositive = IF([Total Sales] > 0, 1, 0)
+    VAR _InventoryRows = COUNTROWS(FactInventory)
+    VAR _InventoryValueDenied =
+        IF(ISBLANK([Current Inventory Value]) || [Current Inventory Value] = 0, 0, 1)
+
+EVALUATE
+UNION(
+    ROW("Check", "Total Sales", "Actual", _SalesPositive, "Expected", 1, "Status", IF(_SalesPositive = 1, "PASS", "FAIL")),
+    ROW("Check", "Visible territory group count", "Actual", _VisibleGroupCount, "Expected", 1, "Status", IF(_VisibleGroupCount = 1, "PASS", "FAIL")),
+    ROW("Check", "Expected territory visible", "Actual", IF(_ExpectedGroupVisible > 0, 1, 0), "Expected", 1, "Status", IF(_ExpectedGroupVisible > 0, "PASS", "FAIL")),
+    ROW("Check", "Inventory rows denied", "Actual", _InventoryRows, "Expected", 0, "Status", IF(_InventoryRows = 0, "PASS", "FAIL")),
+    ROW("Check", "Inventory value denied", "Actual", _InventoryValueDenied, "Expected", 0, "Status", IF(_InventoryValueDenied = 0, "PASS", "FAIL"))
+)
+ORDER BY [Check]
