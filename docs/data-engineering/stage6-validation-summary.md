@@ -2,9 +2,9 @@
 
 ## Status
 
-Repository implementation and PostgreSQL benchmark reconciliation are complete.
+**COMPLETE — live Power BI Desktop runtime validation passed on 20 September 2026.**
 
-Final exit gate still requires the live Power BI Desktop runtime query to return all checks as PASS.
+Repository implementation, PostgreSQL benchmark reconciliation, PBIP/TMDL validation, exact live KPI reconciliation, and all-measure smoke validation are complete.
 
 ## Governed semantic layer
 
@@ -90,7 +90,7 @@ The local verifier writes temporary evidence under the ignored `.runtime/` direc
 - `.runtime/stage6-powerbi-runtime-proof.csv`
 - `.runtime/stage6-measure-smoke-proof.csv`
 
-After the live gate passes, reviewed canonical copies are committed under `docs/data-engineering/`. Stage 6 is marked COMPLETE only after live evidence shows **34/34 exact KPI checks PASS** and **78/78 governed measures evaluate successfully**.
+Reviewed canonical runtime evidence is committed under `docs/data-engineering/`. Stage 6 has passed **34/34 exact KPI checks** and **78/78 governed-measure smoke checks**, so the stage is COMPLETE.
 
 
 ## Load-stability hardening
