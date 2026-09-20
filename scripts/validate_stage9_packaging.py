@@ -62,6 +62,15 @@ def main() -> None:
         if not path.exists() or path.stat().st_size == 0:
             fail(f"missing/empty required artifact: {rel}")
 
+    capture_script = (ROOT / "scripts/capture_stage9_screenshots.ps1").read_text(encoding="utf-8")
+    non_ascii = sorted({ch for ch in capture_script if ord(ch) > 127})
+    if non_ascii:
+        codepoints = ", ".join(f"U+{ord(ch):04X}" for ch in non_ascii)
+        fail(
+            "capture_stage9_screenshots.ps1 must remain ASCII-only for Windows "
+            f"PowerShell 5.1 compatibility; found: {codepoints}"
+        )
+
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     required_readme_tokens = [
         "Retail360",
