@@ -131,18 +131,19 @@ UX:
 - bookmarks only where they improve navigation
 
 ## Stage 8 — Enterprise Features and QA
-Status: NEXT
+Status: COMPLETE
 
 
 Deliverables:
-- RLS design
-- Performance Analyzer review
-- DAX optimisation
-- relationship QA
+- territory-based RLS roles with fail-closed inventory behavior
+- Performance Analyzer / report-structure review
+- DAX optimisation contract
+- relationship and security-direction QA
 - KPI reconciliation against PostgreSQL
-- edge-case testing
+- SQL edge-case testing
 - refresh/deployment notes
-- PBIP/PBIX strategy
+- PBIP/PBIX source-control strategy
+- one-command Stage 8 enterprise runtime gate
 
 ## Stage 9 — GitHub and Recruiter Packaging
 
