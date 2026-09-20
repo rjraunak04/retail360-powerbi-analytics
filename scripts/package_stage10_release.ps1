@@ -70,9 +70,10 @@ foreach ($dir in @("powerbi", "power-query", "scripts", "sql", "docs")) {
     Copy-FilteredTree -Source (Join-Path $Root $dir) -Destination (Join-Path $ReleaseDir $dir)
 }
 
-$workflowSource = Join-Path $Root ".github\workflows"
+$workflowSource = Join-Path (Join-Path $Root ".github") "workflows"
 if (Test-Path $workflowSource) {
-    Copy-FilteredTree -Source $workflowSource -Destination (Join-Path $ReleaseDir ".github\workflows")
+    $workflowDestination = Join-Path (Join-Path $ReleaseDir ".github") "workflows"
+    Copy-FilteredTree -Source $workflowSource -Destination $workflowDestination
 }
 
 $commit = "unknown"
