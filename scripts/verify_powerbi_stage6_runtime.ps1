@@ -1,5 +1,5 @@
 param(
-    [switch]$SkipCleanRestart
+    [switch]$ForceCleanRestart
 )
 
 $ErrorActionPreference = "Stop"
@@ -52,6 +52,7 @@ function Test-PostgresContainerReady {
 }
 
 Write-Host "Retail360 Stage 6 full validation gate" -ForegroundColor Cyan
+Write-Host "Runtime policy: reuse one healthy open Power BI instance; clean-start only when needed." -ForegroundColor DarkGray
 
 Write-Host "Starting/checking PostgreSQL..." -ForegroundColor DarkGray
 if (-not (Test-DockerEngine)) {
@@ -233,20 +234,21 @@ Get-ChildItem $RuntimeRoot -Directory -Filter "stage6-powerbi-*" -ErrorAction Si
     }
 
 $CanonicalProject = Join-Path $Root "powerbi\Retail360.pbip"
+$PowerBIProcess = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
 
-if ($SkipCleanRestart) {
-    $PowerBIProcess = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
-    if ($PowerBIProcess.Count -gt 1) {
-        throw "Multiple Power BI Desktop instances are running ($($PowerBIProcess.Count)). Close them and rerun."
-    }
-    if ($PowerBIProcess.Count -eq 0) {
-        Write-Host "Power BI Desktop is not running; opening canonical Retail360.pbip..." -ForegroundColor Yellow
-        Start-Process $CanonicalProject
-        Start-Sleep -Seconds 12
-    }
-    else {
-        Write-Host "SkipCleanRestart requested; using the single already-open Power BI Desktop instance." -ForegroundColor Yellow
-    }
+if ($PowerBIProcess.Count -gt 1) {
+    throw "Multiple Power BI Desktop instances are running ($($PowerBIProcess.Count)). Save/close extra Power BI windows and rerun so only one semantic-model engine is validated."
+}
+
+if ($ForceCleanRestart) {
+    Invoke-CleanPowerBIRestart -ProjectPath $CanonicalProject
+}
+elseif ($PowerBIProcess.Count -eq 1) {
+    # Reuse the already-loaded canonical model. This avoids unnecessary reloads
+    # and is especially important on low-memory developer machines. The live DAX
+    # gates below still prove that the open model is the expected Retail360 model.
+    Write-Host "Using the single already-open Power BI Desktop runtime." -ForegroundColor Green
+    Write-Host "The 34-check and 78-measure live DAX gates will verify that this is the correct Stage 6 model." -ForegroundColor DarkGray
 }
 else {
     Invoke-CleanPowerBIRestart -ProjectPath $CanonicalProject
