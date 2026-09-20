@@ -79,9 +79,9 @@ def validate_roles(model_text: str) -> None:
 
 def validate_relationships() -> None:
     text = RELATIONSHIPS.read_text(encoding="utf-8")
-    if "crossFilteringBehavior: both" in text.lower():
+    if "crossfilteringbehavior: both" in text.lower():
         fail("bidirectional relationship found")
-    if "securityFilteringBehavior: both" in text.lower():
+    if "securityfilteringbehavior: both" in text.lower():
         fail("bidirectional security filtering found")
 
     blocks = [b for b in re.split(r"\n\s*\n", text.strip()) if b.strip()]
