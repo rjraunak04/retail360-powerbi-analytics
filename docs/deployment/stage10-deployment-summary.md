@@ -21,6 +21,8 @@ The repository does **not** claim that a Power BI Service workspace publication,
 - recruiter-ready dashboard screenshots
 - reproducible local setup
 - CI-enforced Stage 10 deployment contract
+- GitHub Actions build of the versioned release ZIP
+- short-lived CI artifact containing the release ZIP, release metadata and SHA-256 checksum manifest
 
 ## Deployment mode
 
@@ -42,7 +44,7 @@ Versioned portfolio release package
       +--> Power BI Service publish when tenant access is available
 ```
 
-The package is generated locally under `dist/` and is intentionally not committed.
+The package is generated locally under `dist/` and is intentionally not committed. GitHub Actions also builds the same package during Stage 10 validation and uploads a short-lived workflow artifact for review.
 
 ## Build the release package
 
