@@ -2,7 +2,7 @@
 
 ## Status
 
-Repository implementation and PostgreSQL benchmark reconciliation are complete. Live Power BI runtime verification remains the final exit gate.
+Stage 6 is COMPLETE. Repository implementation, PostgreSQL reconciliation, live Power BI exact KPI reconciliation (34/34), and the 78/78 all-measure smoke suite have passed.
 
 ## Design
 
