@@ -3,7 +3,10 @@ param(
     [int]$ModelProbeTimeoutSeconds = 30,
     [string]$QueryPath = "",
     [string]$ProofCsvPath = "",
-    [string]$StageLabel = "Stage 5"
+    [string]$StageLabel = "Stage 5",
+    [string]$RoleName = "",
+    [int]$MinimumRows = 20,
+    [string]$RequiredCheck = "Total Sales"
 )
 
 $ErrorActionPreference = "Stop"
@@ -48,7 +51,8 @@ function Recordset-ToObjects {
 function Open-AdodbConnection {
     param(
         [int]$Port,
-        [string]$Database = ""
+        [string]$Database = "",
+        [string]$Role = ""
     )
 
     $conn = New-Object -ComObject ADODB.Connection
@@ -58,6 +62,9 @@ function Open-AdodbConnection {
     $connectionString = "Provider=MSOLAP;Data Source=localhost:$Port;Integrated Security=SSPI;"
     if ($Database) {
         $connectionString += "Initial Catalog=$Database;"
+    }
+    if ($Role) {
+        $connectionString += "Roles=$Role;"
     }
 
     $conn.Open($connectionString)
@@ -327,7 +334,7 @@ while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
         foreach ($catalog in $catalogs) {
             $conn = $null
             try {
-                $conn = Open-AdodbConnection -Port $port -Database $catalog
+                $conn = Open-AdodbConnection -Port $port -Database $catalog -Role $RoleName
 
                 # Execute the real Stage 5 proof directly. This is both model
                 # identification and runtime validation, avoiding provider-
@@ -345,10 +352,11 @@ while ((Get-Date) -lt $probeDeadline -and -not $runtimeRows) {
                 $candidateFailures = @($candidateRows | Where-Object { [string]$_.Status -ne "PASS" })
                 $checkNames = @($candidateRows | ForEach-Object { [string]$_.Check })
 
+                $requiredCheckOk = (-not $RequiredCheck) -or ($checkNames -contains $RequiredCheck)
                 if (
-                    $candidateRows.Count -ge 20 -and
+                    $candidateRows.Count -ge $MinimumRows -and
                     $candidateFailures.Count -eq 0 -and
-                    $checkNames -contains "Total Sales"
+                    $requiredCheckOk
                 ) {
                     $runtimeRows = $candidateRows
                     $selectedPort = $port
@@ -381,6 +389,9 @@ if (-not $runtimeRows) {
 
 Write-Host "Connected to Retail360 Power BI semantic model on localhost:$selectedPort" -ForegroundColor Green
 Write-Host "Power BI model database: $selectedDatabase" -ForegroundColor DarkGray
+if ($RoleName) {
+    Write-Host "Semantic-model role: $RoleName" -ForegroundColor DarkGray
+}
 
 $rows = $runtimeRows
 
