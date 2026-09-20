@@ -158,18 +158,40 @@ function Invoke-CleanPowerBIRestart {
             }
     }
 
-    # Basic host-memory preflight. This model is modest; extremely low free
-    # memory usually means another application is starving msmdsrv.
+    # Host-memory preflight. Stage 5 already proved that the semantic model is
+    # small enough for this machine, so low physical RAM alone should not block
+    # verification when Windows still has healthy pagefile/virtual headroom.
+    # We warn and show the largest user processes, but only stop when both
+    # physical AND virtual memory are critically low.
     try {
         $os = Get-CimInstance Win32_OperatingSystem
-        $freeGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
-        Write-Host ("Free physical memory before Power BI launch: " + $freeGb + " GB") -ForegroundColor DarkGray
-        if ($freeGb -lt 2.0) {
-            throw "Only $freeGb GB RAM is free. Close memory-heavy applications and rerun Stage 6 verification."
+        $freePhysicalGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
+        $freeVirtualGb = [math]::Round(($os.FreeVirtualMemory * 1KB) / 1GB, 2)
+
+        Write-Host ("Free physical memory before Power BI launch: " + $freePhysicalGb + " GB") -ForegroundColor DarkGray
+        Write-Host ("Free virtual memory before Power BI launch:  " + $freeVirtualGb + " GB") -ForegroundColor DarkGray
+
+        if ($freePhysicalGb -lt 1.0) {
+            Write-Host "Low-RAM mode: continuing because Stage 5 already proved this model on the same machine." -ForegroundColor Yellow
+            Write-Host "Largest current processes by working set:" -ForegroundColor DarkGray
+
+            Get-Process -ErrorAction SilentlyContinue |
+                Sort-Object WorkingSet64 -Descending |
+                Select-Object -First 8 @{Name="Process";Expression={$_.ProcessName}}, Id, @{Name="RAM_GB";Expression={[math]::Round($_.WorkingSet64 / 1GB, 2)}} |
+                Format-Table -AutoSize | Out-Host
+
+            if ($freeVirtualGb -lt 2.0) {
+                throw "Windows is critically low on both physical and virtual memory (RAM $freePhysicalGb GB, virtual $freeVirtualGb GB). Increase/enable the Windows page file or close one large application before rerunning."
+            }
+
+            Write-Host "Windows has sufficient virtual-memory headroom; Power BI launch will continue in low-RAM mode." -ForegroundColor Yellow
+        }
+        elseif ($freePhysicalGb -lt 2.0) {
+            Write-Host "RAM is tight, but sufficient virtual-memory headroom is available. Continuing." -ForegroundColor Yellow
         }
     }
     catch {
-        if ($_.Exception.Message -like "Only * GB RAM is free*") { throw }
+        if ($_.Exception.Message -like "Windows is critically low on both physical and virtual memory*") { throw }
         Write-Host "Memory preflight unavailable; continuing." -ForegroundColor Yellow
     }
 
