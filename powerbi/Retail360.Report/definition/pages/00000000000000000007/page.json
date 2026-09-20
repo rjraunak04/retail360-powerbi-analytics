@@ -1,14 +1,14 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
-  "name": "a4e8c0d16f654da1a1b2",
-  "displayName": "Executive Overview",
+  "name": "00000000000000000007",
+  "displayName": "Promotion Analysis",
   "displayOption": "FitToPage",
   "height": 720,
   "width": 1280,
   "annotations": [
     {
       "name": "Retail360.Stage7Purpose",
-      "value": "Executive summary of headline retail performance."
+      "value": "Promotion and discount impact analysis."
     }
   ]
 }
