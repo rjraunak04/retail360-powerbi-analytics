@@ -14,6 +14,8 @@ REQUIRED_DOCS = [
     "docs/powerbi/kpi-dictionary.md",
     "docs/project/architecture-decisions.md",
     "docs/project/setup.md",
+    "docs/project/project-explanation-practice.md",
+    "docs/project/interview-cheatsheet.md",
     "docs/sql/business-analysis-examples.md",
     "docs/qa/stage9-packaging-validation.md",
     "docs/screenshots/README.md",
@@ -151,6 +153,8 @@ def main() -> None:
     print("SQL examples:             PASS")
     print("Architecture decisions:   PASS")
     print("Setup guide:              PASS")
+    print("Project explanation pack: PASS")
+    print("Interview cheat sheet:    PASS")
     print("Public repository scope:  PASS")
     print("Stage 6 runtime evidence: PASS")
     print("Stage 8 enterprise QA:    PASS")
