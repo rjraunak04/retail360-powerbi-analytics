@@ -154,3 +154,19 @@ Exit gate:
 ## Build Rule
 
 No stage is considered complete only because a file exists. Each stage must pass an explicit validation gate before it is treated as production-ready.
+
+
+## Post-build — Project Explanation Practice
+Status: COMPLETE
+
+Deliverables:
+- 30-second recruiter pitch
+- 2-minute technical walkthrough
+- five-minute report demo sequence
+- architecture whiteboard narrative
+- verified KPI numbers to remember
+- modelling and debugging stories
+- common interview Q&A
+- resume bullets
+- one-page interview cheat sheet
+- explicit project non-claims
