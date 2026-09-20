@@ -103,3 +103,8 @@ A local optional runtime gate is available at:
 `scripts/verify_powerbi_stage8_runtime.ps1`
 
 It reruns the Stage 6 semantic-model regression gate and validates all three RLS roles through the live Power BI local Analysis Services engine.
+
+
+## Stage 6 runtime reuse policy
+
+Stage 8 reuses a single healthy open Retail360 Power BI Desktop instance for the Stage 6 regression gate. It does **not** force-close and reopen Desktop on every Stage 8 run. The Stage 6 live DAX gates still prove that the loaded semantic model is the expected current model through 34 exact KPI checks and the 78-measure smoke suite. A clean start is used only when no Power BI Desktop instance is running or when explicitly requested for diagnostics.
