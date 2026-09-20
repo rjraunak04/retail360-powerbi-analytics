@@ -1,8 +1,8 @@
-# Retail360 — Stage 9 Validation Summary
+﻿# Retail360 â€” Stage 9 Validation Summary
 
 ## Stage
 
-**Stage 9 — GitHub and Recruiter Packaging**
+**Stage 9 â€” GitHub and Recruiter Packaging**
 
 ## Repository packaging status
 
@@ -29,9 +29,9 @@ Completed artifacts:
 
 Stage 9 links directly to validated engineering evidence rather than restating unverified claims:
 
-- Stage 6 exact Power BI runtime proof — 34/34 PASS
-- Stage 6 governed-measure smoke proof — 78/78 PASS
-- Stage 7 report source contract — 10 visible pages + 1 hidden tooltip
+- Stage 6 exact Power BI runtime proof â€” 34/34 PASS
+- Stage 6 governed-measure smoke proof â€” 78/78 PASS
+- Stage 7 report source contract â€” 10 visible pages + 1 hidden tooltip
 - Stage 8 enterprise/security/edge-case QA
 
 ## Screenshot evidence
@@ -57,3 +57,18 @@ The project intentionally does not substitute AI-generated dashboard mockups for
 Repository packaging is complete when CI passes.
 
 Stage 9 becomes fully complete after the local screenshot helper produces and validates all **10/10 real rendered report screenshots** and those images are committed to `docs/screenshots/`.
+
+## Final screenshot evidence
+
+Status: PASSED
+
+The automated local Power BI Desktop capture produced and validated all 10/10 real rendered report screenshots under docs/screenshots/.
+
+Final local gate:
+- 10/10 report screenshots present
+- each screenshot passed the minimum file-size sanity check
+- Stage 9 packaging validation with --require-screenshots passed
+
+### Stage 9 decision
+
+Stage 9 - GitHub and Recruiter Packaging: COMPLETE
