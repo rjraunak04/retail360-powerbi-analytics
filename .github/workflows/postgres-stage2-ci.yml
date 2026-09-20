@@ -92,7 +92,12 @@ jobs:
         run: python scripts/validate_stage8_enterprise.py
 
       - name: Validate Stage 9 recruiter packaging
-        run: python scripts/validate_stage9_packaging.py
+        run: |
+          if [ -f docs/screenshots/01-executive-overview.png ]; then
+            python scripts/validate_stage9_packaging.py --require-screenshots
+          else
+            python scripts/validate_stage9_packaging.py
+          fi
 
       - name: Parse Stage 9 screenshot capture helper
         shell: pwsh
