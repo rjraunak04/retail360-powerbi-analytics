@@ -1,5 +1,5 @@
 param(
-    [switch]$SkipCleanRestart
+    [switch]$CleanRestart
 )
 
 $ErrorActionPreference = "Stop"
@@ -158,18 +158,57 @@ function Invoke-CleanPowerBIRestart {
             }
     }
 
-    # Basic host-memory preflight. This model is modest; extremely low free
-    # memory usually means another application is starving msmdsrv.
+    # Memory preflight.
+    #
+    # The previous verifier used a hard 2 GB free-physical-RAM gate. That was a
+    # conservative diagnostic guard, not a Power BI requirement, and on an
+    # 8-GB-class Windows machine it could block forever even when Windows had
+    # enough virtual-memory/pagefile headroom to load this ~922k-row model.
+    #
+    # First reclaim disposable WSL/Linux page cache (best effort) without
+    # stopping Docker/PostgreSQL, then gate only on genuinely dangerous memory
+    # pressure: <0.50 GB free physical RAM or <2 GB free virtual memory.
+    try {
+        Write-Host "Reclaiming disposable Docker/WSL cache before Power BI launch..." -ForegroundColor DarkGray
+        & wsl.exe -d docker-desktop -u root sh -lc "sync; echo 3 > /proc/sys/vm/drop_caches" *> $null
+        Start-Sleep -Seconds 2
+    }
+    catch {
+        # Some Docker Desktop versions do not expose a docker-desktop distro.
+        # Cache reclamation is optional; continue with the Windows memory check.
+    }
+
     try {
         $os = Get-CimInstance Win32_OperatingSystem
-        $freeGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
-        Write-Host ("Free physical memory before Power BI launch: " + $freeGb + " GB") -ForegroundColor DarkGray
-        if ($freeGb -lt 2.0) {
-            throw "Only $freeGb GB RAM is free. Close memory-heavy applications and rerun Stage 6 verification."
+        $freePhysicalGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
+        $freeVirtualGb = [math]::Round(($os.FreeVirtualMemory * 1KB) / 1GB, 2)
+
+        Write-Host ("Free physical memory before Power BI launch: " + $freePhysicalGb + " GB") -ForegroundColor DarkGray
+        Write-Host ("Free virtual memory before Power BI launch:  " + $freeVirtualGb + " GB") -ForegroundColor DarkGray
+
+        if ($freePhysicalGb -lt 0.50) {
+            throw "Only $freePhysicalGb GB physical RAM is free. Close one memory-heavy application and rerun Stage 6 verification."
+        }
+        if ($freeVirtualGb -lt 2.0) {
+            throw "Only $freeVirtualGb GB virtual memory is free. Increase/enable the Windows pagefile or close a memory-heavy application, then rerun Stage 6 verification."
+        }
+
+        if ($freePhysicalGb -lt 1.50) {
+            Write-Host "Low-memory mode: continuing because virtual-memory headroom is sufficient." -ForegroundColor Yellow
+            Write-Host "Largest current processes (informational only):" -ForegroundColor Yellow
+            Get-Process -ErrorAction SilentlyContinue |
+                Sort-Object WorkingSet64 -Descending |
+                Select-Object -First 8 Name, Id, @{Name="RAM_GB";Expression={[math]::Round($_.WorkingSet64 / 1GB, 2)}} |
+                Format-Table -AutoSize | Out-Host
         }
     }
     catch {
-        if ($_.Exception.Message -like "Only * GB RAM is free*") { throw }
+        if (
+            $_.Exception.Message -like "Only * physical RAM is free*" -or
+            $_.Exception.Message -like "Only * virtual memory is free*"
+        ) {
+            throw
+        }
         Write-Host "Memory preflight unavailable; continuing." -ForegroundColor Yellow
     }
 
@@ -180,6 +219,7 @@ function Invoke-CleanPowerBIRestart {
 
 
 Write-Host "Preparing single-instance Power BI runtime..." -ForegroundColor DarkGray
+Write-Host "Default mode reuses one already-open Retail360 model; use -CleanRestart only when a cold restart is specifically required." -ForegroundColor DarkGray
 
 $RuntimeRoot = Join-Path $Root ".runtime"
 New-Item -ItemType Directory -Force -Path $RuntimeRoot | Out-Null
@@ -211,23 +251,31 @@ Get-ChildItem $RuntimeRoot -Directory -Filter "stage6-powerbi-*" -ErrorAction Si
     }
 
 $CanonicalProject = Join-Path $Root "powerbi\Retail360.pbip"
+$PowerBIProcess = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
 
-if ($SkipCleanRestart) {
-    $PowerBIProcess = @(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
-    if ($PowerBIProcess.Count -gt 1) {
-        throw "Multiple Power BI Desktop instances are running ($($PowerBIProcess.Count)). Close them and rerun."
-    }
-    if ($PowerBIProcess.Count -eq 0) {
-        Write-Host "Power BI Desktop is not running; opening canonical Retail360.pbip..." -ForegroundColor Yellow
-        Start-Process $CanonicalProject
-        Start-Sleep -Seconds 12
-    }
-    else {
-        Write-Host "SkipCleanRestart requested; using the single already-open Power BI Desktop instance." -ForegroundColor Yellow
-    }
+if ($PowerBIProcess.Count -gt 1) {
+    throw "Multiple Power BI Desktop instances are running ($($PowerBIProcess.Count)). Close extra Power BI windows and rerun. Stage 6 verification requires exactly one semantic-model engine."
+}
+
+if ($CleanRestart) {
+    Invoke-CleanPowerBIRestart -ProjectPath $CanonicalProject
+}
+elseif ($PowerBIProcess.Count -eq 1) {
+    Write-Host "Using the single already-open Retail360 Power BI Desktop instance for live Stage 6 QA." -ForegroundColor Green
 }
 else {
-    Invoke-CleanPowerBIRestart -ProjectPath $CanonicalProject
+    Write-Host "Power BI Desktop is not running; opening canonical Retail360.pbip..." -ForegroundColor Yellow
+
+    # Cold-start cache cleanup is safe only when Desktop is already closed.
+    Get-ChildItem (Join-Path $Root "powerbi") -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq ".pbi" } |
+        Sort-Object FullName -Descending |
+        ForEach-Object {
+            try { Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop } catch {}
+        }
+
+    Start-Process $CanonicalProject
+    Start-Sleep -Seconds 12
 }
 
 Write-Host "3/4 Live Power BI KPI reconciliation..." -ForegroundColor DarkGray
