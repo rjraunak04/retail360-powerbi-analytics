@@ -56,3 +56,6 @@ docs/data-model/foreign-key-report.csv
 
 # Local runtime validation evidence (canonical proof is committed after review)
 .runtime/
+
+# Generated Stage 10 release packages
+dist/

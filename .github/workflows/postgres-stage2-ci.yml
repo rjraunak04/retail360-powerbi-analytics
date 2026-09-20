@@ -99,6 +99,47 @@ jobs:
             python scripts/validate_stage9_packaging.py
           fi
 
+
+      - name: Validate Stage 10 deployment contract
+        run: python scripts/validate_stage10_deployment.py
+
+      - name: Parse Stage 10 release packaging helper
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/package_stage10_release.ps1",
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
+      - name: Build Stage 10 release package
+        shell: pwsh
+        run: |
+          ./scripts/package_stage10_release.ps1 -Version "1.0.0-portfolio" -OutputRoot "dist"
+          if (-not (Test-Path "dist/Retail360-1.0.0-portfolio.zip")) {
+            throw "Stage 10 release ZIP was not created."
+          }
+          if (-not (Test-Path "dist/Retail360-1.0.0-portfolio/SHA256SUMS.txt")) {
+            throw "Stage 10 checksum manifest was not created."
+          }
+
+      - name: Upload Stage 10 deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Retail360-1.0.0-portfolio
+          path: |
+            dist/Retail360-1.0.0-portfolio.zip
+            dist/Retail360-1.0.0-portfolio/RELEASE_INFO.txt
+            dist/Retail360-1.0.0-portfolio/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Parse Stage 9 screenshot capture helper
         shell: pwsh
         run: |
