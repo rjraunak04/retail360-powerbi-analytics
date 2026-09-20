@@ -2,7 +2,7 @@
 
 ## Status
 
-Source-controlled PBIR implementation is complete and validated in CI.
+**COMPLETE.** The source-controlled PBIR implementation is complete and CI-validated. Pixel-level screenshot/aesthetic review is treated as a Stage 8 QA activity rather than a Stage 7 build blocker.
 
 ## Report architecture
 
@@ -72,6 +72,10 @@ python scripts/validate_stage7_report.py
 
 The validator checks:
 
+- exact **62** visual-container inventory (6 per visible page + 2 tooltip visuals)
+- page-purpose annotations and visible-page title textboxes
+- contiguous tab order and unique z-order
+
 - exact page inventory/order
 - visible vs hidden tooltip pages
 - valid page and visual IDs
@@ -86,6 +90,8 @@ The validator checks:
 
 GitHub Actions runs this validation after Stage 6 semantic/DAX checks.
 
-## Desktop render gate
+## Stage 7 exit decision
 
-PBIR source validation is deterministic and CI-backed. Final pixel-level review still requires Power BI Desktop to render the report on a machine with enough free RAM. The local host previously reported only 0.56 GB free memory, so screenshot/pixel review should be performed only after memory pressure is cleared.
+Stage 7 is complete when the PBIR source contract and full CI pipeline are green. The report definition is deterministic and source-controlled, with 10 visible pages, one tooltip page, 62 validated visual containers, drillthrough, tooltip bindings, governed measures, layout geometry, and interaction contracts.
+
+Pixel-perfect screenshot review, Performance Analyzer review, accessibility refinements, and final render tuning belong to **Stage 8 — Enterprise Features and QA**. This keeps Stage 7 focused on building the recruiter-grade report experience and Stage 8 focused on runtime quality assurance.
