@@ -14,7 +14,7 @@ REQUIRED = [
     "docs/deployment/stage10-deployment-summary.md",
     "docs/deployment/release-manifest.json",
     "scripts/package_stage10_release.ps1",
-    "docs/recruiter/setup-guide.md",
+    "docs/project/setup.md",
 ]
 
 SCREENSHOTS = [
@@ -102,10 +102,10 @@ def main() -> None:
         fail("roadmap does not mark Stage 10 fallback deployment complete")
 
     for token in [
-        "Stage 10 deployment",
         "package_stage10_release.ps1",
-        "Power BI Service ready",
-        "portfolio/fallback deployment",
+        "Power BI Service publication",
+        "portfolio/fallback deployment path",
+        "docs/deployment/stage10-deployment-summary.md",
     ]:
         if token not in readme:
             fail(f"README missing Stage 10 token: {token}")
