@@ -18,7 +18,8 @@
 [Star Schema](docs/architecture/star-schema.md) •
 [KPI Dictionary](docs/powerbi/kpi-dictionary.md) •
 [Dashboard Gallery](docs/screenshots/README.md) •
-[Setup](docs/project/setup.md)
+[Setup](docs/project/setup.md) •
+[Interview Practice](docs/project/project-explanation-practice.md)
 
 </div>
 
@@ -272,3 +273,13 @@ Not claimed:
 The portfolio/fallback deployment path is complete and CI-validated. Power BI Service publication remains an optional environment-specific deployment step.
 
 [Project roadmap](docs/roadmap/end-to-end-build-plan.md)
+
+
+## Explain this project in interviews
+
+Use the dedicated practice pack before recruiter or technical interviews:
+
+- [Full project explanation & interview practice](docs/project/project-explanation-practice.md)
+- [One-page interview cheat sheet](docs/project/interview-cheatsheet.md)
+
+The practice material covers the 30-second pitch, 2-minute architecture walkthrough, key verified numbers, model-grain decisions, DAX design, RLS, debugging stories, likely interview questions, demo sequence, resume bullets and explicit non-claims.
