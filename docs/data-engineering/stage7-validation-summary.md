@@ -24,3 +24,5 @@ Command:
 Repository gate passes when the Stage 7 validator and the complete GitHub Actions warehouse/semantic pipeline are green.
 
 A final Desktop screenshot review is a visual QA gate rather than a source-code gate and depends on adequate local memory.
+
+CI trigger: Stage 7 source validation.
