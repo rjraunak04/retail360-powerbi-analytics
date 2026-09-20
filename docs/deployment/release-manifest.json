@@ -22,7 +22,9 @@
     "generated_directory": "dist/Retail360-1.0.0-portfolio",
     "generated_archive": "dist/Retail360-1.0.0-portfolio.zip",
     "checksum_file": "SHA256SUMS.txt",
-    "committed_to_git": false
+    "committed_to_git": false,
+    "ci_artifact_name": "Retail360-1.0.0-portfolio",
+    "ci_retention_days": 14
   },
   "validated_report_pages": 10,
   "hidden_tooltip_pages": 1,
