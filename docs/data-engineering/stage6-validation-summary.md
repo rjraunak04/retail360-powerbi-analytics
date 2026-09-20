@@ -129,3 +129,31 @@ The hardened design now follows these rules:
 - clean only repository-local Power BI caches on a cold start
 - fail fast when multiple Power BI Desktop instances are running, because parallel semantic-model engines can trigger memory pressure and misleading provider/container errors
 - validate the final model through 34 exact KPI checks and a 78-measure smoke suite
+
+
+## Final live Power BI runtime proof
+
+**Status: PASSED — 20 September 2026**
+
+The canonical Retail360 PBIP project was validated against the live local Power BI Desktop semantic model after PostgreSQL and repository contracts had already passed.
+
+Final live results:
+
+- Stage 6 SQL KPI benchmark: **PASS**
+- Stage 6 DAX/TMDL contract: **PASS**
+- governed measures: **78/78**
+- exact live KPI reconciliation: **34/34 PASS**
+- all-measure live smoke suite: **78/78 PASS**
+- Power BI semantic model connected successfully through the local Analysis Services endpoint
+- exact proof: `docs/data-engineering/stage6-powerbi-runtime-proof.csv`
+- smoke proof: `docs/data-engineering/stage6-measure-smoke-proof.csv`
+
+The exact runtime suite reconciles sales, cost, profit, orders, customer/reseller counts, channel totals, role-playing due/ship dates, time intelligence, promotion logic, and latest-snapshot inventory KPIs against the SQL benchmark.
+
+The smoke suite evaluates every governed Stage 6 measure. Measures that are legitimately blank in the current unfiltered context still pass when evaluation succeeds.
+
+### Stage 6 decision
+
+**Stage 6 — DAX KPI Layer: COMPLETE**
+
+All repository, SQL, PBIP/TMDL, CI, Power BI model-load, exact KPI reconciliation, and all-measure runtime gates have passed.
