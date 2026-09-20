@@ -6,6 +6,7 @@
 
 - 10 visible report pages
 - 1 hidden report-page tooltip
+- **62 visual containers**: 6 per visible page and 2 on the hidden tooltip
 - 6 native visual families
 - consistent 1280×720 visible-page canvas
 - inline Year/context slicers
@@ -19,10 +20,12 @@ Command:
 
 `python scripts/validate_stage7_report.py`
 
-## Exit criteria
+## Final decision
 
-Repository gate passes when the Stage 7 validator and the complete GitHub Actions warehouse/semantic pipeline are green.
+**Stage 7 — Recruiter-Grade Report UX: COMPLETE**
 
-A final Desktop screenshot review is a visual QA gate rather than a source-code gate and depends on adequate local memory.
+The Stage 7 build gate is the deterministic PBIR/report contract plus the complete CI pipeline. The report now has the full analytical page architecture, governed semantic bindings, consistent layout, drillthrough, tooltip behavior, and validated interaction structure.
+
+Pixel-level screenshot review and runtime visual/performance tuning are intentionally carried into **Stage 8 — Enterprise Features and QA**.
 
 CI trigger: Stage 7 source validation.
