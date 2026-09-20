@@ -22,6 +22,9 @@ EXPECTED_VISIBLE = [
     "Model / Data Quality",
 ]
 ALLOWED_VISUALS = {"textbox", "cardVisual", "slicer", "lineChart", "barChart", "tableEx"}
+EXPECTED_TOTAL_VISUALS = 62
+EXPECTED_VISIBLE_VISUALS_PER_PAGE = 6
+EXPECTED_TOOLTIP_VISUALS = 2
 
 
 def fail(msg: str) -> None:
@@ -109,6 +112,11 @@ def main() -> None:
             visible_names.append(page.get("displayName"))
             if page.get("width") != 1280 or page.get("height") != 720:
                 fail(f"{page.get('displayName')} must use 1280x720 canvas")
+            if page.get("displayOption") != "FitToPage":
+                fail(f"{page.get('displayName')} must use FitToPage")
+            annotations = page.get("annotations") or []
+            if not any(a.get("name") == "Retail360.Stage7Purpose" and a.get("value") for a in annotations):
+                fail(f"{page.get('displayName')} is missing Retail360.Stage7Purpose annotation")
         else:
             if page.get("visibility") != "HiddenInViewMode" or page.get("type") != "Tooltip":
                 fail("Product Tooltip must be a hidden tooltip page")
@@ -175,15 +183,39 @@ def main() -> None:
                 visuals.append(v)
 
         total_visuals += len(visuals)
-        minimum = 2 if page.get("displayName") == "Product Tooltip" else 6
-        if len(visuals) < minimum:
-            fail(f"{page.get('displayName')} has only {len(visuals)} visuals; expected at least {minimum}")
+        expected_count = EXPECTED_TOOLTIP_VISUALS if page.get("displayName") == "Product Tooltip" else EXPECTED_VISIBLE_VISUALS_PER_PAGE
+        if len(visuals) != expected_count:
+            fail(f"{page.get('displayName')} has {len(visuals)} visuals; expected exactly {expected_count}")
+
+        tab_orders = [v.get("position", {}).get("tabOrder") for v in visuals]
+        if any(not isinstance(x, int) for x in tab_orders):
+            fail(f"{page.get('displayName')} has a visual without integer tabOrder")
+        if sorted(tab_orders) != list(range(len(visuals))):
+            fail(f"{page.get('displayName')} tabOrder must be contiguous 0..{len(visuals)-1}")
+
+        z_orders = [v.get("position", {}).get("z") for v in visuals]
+        if len(z_orders) != len(set(z_orders)):
+            fail(f"{page.get('displayName')} has duplicate z-order values")
+
+        if page.get("displayName") != "Product Tooltip":
+            title_boxes = []
+            for vis in visuals:
+                if ((vis.get("visual") or {}).get("visualType")) != "textbox":
+                    continue
+                text_blob = json.dumps((vis.get("visual") or {}).get("objects") or {})
+                if page.get("displayName") in text_blob:
+                    title_boxes.append(vis)
+            if len(title_boxes) != 1:
+                fail(f"{page.get('displayName')} must have exactly one page-title textbox")
 
         # No accidental layout overlaps.
         for i, a in enumerate(visuals):
             for b in visuals[i+1:]:
                 if overlaps(a["position"], b["position"]):
                     fail(f"visual overlap on {page.get('displayName')}: {a['name']} vs {b['name']}")
+
+    if total_visuals != EXPECTED_TOTAL_VISUALS:
+        fail(f"expected exactly {EXPECTED_TOTAL_VISUALS} visual containers, found {total_visuals}")
 
     if visible_names != EXPECTED_VISIBLE:
         fail(f"visible page order mismatch: {visible_names}")
@@ -201,7 +233,9 @@ def main() -> None:
     print("-" * 76)
     print("Visible pages:            10/10 PASS")
     print("Hidden tooltip pages:      1/1 PASS")
-    print(f"Visual containers:         {total_visuals} PASS")
+    print(f"Visual containers:         {total_visuals}/{EXPECTED_TOTAL_VISUALS} PASS")
+    print("Page purpose/title policy: PASS")
+    print("Tab/z-order policy:        PASS")
     print("Canvas bounds/overlap:     PASS")
     print("Semantic field bindings:   PASS")
     print("KPI measure bindings:      PASS")
