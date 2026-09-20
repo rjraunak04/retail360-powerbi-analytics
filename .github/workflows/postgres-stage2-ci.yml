@@ -91,6 +91,24 @@ jobs:
       - name: Validate Stage 8 enterprise semantic / performance contract
         run: python scripts/validate_stage8_enterprise.py
 
+      - name: Validate Stage 9 recruiter packaging
+        run: python scripts/validate_stage9_packaging.py
+
+      - name: Parse Stage 9 screenshot capture helper
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "scripts/capture_stage9_screenshots.ps1",
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
       - name: Parse Stage 5 PowerShell runtime verifier
         shell: pwsh
         run: |
