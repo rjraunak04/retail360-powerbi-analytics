@@ -24,3 +24,9 @@ ref table FactSales
 ref table FactInventory
 
 ref table KPI_Measures
+
+ref role RLS_North_America
+
+ref role RLS_Europe
+
+ref role RLS_Pacific

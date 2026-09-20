@@ -1,0 +1,8 @@
+/// Demo regional RLS role for North America sales.
+/// Inventory is denied because FactInventory has no territory key/grain.
+role RLS_North_America
+	modelPermission: read
+
+	tablePermission DimSalesTerritory = DimSalesTerritory[Territory Group] = "North America"
+
+	tablePermission FactInventory = FALSE()
