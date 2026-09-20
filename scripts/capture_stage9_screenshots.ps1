@@ -138,25 +138,65 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 if ($CommitAndPush) {
+    $roadmapPath = Join-Path $Root "docs\roadmap\end-to-end-build-plan.md"
+    if (Test-Path $roadmapPath) {
+        $roadmap = Get-Content $roadmapPath -Raw
+        $oldStatus = "## Stage 9 — GitHub and Recruiter Packaging" + [Environment]::NewLine + "Status: REPOSITORY COMPLETE — RENDERED SCREENSHOT CAPTURE PENDING"
+        $newStatus = "## Stage 9 — GitHub and Recruiter Packaging" + [Environment]::NewLine + "Status: COMPLETE"
+        $roadmap = $roadmap.Replace($oldStatus, $newStatus)
+        Set-Content -Path $roadmapPath -Value $roadmap -Encoding UTF8
+    }
+
+    $summaryPath = Join-Path $Root "docs\recruiter\stage9-validation-summary.md"
+    if (Test-Path $summaryPath) {
+        $summary = Get-Content $summaryPath -Raw
+        if ($summary -notmatch "Final screenshot evidence") {
+            $append = @"
+
+## Final screenshot evidence
+
+Status: PASSED
+
+The automated local Power BI Desktop capture produced and validated all 10/10 real rendered report screenshots under docs/screenshots/.
+
+Final local gate:
+- 10/10 report screenshots present
+- each screenshot passed the minimum file-size sanity check
+- Stage 9 packaging validation with --require-screenshots passed
+
+### Stage 9 decision
+
+Stage 9 — GitHub and Recruiter Packaging: COMPLETE
+"@
+            $summary = $summary + $append
+            Set-Content -Path $summaryPath -Value $summary -Encoding UTF8
+        }
+    }
+
+    python scripts/validate_stage9_packaging.py --require-screenshots
+    if ($LASTEXITCODE -ne 0) {
+        throw "Final Stage 9 packaging validation failed after status update."
+    }
+
     $currentBranch = (git rev-parse --abbrev-ref HEAD).Trim()
     if (-not $currentBranch -or $currentBranch -eq "HEAD") {
         throw "Cannot commit screenshots from a detached HEAD."
     }
 
-    git add docs/screenshots/*.png
+    git add docs/screenshots/*.png docs/roadmap/end-to-end-build-plan.md docs/recruiter/stage9-validation-summary.md
     git status --short
 
     $staged = git diff --cached --name-only
     if ($staged) {
-        git commit -m "docs: add Retail360 dashboard screenshot gallery"
+        git commit -m "docs: finalize Retail360 Stage 9 recruiter package"
         if ($LASTEXITCODE -ne 0) { throw "Git commit failed." }
 
         git push origin $currentBranch
         if ($LASTEXITCODE -ne 0) { throw "Git push failed." }
 
-        Write-Host "Screenshots committed and pushed to $currentBranch." -ForegroundColor Green
+        Write-Host "Stage 9 screenshots/status committed and pushed to $currentBranch." -ForegroundColor Green
     }
     else {
-        Write-Host "No new screenshot changes to commit." -ForegroundColor DarkGray
+        Write-Host "No new Stage 9 changes to commit." -ForegroundColor DarkGray
     }
 }
