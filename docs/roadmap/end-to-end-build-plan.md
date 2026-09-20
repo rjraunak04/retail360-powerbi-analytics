@@ -1,10 +1,10 @@
-# Retail360 — End-to-End Build Plan
+﻿# Retail360 â€” End-to-End Build Plan
 
 ## Goal
 
 Complete Retail360 as a recruiter-ready end-to-end retail analytics portfolio project with reproducible source acquisition, data-quality validation, PostgreSQL data engineering, dimensional modelling, Power BI semantic modelling, DAX, dashboard UX, QA, documentation and deployment evidence.
 
-## Stage 0 — Project Foundation
+## Stage 0 â€” Project Foundation
 Status: COMPLETE
 
 Deliverables:
@@ -14,7 +14,7 @@ Deliverables:
 - repository structure
 - source-control conventions
 
-## Stage 1 — Data Foundation
+## Stage 1 â€” Data Foundation
 Status: COMPLETE
 
 Deliverables:
@@ -31,7 +31,7 @@ Exit gate:
 - zero duplicate/null grain keys
 - referential-integrity checks understood and documented
 
-## Stage 2 — PostgreSQL Warehouse Foundation
+## Stage 2 â€” PostgreSQL Warehouse Foundation
 Status: COMPLETE
 
 
@@ -43,7 +43,7 @@ Deliverables:
 - row-count reconciliation
 - SQL quality checks
 
-## Stage 3 — Staging and Business Transformation
+## Stage 3 â€” Staging and Business Transformation
 Status: COMPLETE
 
 
@@ -56,7 +56,7 @@ Deliverables:
 - date handling
 - null/unknown-member policy
 
-## Stage 4 — Analytics Star Schema
+## Stage 4 â€” Analytics Star Schema
 Status: COMPLETE
 
 
@@ -78,7 +78,7 @@ Exit gate:
 - conformed dimensions
 - no accidental many-to-many relationships
 
-## Stage 5 — Power BI Semantic Model
+## Stage 5 â€” Power BI Semantic Model
 Status: COMPLETE
 
 
@@ -91,7 +91,7 @@ Deliverables:
 - correct data categories and formatting
 - Date table marked properly
 
-## Stage 6 — DAX KPI Layer
+## Stage 6 â€” DAX KPI Layer
 Status: COMPLETE
 
 
@@ -105,7 +105,7 @@ Core KPI groups:
 - Promotion: promoted sales, discount impact
 - Inventory: Units Balance, Inventory Value, inventory movement
 
-## Stage 7 — Recruiter-Grade Report UX
+## Stage 7 â€” Recruiter-Grade Report UX
 Status: COMPLETE
 
 Pages:
@@ -130,7 +130,7 @@ UX:
 - drillthrough
 - bookmarks only where they improve navigation
 
-## Stage 8 — Enterprise Features and QA
+## Stage 8 â€” Enterprise Features and QA
 Status: COMPLETE
 
 
@@ -145,7 +145,9 @@ Deliverables:
 - PBIP/PBIX source-control strategy
 - one-command Stage 8 enterprise runtime gate
 
-## Stage 9 — GitHub and Recruiter Packaging
+## Stage 9 â€” GitHub and Recruiter Packaging
+Status: COMPLETE
+
 
 Deliverables:
 - final README
@@ -160,7 +162,7 @@ Deliverables:
 - CV bullets
 - LinkedIn/GitHub project description
 
-## Stage 10 — Deployment
+## Stage 10 â€” Deployment
 
 Preferred:
 - publish to Power BI Service where account capabilities allow
@@ -175,3 +177,4 @@ Fallback:
 ## Build Rule
 
 No stage is considered complete only because a file exists. Each stage must pass an explicit validation gate before the next layer is treated as production-ready.
+
