@@ -1,33 +1,31 @@
-# Retail360 — Recruiter-Friendly SQL Examples
+# Business Analysis SQL Examples
 
-These examples illustrate the business logic used in the analytics layer. They are simplified for discussion; the repository SQL scripts remain the implementation source of truth.
+These examples show the core business logic used in the analytics layer. The SQL scripts under `sql/` remain the implementation source of truth.
 
-## 1. Revenue, cost and gross profit
+## Revenue, cost and gross profit
 
 ```sql
 SELECT
-    SUM(sales_amount)        AS total_sales,
-    SUM(total_product_cost)  AS total_product_cost,
-    SUM(gross_profit)        AS gross_profit,
-    SUM(order_quantity)      AS units_sold
+    SUM(sales_amount)       AS total_sales,
+    SUM(total_product_cost) AS total_product_cost,
+    SUM(gross_profit)       AS gross_profit,
+    SUM(order_quantity)     AS units_sold
 FROM analytics.fact_sales;
 ```
 
-## 2. Correct distinct order count across channels
+## Distinct orders across channels
 
 Internet and Reseller order numbers can overlap, so the business key includes channel.
 
 ```sql
 SELECT COUNT(*) AS distinct_orders
 FROM (
-    SELECT DISTINCT
-        channel_key,
-        sales_order_number
+    SELECT DISTINCT channel_key, sales_order_number
     FROM analytics.fact_sales
 ) q;
 ```
 
-## 3. Channel reconciliation
+## Channel reconciliation
 
 ```sql
 SELECT
@@ -41,7 +39,7 @@ GROUP BY c.channel_name
 ORDER BY sales DESC;
 ```
 
-## 4. Weighted gross margin
+## Weighted gross margin
 
 ```sql
 SELECT
@@ -49,9 +47,7 @@ SELECT
 FROM analytics.fact_sales;
 ```
 
-This intentionally does not average row-level margin percentages.
-
-## 5. Top product categories
+## Top product categories
 
 ```sql
 SELECT
@@ -65,7 +61,7 @@ GROUP BY p.category_name
 ORDER BY sales DESC;
 ```
 
-## 6. Latest inventory snapshot
+## Latest inventory snapshot
 
 ```sql
 WITH latest AS (
@@ -82,7 +78,7 @@ JOIN latest l
 GROUP BY i.movement_date;
 ```
 
-## 7. Products below safety stock
+## Products below safety stock
 
 ```sql
 WITH latest AS (
@@ -105,7 +101,7 @@ JOIN analytics.dim_product p
 WHERE s.units_balance < p.safety_stock_level;
 ```
 
-## 8. Repeat customers
+## Repeat customers
 
 ```sql
 WITH customer_orders AS (
@@ -121,7 +117,7 @@ FROM customer_orders
 WHERE orders > 1;
 ```
 
-## 9. Territory-level RLS baseline
+## Territory baseline
 
 ```sql
 SELECT
@@ -135,7 +131,7 @@ GROUP BY t.territory_group
 ORDER BY sales DESC;
 ```
 
-## 10. Data-quality reconciliation
+## Data-quality reconciliation
 
 ```sql
 SELECT
@@ -144,7 +140,3 @@ SELECT
     COUNT(*) FILTER (WHERE order_quantity < 0) AS negative_quantity_rows
 FROM analytics.fact_sales;
 ```
-
-## Interview point
-
-The SQL layer establishes stable row-level business definitions and analytical grain. DAX then handles filter-context-sensitive measures such as time intelligence, rank, selected-period contribution and role-playing dates.
