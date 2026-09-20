@@ -114,7 +114,7 @@ for ($i = 0; $i -lt $pages.Count; $i++) {
     Start-Sleep -Milliseconds 500
 
     $target = Join-Path $OutputDir $pages[$i].File
-    Write-Host ("Capturing " + ($i + 1) + "/10 — " + $pages[$i].Name) -ForegroundColor Cyan
+    Write-Host ("Capturing " + ($i + 1) + "/10 - " + $pages[$i].Name) -ForegroundColor Cyan
     Save-PowerBIWindowScreenshot -WindowHandle $hwnd -Path $target
 
     $info = Get-Item $target
@@ -141,9 +141,8 @@ if ($CommitAndPush) {
     $roadmapPath = Join-Path $Root "docs\roadmap\end-to-end-build-plan.md"
     if (Test-Path $roadmapPath) {
         $roadmap = Get-Content $roadmapPath -Raw
-        $oldStatus = "## Stage 9 — GitHub and Recruiter Packaging" + [Environment]::NewLine + "Status: REPOSITORY COMPLETE — RENDERED SCREENSHOT CAPTURE PENDING"
-        $newStatus = "## Stage 9 — GitHub and Recruiter Packaging" + [Environment]::NewLine + "Status: COMPLETE"
-        $roadmap = $roadmap.Replace($oldStatus, $newStatus)
+        $stage9Pattern = '(?ms)(## Stage 9[^\r\n]*GitHub and Recruiter Packaging\r?\n)Status: REPOSITORY COMPLETE[^\r\n]*RENDERED SCREENSHOT CAPTURE PENDING'
+        $roadmap = [regex]::Replace($roadmap, $stage9Pattern, '${1}Status: COMPLETE')
         Set-Content -Path $roadmapPath -Value $roadmap -Encoding UTF8
     }
 
@@ -166,7 +165,7 @@ Final local gate:
 
 ### Stage 9 decision
 
-Stage 9 — GitHub and Recruiter Packaging: COMPLETE
+Stage 9 - GitHub and Recruiter Packaging: COMPLETE
 "@
             $summary = $summary + $append
             Set-Content -Path $summaryPath -Value $summary -Encoding UTF8
