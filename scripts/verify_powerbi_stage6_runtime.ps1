@@ -161,11 +161,37 @@ function Invoke-CleanPowerBIRestart {
     # Basic host-memory preflight. This model is modest; extremely low free
     # memory usually means another application is starving msmdsrv.
     try {
-        $os = Get-CimInstance Win32_OperatingSystem
-        $freeGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
-        Write-Host ("Free physical memory before Power BI launch: " + $freeGb + " GB") -ForegroundColor DarkGray
+        $memoryDeadline = (Get-Date).AddMinutes(10)
+        $freeGb = 0.0
+
+        while ((Get-Date) -lt $memoryDeadline) {
+            $os = Get-CimInstance Win32_OperatingSystem
+            $freeGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
+            Write-Host ("Free physical memory before Power BI launch: " + $freeGb + " GB") -ForegroundColor DarkGray
+
+            if ($freeGb -ge 2.0) {
+                break
+            }
+
+            Write-Host "Stage 6 needs at least 2 GB free RAM for a stable Desktop load." -ForegroundColor Yellow
+            Write-Host "Close memory-heavy apps/windows now; this verifier will wait and retry automatically." -ForegroundColor Yellow
+
+            try {
+                Write-Host "Largest user processes by working set:" -ForegroundColor DarkGray
+                Get-Process |
+                    Where-Object { $_.ProcessName -notin @("System","Idle","Memory Compression") } |
+                    Sort-Object WorkingSet64 -Descending |
+                    Select-Object -First 8 @{Name="Process";Expression={$_.ProcessName}},
+                                           @{Name="RAM_MB";Expression={[math]::Round($_.WorkingSet64 / 1MB)}} |
+                    Format-Table -AutoSize | Out-Host
+            }
+            catch {}
+
+            Start-Sleep -Seconds 20
+        }
+
         if ($freeGb -lt 2.0) {
-            throw "Only $freeGb GB RAM is free. Close memory-heavy applications and rerun Stage 6 verification."
+            throw "Stage 6 runtime QA paused because only $freeGb GB RAM is free after waiting 10 minutes. Free at least 2 GB and rerun; repository/CI checks have already passed."
         }
     }
     catch {
