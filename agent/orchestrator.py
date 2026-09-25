@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Mapping
 
 from .config import AgentConfig
+from .insights import Insight, generate_insights
 from .planner import QueryPlan, RuleBasedPlanner
 from .tools import AgentTool, ToolResult
 
@@ -15,6 +16,7 @@ class AgentResponse:
     intent: str = "unknown"
     plan: QueryPlan | None = None
     tool_results: tuple[ToolResult, ...] = ()
+    insights: tuple[Insight, ...] = ()
 
 
 class AnalyticsAgent:
@@ -71,6 +73,9 @@ class AnalyticsAgent:
             workflow = plan.steps[2].arguments.get("workflow", "analysis")
             if not rows:
                 return f"{workflow} completed with no matching rows."
+            insights = generate_insights(str(workflow), rows)
+            if insights:
+                return " ".join(insight.message for insight in insights)
             preview = rows[:5]
             return f"{workflow} completed from governed Retail360 data. Top evidence: {preview}"
 
@@ -95,10 +100,15 @@ class AnalyticsAgent:
 
         plan = self.planner.plan(clean_question)
         results = self.execute_plan(plan)
+        insights: tuple[Insight, ...] = ()
+        if plan.intent == "business_analysis" and len(results) >= 3 and results[2].ok:
+            workflow = str(plan.steps[2].arguments.get("workflow", "analysis"))
+            insights = generate_insights(workflow, results[2].data or [])
         return AgentResponse(
             question=clean_question,
             answer=self._explain(plan, results),
             intent=plan.intent,
             plan=plan,
             tool_results=results,
+            insights=insights,
         )
