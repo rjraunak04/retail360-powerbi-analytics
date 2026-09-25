@@ -10,6 +10,7 @@ import psycopg
 from psycopg import sql
 
 from ..config import AgentConfig
+from ..guardrails import GuardrailViolation, SqlGuardrailPolicy, validate_agent_sql
 from .base import ToolResult
 
 _FORBIDDEN = re.compile(
@@ -29,31 +30,12 @@ class QueryRejected(ValueError):
 
 
 def validate_read_only_query(query: str, allowed_schema: str = "analytics") -> str:
-    """Return normalized SQL when it is safe for the analytics tool."""
+    """Compatibility wrapper around the stronger Day 5 guardrail layer."""
 
-    normalized = query.strip()
-    if not normalized:
-        raise QueryRejected("Query must not be empty.")
-
-    # One statement only. A single optional trailing semicolon is accepted.
-    body = normalized[:-1].strip() if normalized.endswith(";") else normalized
-    if ";" in body:
-        raise QueryRejected("Only one SQL statement is allowed.")
-
-    if not re.match(r"^(select|with)\b", body, re.IGNORECASE):
-        raise QueryRejected("Only SELECT or WITH queries are allowed.")
-
-    if _FORBIDDEN.search(body):
-        raise QueryRejected("Mutating or administrative SQL is not allowed.")
-
-    schemas = {match.group(2).lower() for match in _SCHEMA_REF.finditer(body)}
-    disallowed = schemas - {allowed_schema.lower()}
-    if disallowed:
-        raise QueryRejected(
-            "Query references a non-approved schema: " + ", ".join(sorted(disallowed))
-        )
-
-    return body
+    try:
+        return validate_agent_sql(query, SqlGuardrailPolicy(allowed_schema=allowed_schema))
+    except GuardrailViolation as exc:
+        raise QueryRejected(str(exc)) from exc
 
 
 class PostgresAnalyticsTool:
@@ -82,8 +64,15 @@ class PostgresAnalyticsTool:
             )
 
         try:
-            safe_query = validate_read_only_query(query, self.config.allowed_schema)
-        except QueryRejected as exc:
+            safe_query = validate_agent_sql(
+                query,
+                SqlGuardrailPolicy(
+                    allowed_schema=self.config.allowed_schema,
+                    allowed_tables=frozenset(self.config.allowed_tables),
+                    max_query_chars=self.config.max_query_chars,
+                ),
+            )
+        except (QueryRejected, GuardrailViolation) as exc:
             return ToolResult(
                 tool_name=self.name,
                 ok=False,
@@ -126,6 +115,6 @@ class PostgresAnalyticsTool:
             return ToolResult(
                 tool_name=self.name,
                 ok=False,
-                error=f"PostgreSQL query failed: {exc}",
+                error="PostgreSQL query failed safely.",
                 metadata={"rejected": False},
             )
