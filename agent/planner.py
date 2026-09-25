@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+from .workflows import choose_workflow
+
 
 @dataclass(frozen=True)
 class PlanStep:
@@ -21,6 +23,21 @@ class RuleBasedPlanner:
 
     def plan(self, question: str) -> QueryPlan:
         text = question.casefold()
+        workflow = choose_workflow(question)
+        if workflow:
+            return QueryPlan(
+                intent="business_analysis",
+                steps=(
+                    PlanStep("kpi_metadata", {"query": workflow.metric}, "Ground the workflow metric"),
+                    PlanStep("semantic_metadata", {"action": "summary"}, "Ground the workflow in the semantic model"),
+                    PlanStep(
+                        "postgres_analytics",
+                        {"query": workflow.query, "workflow": workflow.name},
+                        workflow.interpretation,
+                    ),
+                ),
+            )
+
         if any(word in text for word in ("schema", "table", "column", "relationship", "model")):
             return QueryPlan(
                 intent="semantic_lookup",
