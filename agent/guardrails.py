@@ -12,14 +12,14 @@ _FORBIDDEN_KEYWORDS = re.compile(
     re.IGNORECASE,
 )
 _QUALIFIED_REFERENCE = re.compile(
-    r'\\b(?:from|join)\\s+"?([A-Za-z_][\\w$]*)"?\\s*\\.\\s*"?([A-Za-z_][\\w$]*)"?',
+    r'\b(?:from|join)\s+"?([A-Za-z_][\w$]*)"?\s*\.\s*"?([A-Za-z_][\w$]*)"?',
     re.IGNORECASE,
 )
 _TABLE_REFERENCE = re.compile(
-    r'\\b(?:from|join)\\s+(?:(?:"?[A-Za-z_][\\w$]*"?\\s*\\.\\s*)?)"?([A-Za-z_][\\w$]*)"?',
+    r'\b(?:from|join)\s+(?:(?:"?[A-Za-z_][\w$]*"?\s*\.\s*)?)"?([A-Za-z_][\w$]*)"?',
     re.IGNORECASE,
 )
-_CTE_NAME = re.compile(r'\\b([A-Za-z_][\\w$]*)\\s+as\\s*\\(', re.IGNORECASE)
+_CTE_NAME = re.compile(r'\b([A-Za-z_][\w$]*)\s+as\s*\(', re.IGNORECASE)
 _DANGEROUS_FUNCTION = re.compile(
     r"\b(pg_read_file|pg_read_binary_file|pg_ls_dir|pg_stat_file|"
     r"pg_sleep|dblink|lo_import|lo_export)\s*\(",
