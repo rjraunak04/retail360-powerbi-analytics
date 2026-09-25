@@ -1,8 +1,20 @@
-# Retail360 — Dashboard Screenshot Gallery
+# Retail360 — Dashboard Gallery
 
-Stage 9 uses **real Power BI Desktop screenshots** generated from the source-controlled PBIP report. Generated mockups are intentionally not used as portfolio evidence.
+These are **real Power BI Desktop screenshots** from the source-controlled Retail360 report. They are kept in the repository so a reviewer can inspect the finished BI output without rebuilding the project first.
 
-Expected files:
+## Quick preview
+
+| Executive Overview | Product & Profitability |
+|---|---|
+| ![Executive Overview](01-executive-overview.png) | ![Product & Profitability](03-product-profitability.png) |
+
+| Customer Analytics | Inventory Analytics |
+|---|---|
+| ![Customer Analytics](04-customer-analytics.png) | ![Inventory Analytics](08-inventory-analytics.png) |
+
+## Full report gallery
+
+The report contains ten visible analytical pages:
 
 | # | Report page | File |
 |---:|---|---|

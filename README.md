@@ -19,6 +19,7 @@
 [Star Schema](docs/architecture/star-schema.md) •
 [KPI Dictionary](docs/powerbi/kpi-dictionary.md) •
 [Dashboard Gallery](docs/screenshots/README.md) •
+[Portfolio Summary](docs/project/portfolio-summary.md) •
 [Agent Guide](docs/agent/recruiter-guide.md) •
 [Setup](docs/project/setup.md)
 
@@ -27,6 +28,20 @@
 ---
 
 Retail360 is a source-controlled analytics platform built on **Microsoft AdventureWorksDW**. It takes raw CSV extracts through a reproducible **PostgreSQL warehouse → staging layer → analytics star schema → Power BI semantic model → governed DAX layer → report**, with automated validation at each stage.
+
+## Why this project matters
+
+This repository is designed to show the full analytics engineering path rather than only a finished dashboard:
+
+- **121,253** harmonized sales lines and **776,286** inventory snapshots
+- **78** governed DAX measures with **34/34** exact KPI runtime checks and **78/78** measure smoke checks
+- **10** analytical report pages plus drill-through, tooltip and demonstration RLS
+- source-controlled **PBIP / TMDL / PBIR** model and report assets
+- reproducible PostgreSQL warehouse, Docker setup and automated QA
+- governed analytics agent with semantic grounding, guarded read-only SQL and deterministic insights
+- **20-question** agent benchmark enforced through GitHub Actions quality gates
+
+**Reviewer shortcut:** [Dashboard Gallery](docs/screenshots/README.md) → [Architecture](docs/architecture/retail360-architecture.md) → [KPI Dictionary](docs/powerbi/kpi-dictionary.md) → [Agent Recruiter Guide](docs/agent/recruiter-guide.md) → [Validation Evidence](docs/data-engineering/stage8-validation-summary.md)
 
 ## Agentic analytics layer
 
@@ -92,6 +107,8 @@ pytest -q tests/agent
 | 🔁 CI | Warehouse + agent regression validation |
 
 ![Retail360 Executive Overview](docs/screenshots/01-executive-overview.png)
+
+**More report evidence:** [Sales & Growth](docs/screenshots/02-sales-growth.png) · [Product & Profitability](docs/screenshots/03-product-profitability.png) · [Customer Analytics](docs/screenshots/04-customer-analytics.png) · [Inventory Analytics](docs/screenshots/08-inventory-analytics.png) · [Full 10-page gallery](docs/screenshots/README.md)
 
 ## What the project covers
 
