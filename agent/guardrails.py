@@ -11,11 +11,15 @@ _FORBIDDEN_KEYWORDS = re.compile(
     r"listen|notify|prepare|execute|deallocate|lock|discard)\b",
     re.IGNORECASE,
 )
-_SCHEMA_REFERENCE = re.compile(r'(?<![\w"])("?)([A-Za-z_][\w$]*)\1\s*\.', re.IGNORECASE)
-_TABLE_REFERENCE = re.compile(
-    r"\b(?:from|join)\s+(?:analytics\.)?([A-Za-z_][\w$]*)",
+_QUALIFIED_REFERENCE = re.compile(
+    r'\\b(?:from|join)\\s+"?([A-Za-z_][\\w$]*)"?\\s*\\.\\s*"?([A-Za-z_][\\w$]*)"?',
     re.IGNORECASE,
 )
+_TABLE_REFERENCE = re.compile(
+    r'\\b(?:from|join)\\s+(?:(?:"?[A-Za-z_][\\w$]*"?\\s*\\.\\s*)?)"?([A-Za-z_][\\w$]*)"?',
+    re.IGNORECASE,
+)
+_CTE_NAME = re.compile(r'\\b([A-Za-z_][\\w$]*)\\s+as\\s*\\(', re.IGNORECASE)
 _DANGEROUS_FUNCTION = re.compile(
     r"\b(pg_read_file|pg_read_binary_file|pg_ls_dir|pg_stat_file|"
     r"pg_sleep|dblink|lo_import|lo_export)\s*\(",
