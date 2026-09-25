@@ -19,6 +19,7 @@
 [Star Schema](docs/architecture/star-schema.md) •
 [KPI Dictionary](docs/powerbi/kpi-dictionary.md) •
 [Dashboard Gallery](docs/screenshots/README.md) •
+[Portfolio Summary](docs/project/portfolio-summary.md) •
 [Agent Guide](docs/agent/recruiter-guide.md) •
 [Setup](docs/project/setup.md)
 
