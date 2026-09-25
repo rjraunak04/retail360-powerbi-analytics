@@ -158,45 +158,49 @@ function Invoke-CleanPowerBIRestart {
             }
     }
 
-    # Basic host-memory preflight. This model is modest; extremely low free
-    # memory usually means another application is starving msmdsrv.
+    # Host-memory preflight. Stage 5 proved the model can load on this machine;
+    # the Stage 6 OutOfMemory/provider crashes happened when Windows had almost
+    # no free RAM. Give Windows a short reclaim window, then fail clearly rather
+    # than launching Desktop into a known low-memory state.
     try {
-        $memoryDeadline = (Get-Date).AddMinutes(10)
+        $minFreeGb = 1.25
+        $memoryDeadline = (Get-Date).AddSeconds(45)
         $freeGb = 0.0
 
-        while ((Get-Date) -lt $memoryDeadline) {
+        do {
             $os = Get-CimInstance Win32_OperatingSystem
             $freeGb = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
             Write-Host ("Free physical memory before Power BI launch: " + $freeGb + " GB") -ForegroundColor DarkGray
 
-            if ($freeGb -ge 2.0) {
+            if ($freeGb -ge $minFreeGb) {
                 break
             }
 
-            Write-Host "Stage 6 needs at least 2 GB free RAM for a stable Desktop load." -ForegroundColor Yellow
-            Write-Host "Close memory-heavy apps/windows now; this verifier will wait and retry automatically." -ForegroundColor Yellow
+            [System.GC]::Collect()
+            [System.GC]::WaitForPendingFinalizers()
+            Start-Sleep -Seconds 5
+        } while ((Get-Date) -lt $memoryDeadline)
 
+        if ($freeGb -lt $minFreeGb) {
+            Write-Host ""
+            Write-Host "Top memory-consuming processes:" -ForegroundColor Yellow
             try {
-                Write-Host "Largest user processes by working set:" -ForegroundColor DarkGray
                 Get-Process |
                     Where-Object { $_.ProcessName -notin @("System","Idle","Memory Compression") } |
                     Sort-Object WorkingSet64 -Descending |
                     Select-Object -First 8 @{Name="Process";Expression={$_.ProcessName}},
+                                           Id,
                                            @{Name="RAM_MB";Expression={[math]::Round($_.WorkingSet64 / 1MB)}} |
                     Format-Table -AutoSize | Out-Host
             }
             catch {}
 
-            Start-Sleep -Seconds 20
-        }
-
-        if ($freeGb -lt 2.0) {
-            throw "Stage 6 runtime QA paused because only $freeGb GB RAM is free after waiting 10 minutes. Free at least 2 GB and rerun; repository/CI checks have already passed."
+            throw "LOW_RAM_BLOCKER: only $freeGb GB RAM is free; at least $minFreeGb GB is required for reliable Stage 6 Desktop loading. Close one or two memory-heavy applications shown above and rerun the same verifier."
         }
     }
     catch {
-        if ($_.Exception.Message -like "Only * GB RAM is free*") { throw }
-        Write-Host "Memory preflight unavailable; continuing." -ForegroundColor Yellow
+        if ($_.Exception.Message -like "LOW_RAM_BLOCKER:*") { throw }
+        Write-Host ("Memory preflight unavailable: " + $_.Exception.Message) -ForegroundColor Yellow
     }
 
     Write-Host "Opening canonical Retail360.pbip in a clean Power BI Desktop process..." -ForegroundColor Yellow
