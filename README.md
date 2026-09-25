@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🛒 Retail360 — Enterprise Retail Analytics Platform
+# 🛒 Retail360 — Agentic Retail Analytics Platform
 
-**End-to-end retail BI engineering with PostgreSQL, Power Query, dimensional modeling, governed DAX, PBIP/TMDL and automated QA.**
+**End-to-end retail analytics with PostgreSQL, Power BI, governed DAX, automated QA and an evidence-grounded analytics agent.**
 
 [![Power BI](https://img.shields.io/badge/Power%20BI-PBIP%20%7C%20TMDL-F2C811?logo=powerbi&logoColor=black)](powerbi/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](sql/)
@@ -10,7 +10,8 @@
 [![Power Query](https://img.shields.io/badge/Power%20Query-M-00B294)](power-query/)
 [![Python](https://img.shields.io/badge/Python-QA%20%26%20Automation-3776AB?logo=python&logoColor=white)](scripts/)
 [![Docker](https://img.shields.io/badge/Docker-Local%20Warehouse-2496ED?logo=docker&logoColor=white)](compose.yml)
-[![CI](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/postgres-stage2-ci.yml/badge.svg?branch=develop)](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/postgres-stage2-ci.yml)
+[![Warehouse CI](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/postgres-stage2-ci.yml/badge.svg?branch=develop)](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/postgres-stage2-ci.yml)
+[![Agent Quality CI](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/agent-quality-ci.yml/badge.svg?branch=main)](https://github.com/rjraunak04/retail360-powerbi-analytics/actions/workflows/agent-quality-ci.yml)
 
 **Sales • Profitability • Customers • Products • Resellers • Promotions • Territory • Inventory**
 
@@ -18,6 +19,7 @@
 [Star Schema](docs/architecture/star-schema.md) •
 [KPI Dictionary](docs/powerbi/kpi-dictionary.md) •
 [Dashboard Gallery](docs/screenshots/README.md) •
+[Agent Guide](docs/agent/recruiter-guide.md) •
 [Setup](docs/project/setup.md)
 
 </div>
@@ -25,6 +27,55 @@
 ---
 
 Retail360 is a source-controlled analytics platform built on **Microsoft AdventureWorksDW**. It takes raw CSV extracts through a reproducible **PostgreSQL warehouse → staging layer → analytics star schema → Power BI semantic model → governed DAX layer → report**, with automated validation at each stage.
+
+## Agentic analytics layer
+
+Retail360 also includes a provider-neutral analytics agent built on top of the governed BI stack. It is designed around **grounding and evidence**, not unrestricted chatbot-to-SQL generation.
+
+```text
+Business question
+      ↓
+Planner
+      ↓
+KPI + semantic grounding
+      ↓
+Governed analysis workflow
+      ↓
+SQL guardrails
+      ↓
+Read-only PostgreSQL
+      ↓
+Evidence rows
+      ↓
+Deterministic insights
+      ↓
+Grounded response
+```
+
+The agent currently provides:
+
+- KPI and Power BI semantic-model grounding
+- read-only PostgreSQL access with schema/table allow-lists, timeout and row bounds
+- governed product-sales, channel-sales, profitability and latest-inventory workflows
+- deterministic observations for leaders, concentration, negative profit and inventory attention
+- a 20-question version-controlled evaluation benchmark
+- CI quality gates for intent routing, tool selection, KPI grounding and answer evidence
+- descriptive-only insight language; promotion analysis does not claim causal lift
+
+Quick metadata demo:
+
+```powershell
+python scripts/demo_agent.py
+```
+
+Evaluation:
+
+```powershell
+python -m agent.evaluation.evaluate
+pytest -q tests/agent
+```
+
+[Recruiter / interview guide](docs/agent/recruiter-guide.md) · [Agent architecture](docs/agent/architecture.md) · [Evaluation design](docs/agent/day6-evaluation.md)
 
 ### ⚡ At a glance
 
@@ -36,7 +87,9 @@ Retail360 is a source-controlled analytics platform built on **Microsoft Adventu
 | 📊 DAX | 78 explicit governed measures |
 | ✅ QA | SQL reconciliation, semantic-model checks and runtime DAX tests |
 | 🐳 Local setup | Docker-based PostgreSQL environment |
-| 🔁 CI | GitHub Actions regression validation |
+| 🤖 Agent | Governed planning, guarded SQL, business workflows and evidence-backed insights |
+| 🧪 Agent evaluation | 20-question benchmark + CI quality gates |
+| 🔁 CI | Warehouse + agent regression validation |
 
 ![Retail360 Executive Overview](docs/screenshots/01-executive-overview.png)
 
@@ -184,9 +237,11 @@ Canonical Power BI runtime evidence:
 
 ```text
 retail360-powerbi-analytics/
+├── agent/                   # governed analytics agent, workflows and evaluation
 ├── data/                    # local source-data workflow
 ├── dax/                     # DAX QA queries
 ├── docs/
+│   ├── agent/               # agent architecture, evaluation and recruiter guide
 │   ├── architecture/        # architecture and star schema
 │   ├── business/            # business context
 │   ├── data-engineering/    # validation evidence
@@ -260,6 +315,9 @@ Implemented:
 - RLS demonstration roles
 - automated validation
 - reproducible local packaging
+- governed analytics agent with guarded read-only database access
+- deterministic business-analysis workflows and insights
+- benchmark-driven agent evaluation and CI quality gates
 
 Not claimed:
 - causal promotion lift
@@ -269,6 +327,6 @@ Not claimed:
 
 ## Status
 
-The portfolio/fallback deployment path is complete and CI-validated. Power BI Service publication remains an optional environment-specific deployment step.
+The BI platform and agentic analytics layers are implemented with automated validation. Power BI Service publication remains an optional environment-specific deployment step.
 
 [Project roadmap](docs/roadmap/end-to-end-build-plan.md)
