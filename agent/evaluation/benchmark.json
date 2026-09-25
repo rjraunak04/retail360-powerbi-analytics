@@ -1,0 +1,22 @@
+[
+  {"id":"kpi_sales_01","question":"What does total sales mean?","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Total Sales","answer_contains":["Total Sales"]},
+  {"id":"kpi_revenue_01","question":"How is revenue defined?","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Total Sales","answer_contains":["Total Sales"]},
+  {"id":"kpi_margin_01","question":"Explain gross margin","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Gross Margin %","answer_contains":["Gross Margin %","weighted margin"]},
+  {"id":"kpi_profit_01","question":"What is gross profit?","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Gross Profit","answer_contains":["Gross Profit"]},
+  {"id":"kpi_inventory_01","question":"Explain current inventory","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Current Inventory Value / Units","answer_contains":["latest snapshot"]},
+  {"id":"kpi_orders_01","question":"How do we define orders?","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Distinct Orders","answer_contains":["Distinct Orders"]},
+  {"id":"kpi_units_01","question":"What are units sold?","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Units Sold","answer_contains":["Units Sold"]},
+  {"id":"semantic_schema_01","question":"Explain the semantic model schema","expected_intent":"semantic_lookup","expected_tool":"semantic_metadata","answer_contains":["Retail360","14 relationships"]},
+  {"id":"semantic_table_01","question":"What tables are in the model?","expected_intent":"semantic_lookup","expected_tool":"semantic_metadata","answer_contains":["Retail360"]},
+  {"id":"semantic_relationship_01","question":"Tell me about model relationships","expected_intent":"semantic_lookup","expected_tool":"semantic_metadata","answer_contains":["14 relationships"]},
+  {"id":"semantic_column_01","question":"What columns are available?","expected_intent":"semantic_lookup","expected_tool":"semantic_metadata","answer_contains":["Retail360"]},
+  {"id":"discovery_01","question":"What can Retail360 analyze?","expected_intent":"discovery","expected_tool":"semantic_metadata","answer_contains":["Retail360"]},
+  {"id":"discovery_02","question":"Help me understand the available analytics","expected_intent":"discovery","expected_tool":"semantic_metadata","answer_contains":["Retail360"]},
+  {"id":"kpi_margin_02","question":"How should margin be calculated?","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Gross Margin %","answer_contains":["weighted margin"]},
+  {"id":"kpi_inventory_02","question":"Should current inventory sum all historical snapshots?","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Current Inventory Value / Units","answer_contains":["latest snapshot"]},
+  {"id":"kpi_sales_02","question":"Define sales for this dashboard","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Total Sales","answer_contains":["current filter context"]},
+  {"id":"kpi_orders_02","question":"How are distinct orders counted?","expected_intent":"kpi_lookup","expected_tool":"kpi_metadata","expected_kpi":"Distinct Orders","answer_contains":["Channel","Sales Order Number"]},
+  {"id":"semantic_model_02","question":"Describe the Power BI model","expected_intent":"semantic_lookup","expected_tool":"semantic_metadata","answer_contains":["Retail360"]},
+  {"id":"semantic_schema_02","question":"Which schema backs the model?","expected_intent":"semantic_lookup","expected_tool":"semantic_metadata","answer_contains":["Retail360"]},
+  {"id":"discovery_03","question":"Give me an overview of Retail360 analytics","expected_intent":"discovery","expected_tool":"semantic_metadata","answer_contains":["Retail360"]}
+]
