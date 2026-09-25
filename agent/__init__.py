@@ -1,10 +1,16 @@
-"""Retail360 agentic analytics package.
-
-The package keeps AI orchestration separate from the governed warehouse,
-semantic model, and validation layers.
-"""
+"""Retail360 agentic analytics package."""
 
 from .config import AgentConfig
-from .orchestrator import AnalyticsAgent, AgentResponse
+from .factory import build_default_agent
+from .orchestrator import AgentResponse, AnalyticsAgent
+from .planner import PlanStep, QueryPlan, RuleBasedPlanner
 
-__all__ = ["AgentConfig", "AnalyticsAgent", "AgentResponse"]
+__all__ = [
+    "AgentConfig",
+    "AgentResponse",
+    "AnalyticsAgent",
+    "PlanStep",
+    "QueryPlan",
+    "RuleBasedPlanner",
+    "build_default_agent",
+]
