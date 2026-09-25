@@ -64,14 +64,15 @@ def validate_agent_sql(query: str, policy: SqlGuardrailPolicy) -> str:
     if _DANGEROUS_FUNCTION.search(inspected):
         raise GuardrailViolation("Unsafe PostgreSQL functions are not allowed.")
 
-    schemas = {match.group(2).lower() for match in _SCHEMA_REFERENCE.finditer(inspected)}
+    schemas = {match.group(1).lower() for match in _QUALIFIED_REFERENCE.finditer(inspected)}
     disallowed_schemas = schemas - {policy.allowed_schema.lower()}
     if disallowed_schemas:
         raise GuardrailViolation("Query references a non-approved schema.")
 
     if policy.allowed_tables:
         tables = {match.group(1).lower() for match in _TABLE_REFERENCE.finditer(inspected)}
-        disallowed_tables = tables - {name.lower() for name in policy.allowed_tables}
+        cte_names = {match.group(1).lower() for match in _CTE_NAME.finditer(inspected)}
+        disallowed_tables = tables - {name.lower() for name in policy.allowed_tables} - cte_names
         if disallowed_tables:
             raise GuardrailViolation("Query references a non-approved analytics table.")
 
