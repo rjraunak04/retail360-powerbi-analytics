@@ -2,15 +2,19 @@
 
 from .config import AgentConfig
 from .factory import build_default_agent
+from .guardrails import GuardrailViolation, SqlGuardrailPolicy, validate_agent_sql
 from .orchestrator import AgentResponse, AnalyticsAgent
 from .planner import PlanStep, QueryPlan, RuleBasedPlanner
 
 __all__ = [
     "AgentConfig",
     "AgentResponse",
+    "GuardrailViolation",
+    "SqlGuardrailPolicy",
     "AnalyticsAgent",
     "PlanStep",
     "QueryPlan",
     "RuleBasedPlanner",
     "build_default_agent",
+    "validate_agent_sql",
 ]
