@@ -66,6 +66,14 @@ class AnalyticsAgent:
         if failed:
             return f"Plan stopped safely because {failed.tool_name} failed: {failed.error}"
 
+        if plan.intent == "business_analysis" and len(results) >= 3:
+            rows = results[2].data or []
+            workflow = plan.steps[2].arguments.get("workflow", "analysis")
+            if not rows:
+                return f"{workflow} completed with no matching rows."
+            preview = rows[:5]
+            return f"{workflow} completed from governed Retail360 data. Top evidence: {preview}"
+
         if plan.intent == "kpi_lookup" and results and results[0].data:
             item = results[0].data[0]
             return f"{item['measure']}: {item['definition']}"
