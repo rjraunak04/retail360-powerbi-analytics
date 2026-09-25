@@ -16,6 +16,7 @@ POLICY = SqlGuardrailPolicy(
         "DELETE FROM analytics.fact_sales",
         "SELECT * FROM raw.fact_sales",
         "SELECT * FROM analytics.secret_table",
+        'SELECT * FROM "analytics"."secret_table"',
         "SELECT pg_read_file('/etc/passwd')",
         "SELECT pg_sleep(10)",
         "SELECT 1; SELECT 2",
@@ -54,3 +55,12 @@ def test_error_messages_do_not_echo_sensitive_query_text():
         assert "/secret/path" not in str(exc)
     else:
         raise AssertionError("Expected unsafe function to be rejected")
+
+
+def test_cte_alias_is_not_treated_as_physical_table():
+    query = "WITH totals AS (SELECT SUM(sales_amount) AS sales FROM analytics.fact_sales) SELECT sales FROM totals"
+    assert validate_agent_sql(query, POLICY)
+
+
+def test_quoted_allowed_table_is_accepted():
+    assert validate_agent_sql('SELECT * FROM "analytics"."fact_sales"', POLICY)
