@@ -3,6 +3,7 @@
 from .config import AgentConfig
 from .factory import build_default_agent
 from .guardrails import GuardrailViolation, SqlGuardrailPolicy, validate_agent_sql
+from .insights import Insight, generate_insights
 from .orchestrator import AgentResponse, AnalyticsAgent
 from .planner import PlanStep, QueryPlan, RuleBasedPlanner
 from .workflows import AnalysisWorkflow, WORKFLOWS, choose_workflow
@@ -13,6 +14,7 @@ __all__ = [
     "WORKFLOWS",
     "AgentResponse",
     "GuardrailViolation",
+    "Insight",
     "SqlGuardrailPolicy",
     "AnalyticsAgent",
     "PlanStep",
@@ -21,4 +23,5 @@ __all__ = [
     "build_default_agent",
     "validate_agent_sql",
     "choose_workflow",
+    "generate_insights",
 ]
